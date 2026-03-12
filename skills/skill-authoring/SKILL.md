@@ -1,56 +1,70 @@
+---
+name: skill-authoring
+description: Create or revise reusable agent skills under skills/<name>/SKILL.md with clear structure, progressive disclosure, and guardrails.
+metadata:
+  category: authoring
+  audience: general-coding-agent
+  maturity: stable
+---
+
 # Skill authoring
 
-Use this skill when creating or revising an Agent Skill under `skills/<name>/SKILL.md`.
+Use this skill when creating or revising a reusable agent skill under `skills/<name>/SKILL.md`.
 
-## Non-negotiable rule
+## Do not use this skill when
 
-If the request is ambiguous, ask clarifying questions first and do not make assumptions about scope, naming, behavior, or required examples.
+- The guidance belongs in global instructions or a repository-wide policy file instead of a reusable skill.
+- The workflow is so narrow or stateful that it belongs in a specialized agent instead of a reusable skill.
+- The request is a one-off task description with no reuse value.
 
-## What good skills contain
+## Inputs to gather
 
-- A clear purpose and when to use the skill.
-- Concrete triggers or example prompts.
-- Inputs the agent should collect before acting.
-- A repeatable workflow the agent can follow.
-- Guardrails, validation steps, and handoff expectations.
+- The problem the skill should solve and the kinds of requests that should activate it.
+- The intended audience, such as a general coding agent or a narrow specialist workflow.
+- Required inputs, constraints, examples, and common failure modes.
+- Nearby instructions, skills, or agents that may overlap.
+- Any environment assumptions that truly matter, such as required tools or network access.
 
-## Authoring workflow
+## First move
 
-1. Clarify the user’s intent, audience, and scope.
-2. Choose a concise, kebab-case skill name.
-3. Write a `SKILL.md` that is easy for an LLM to follow quickly.
-4. Keep instructions actionable and specific rather than abstract.
-5. Include examples and failure cases when they change behavior.
-6. Validate that the skill does not conflict with broader instructions or duplicate an existing skill.
-
-## Suggested structure
-
-```md
-# <Skill name>
-
-Use this skill when ...
-
-## Inputs
-
-- ...
+1. Check whether the guidance belongs in a skill at all instead of a broader instruction file or a specialized agent.
+2. Choose a concise kebab-case skill name that matches the directory name.
+3. Start from `assets/skill-template.md` and keep the main `SKILL.md` focused on activation, first actions, and validation.
 
 ## Workflow
 
-1. ...
+1. Define what should activate the skill and what should not.
+2. Draft the top-level `SKILL.md` so the next action is obvious within a few seconds of reading it.
+3. Keep the main skill file concise and move lookup-heavy detail into reference files.
+4. Add assets for reusable templates or examples when they make the workflow easier to apply.
+5. Add scripts only when they remove repeated work and can stay generic, self-contained, and optional.
+6. Link every support file from `SKILL.md` so an agent can discover it without guessing.
+7. Validate the final package for naming, structure, layering, and discoverability.
 
 ## Guardrails
 
-- ...
+- Keep the skill focused on a reusable workflow, not a one-off task.
+- Make the smallest reasonable generic assumptions; only stop for clarification when ambiguity would materially change the design.
+- Do not duplicate instructions that belong in broader config or in a specialized agent.
+- Keep support files shallow under the skill root and reference them directly from `SKILL.md`.
+- Prefer `references/` before `scripts/` unless automation clearly reduces repeated work.
+
+## Validation
+
+- Read the completed skill once as if you were the target agent and confirm the next action is obvious.
+- Check the layering against `references/layering-guide.md`.
+- Run the checklist in `references/checklist.md`.
+- Run `skills-ref validate path/to/skill` when available.
+- If the target client supports skill reload or listing, verify the skill remains discoverable there.
 
 ## Examples
 
-- ...
-```
+- "Create a `terraform-module-upgrade` skill for safe module version bumps."
+- "Rewrite this skill so it uses references for detailed checklists instead of putting everything in `SKILL.md`."
+- "Make this skill more generic so it works across repositories instead of embedding local project rules."
 
-## Quality checklist
+## Reference files
 
-- The skill name matches the directory name.
-- The workflow is sequential and concrete.
-- The guardrails prevent common failure modes.
-- The instructions are concise enough to scan quickly.
-- Missing requirements are surfaced as questions, not guessed.
+- `assets/skill-template.md` - starter template for a new `SKILL.md`
+- `references/layering-guide.md` - where guidance belongs across instructions, skills, and agents
+- `references/checklist.md` - final authoring and validation checklist

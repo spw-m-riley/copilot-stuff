@@ -6,6 +6,8 @@
 # Local CLI history and per-session artifacts
 /command-history-state.json
 /session-store.db
+/session-store.db-shm
+/session-store.db-wal
 /session-state/
 
 # Local runtime output
@@ -18,3 +20,5 @@
 .DS_Store
 *.swp
 *~
+
+.worktrees/
