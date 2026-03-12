@@ -1,0 +1,20 @@
+# Shareable Copilot settings should stay trackable:
+# - config.json
+# - ide/
+# - installed-plugins/
+
+# Local CLI history and per-session artifacts
+/command-history-state.json
+/session-store.db
+/session-state/
+
+# Local runtime output
+/logs/
+
+# Downloaded/runtime package assets
+/pkg/
+
+# macOS/editor noise
+.DS_Store
+*.swp
+*~
