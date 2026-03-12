@@ -1,0 +1,20 @@
+{
+  "last_logged_in_user": {
+    "host": "https://github.com",
+    "login": "spw-m-riley"
+  },
+  "banner": "never",
+  "alt_screen": true,
+  "mouse": true,
+  "copy_on_select": true,
+  "compact_paste": true,
+  "render_markdown": true,
+  "stream": true,
+  "update_terminal_title": true,
+  "ide.auto_connect": true,
+  "ide.open_diff_on_edit": true,
+  "firstLaunchAt": "2026-03-11T00:00:00.000Z",
+  "model": "gpt-5.4",
+  "reasoning_effort": "high",
+  "experimental": true
+}
