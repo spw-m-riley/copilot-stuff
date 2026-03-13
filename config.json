@@ -13,11 +13,6 @@
   "update_terminal_title": true,
   "ide.auto_connect": true,
   "ide.open_diff_on_edit": true,
-  "trusted_folders": [
-    "/Users/matthew.riley/.copilot",
-    "/Users/matthew.riley/work/aws-wizu-surveys"
-  ],
-  "firstLaunchAt": "2026-03-11T00:00:00.000Z",
   "model": "gpt-5.4",
   "reasoning_effort": "high",
   "experimental": true
