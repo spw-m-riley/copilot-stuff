@@ -8,6 +8,21 @@
 | [User Skills](./skills/)                               | A set of instructions that help with tasks/workflows |
 | [User Extensions](./extensions/)                       | Think git hooks but for the agent lifecycle          |
 
+## Extensions
+
+These live in [`./extensions/`](./extensions/) and are auto-discovered by the Copilot CLI. They add either lifecycle hooks, custom tools, or both.
+
+| Extension | What it does |
+| --------- | ------------ |
+| `ci-migration-context` | Detects CI migration-related prompts such as CircleCI to GitHub Actions work and injects extra migration context so the agent compares workflows, triggers, caches, artifacts, secrets, permissions, and downstream infrastructure changes. |
+| `copilot-healthcheck` | Adds the `mr_healthcheck_run` tool, which performs a lightweight environment check for the current working directory and reports things like repo state and key local Copilot files/tools. |
+| `fleet-model-policy` | Applies prompt-time steering for fleet mode so implementation-heavy fleet work prefers `GPT-5.3-codex`, while leaving research, review, and configuration work on their normal defaults unless explicitly overridden. |
+| `gha-url-router` | Detects GitHub Actions run and job URLs in prompts and injects structured context so the agent uses the GitHub Actions tooling flow instead of manually scraping logs first. |
+| `plan-review-policy` | Adds the default `/plan` review policy, including the Jason (`GPT-5.3-codex`) and Freddy (`Claude Sonnet 4.6`) reviewer loop and the rule that plans are not approved until all reviewers approve in the same round. |
+| `post-edit-lint` | Watches edit-style tool calls and then runs targeted formatting, linting, and validation steps for common file types such as JS/TS, JSON, YAML, Terraform, and shell files, feeding the results back into the conversation. |
+| `research-current-model-policy` | Keeps `/research` aligned with the currently selected foreground model and reasoning effort, instead of falling back to the bundled research model default. |
+| `worktree-manager` | Adds the `mr_worktree_create`, `mr_worktree_list`, `mr_worktree_status`, and `mr_worktree_remove` tools so agent work can be isolated into dedicated git worktrees. |
+
 ## Prompt Tips
 
 - goal + constraints + deliverables + approval rule, plus @ mentions for exact files. Example: `There are npm packages in @package.json which need to be updated. Only update the packages which are non-major releases. The work is only complete if all tests and lint/formatting rules pass after the packages have been updated.`
