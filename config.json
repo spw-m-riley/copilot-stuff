@@ -15,5 +15,12 @@
   "ide.open_diff_on_edit": true,
   "model": "gpt-5.4",
   "reasoning_effort": "high",
-  "experimental": true
+  "experimental": true,
+  "firstLaunchAt": "2026-03-11T00:00:00.000Z",
+  "trusted_folders": [
+    "/Users/matthew.riley/.copilot",
+    "/Users/matthew.riley/work",
+    "/Users/matthew.riley/kilaaks/nvim/.config/nvim"
+  ],
+  "include_coauthor": false
 }
