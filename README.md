@@ -14,14 +14,24 @@ These live in [`./extensions/`](./extensions/) and are auto-discovered by the Co
 
 | Extension | What it does |
 | --------- | ------------ |
-| `ci-migration-context` | Detects CI migration-related prompts such as CircleCI to GitHub Actions work and injects extra migration context so the agent compares workflows, triggers, caches, artifacts, secrets, permissions, and downstream infrastructure changes. |
+| `ci-migration-context` | Detects CI migration-related prompts such as CircleCI to GitHub Actions work and injects extra migration context in the parent turn, then propagates that checklist into relevant delegated child agents. |
 | `copilot-healthcheck` | Adds the `mr_healthcheck_run` tool, which performs a lightweight environment check for the current working directory and reports things like repo state and key local Copilot files/tools. |
-| `fleet-model-policy` | Applies prompt-time steering for fleet mode so implementation-heavy fleet work prefers `GPT-5.3-codex`, while leaving research, review, and configuration work on their normal defaults unless explicitly overridden. |
-| `gha-url-router` | Detects GitHub Actions run and job URLs in prompts and injects structured context so the agent uses the GitHub Actions tooling flow instead of manually scraping logs first. |
-| `plan-review-policy` | Adds the default `/plan` review policy, including the Jason (`GPT-5.3-codex`) and Freddy (`Claude Sonnet 4.6`) reviewer loop and the rule that plans are not approved until all reviewers approve in the same round. |
+| `fleet-model-policy` | Applies prompt-time steering for fleet mode so implementation-heavy fleet work prefers `GPT-5.3-codex`, and now propagates that policy into delegated implementation-style child agents. |
+| `gha-url-router` | Detects GitHub Actions run and job URLs in prompts, injects structured routing context in the parent turn, and now passes that run/job context into relevant delegated child agents too. |
+| `plan-review-policy` | Adds the default `/plan` review policy, including the Jason (`GPT-5.3-codex`) and Freddy (`Claude Sonnet 4.6`) reviewer loop, and now propagates reviewer/helper guidance into delegated `/plan` child agents. |
 | `post-edit-lint` | Watches edit-style tool calls and then runs targeted formatting, linting, and validation steps for common file types such as JS/TS, JSON, YAML, Terraform, and shell files, feeding the results back into the conversation. |
 | `research-current-model-policy` | Keeps `/research` aligned with the currently selected foreground model and reasoning effort, instead of falling back to the bundled research model default. |
-| `worktree-manager` | Adds the `mr_worktree_create`, `mr_worktree_list`, `mr_worktree_status`, and `mr_worktree_remove` tools so agent work can be isolated into dedicated git worktrees. |
+| `worktree-manager` | Adds the `mr_worktree_create`, `mr_worktree_list`, `mr_worktree_status`, and `mr_worktree_remove` tools, and now injects child-agent guidance for implementation-style delegated tasks so git edits stay isolated in dedicated worktrees. |
+
+Child-agent context propagation is currently enabled in:
+
+- `fleet-model-policy` (delegated implementation-style fleet subagents)
+- `plan-review-policy` (delegated reviewer/helper subagents spawned from `/plan`)
+- `ci-migration-context` (delegated CI migration and workflow-debugging subagents)
+- `gha-url-router` (delegated GitHub Actions investigation subagents)
+- `worktree-manager` (delegated implementation/edit/task-style subagents in git repos)
+
+This improves fleet-mode execution by making policy, routing, and worktree expectations available inside delegated child runs instead of limiting that context to the parent prompt.
 
 ## Prompt Tips
 
@@ -29,8 +39,8 @@ These live in [`./extensions/`](./extensions/) and are auto-discovered by the Co
 
 - The most optimal workflow is Research -> Plan -> Implement
   - Use `/research` for your research. Example prompt: `/research @project-d/ needs to be migrated from CircleCI to Github Actions. There are other projects in this directory which have been through the process @project-a/ , @project-b/ and @project-c/ Use those as guides to how the migration should/could be done. Go in deep and make sure you have a full understanding of the shared workflows, the approach to the migrations, the terraform changes, and anything else which is required to make the migration run as smoothly as possible.`
-  - Use `shift+tab` or `/plan` for the planning. Example: `/plan Turn the research into a fully actionable plan. Make the plan suitable for fleet to be used. Ask GPT-5.3-codex and Claude Sonnet 4.6 to review the plan. The plan should not be considered ready until the reviewers approve it. Every reviewer must review in each round of reviews.`
-  - Use `shift+tab` till you get to autopilot and `/fleet` for implementation, often it will recommend it to you anyway.
+  - Use `shift+tab` or `/plan` for the planning. Example: `/plan Turn the research into a fully actionable plan. Make the plan suitable for fleet to be used. Ask GPT-5.3-codex and Claude Sonnet 4.6 to review the plan. The plan should not be considered ready until the reviewers approve it. Every reviewer must review in each round of reviews. Delegated `/plan` child agents now inherit the reviewer/helper policy too.`
+  - Use `shift+tab` till you get to autopilot and `/fleet` for implementation, often it will recommend it to you anyway. During delegated implementation/edit runs in git repos, child agents now receive fleet-policy and worktree guidance, so they are nudged toward the right model and one worktree per agent/task before editing.
 
 ## Model Tips
 

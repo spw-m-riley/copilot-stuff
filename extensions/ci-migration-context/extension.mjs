@@ -3,6 +3,9 @@ import { joinSession } from "@github/copilot-sdk/extension";
 
 const MIGRATION_PATTERN =
   /\b(circleci|circle ci|github actions|gha|workflow migration|ci migration)\b/i;
+const CLEARLY_UNRELATED_CHILD_PATTERN =
+  /\b(config|configure|configuration|settings|healthcheck|health check|diagnostic|diagnostics|copilot-healthcheck)\b/i;
+const MAX_ACTIVE_CONTEXTS = 64;
 
 const MIGRATION_CONTEXT = `
 When the user is working on CI migration or workflow debugging:
@@ -13,15 +16,92 @@ When the user is working on CI migration or workflow debugging:
 - if migrating from CircleCI to GitHub Actions, preserve behavior first and only then simplify
 `.trim();
 
+const activeContextBySession = new Map();
+
+function normalizeSessionId(sessionId) {
+  return typeof sessionId === "string" && sessionId.length > 0 ? sessionId : null;
+}
+
+function clearSessionContext(sessionId) {
+  if (!sessionId) {
+    return;
+  }
+  activeContextBySession.delete(sessionId);
+}
+
+function setSessionContext(sessionId, context) {
+  if (!sessionId) {
+    return;
+  }
+  if (activeContextBySession.has(sessionId)) {
+    activeContextBySession.delete(sessionId);
+  }
+  activeContextBySession.set(sessionId, context);
+
+  while (activeContextBySession.size > MAX_ACTIVE_CONTEXTS) {
+    const oldestSessionId = activeContextBySession.keys().next().value;
+    if (!oldestSessionId) {
+      break;
+    }
+    activeContextBySession.delete(oldestSessionId);
+  }
+}
+
+function getChildMetadataText(input) {
+  const pieces = [
+    input?.agentName,
+    input?.agentDisplayName,
+    input?.agentDescription,
+  ].filter((value) => typeof value === "string" && value.trim().length > 0);
+  return pieces.join(" ").toLowerCase();
+}
+
+function isClearlyUnrelatedChild(input) {
+  const metadata = getChildMetadataText(input);
+  return metadata.length > 0 && CLEARLY_UNRELATED_CHILD_PATTERN.test(metadata);
+}
+
 const session = await joinSession({
   onPermissionRequest: approveAll,
   hooks: {
     onUserPromptSubmitted: async (input) => {
-      if (!MIGRATION_PATTERN.test(input.prompt)) {
+      const sessionId = normalizeSessionId(input.sessionId);
+      const prompt = typeof input.prompt === "string" ? input.prompt : "";
+      if (!MIGRATION_PATTERN.test(prompt)) {
+        clearSessionContext(sessionId);
         return;
       }
+
+      setSessionContext(sessionId, {
+        kind: "ci-migration",
+        matched: true,
+        payload: MIGRATION_CONTEXT,
+      });
+
       await session.log("Injecting CI migration context", { ephemeral: true });
       return { additionalContext: MIGRATION_CONTEXT };
+    },
+    onSubagentStart: async (input) => {
+      const sessionId = normalizeSessionId(input.sessionId);
+      if (!sessionId) {
+        return;
+      }
+
+      const context = activeContextBySession.get(sessionId);
+      if (!context?.matched) {
+        return;
+      }
+      if (isClearlyUnrelatedChild(input)) {
+        return;
+      }
+
+      await session.log("ci-migration-context: injected child context", {
+        ephemeral: true,
+      });
+      return { additionalContext: context.payload };
+    },
+    onSessionEnd: async (input) => {
+      clearSessionContext(normalizeSessionId(input.sessionId));
     },
   },
   tools: [],

@@ -4,6 +4,63 @@ import path from "node:path";
 
 let lastKnownCwd = process.cwd();
 
+const WORKTREE_CHILD_GUIDANCE = [
+  "Worktree guidance for delegated implementation tasks:",
+  "- When editing or implementing in a Git repository, prefer an isolated worktree per agent/task.",
+  "- Create one with mr_worktree_create before making edits when needed, and keep changes inside that worktree.",
+  "- Use mr_worktree_status/mr_worktree_list to confirm the right worktree before writing files.",
+].join("\n");
+
+const IMPLEMENTATION_CHILD_ALLOW_LIST = [
+  "implement",
+  "implementation",
+  "code",
+  "coding",
+  "edit",
+  "fix",
+  "patch",
+  "task",
+  "execute",
+  "execution",
+  "build",
+  "test",
+  "debug",
+];
+
+const NON_IMPLEMENTATION_CHILD_DENY_LIST = [
+  "research",
+  "review",
+  "reviewer",
+  "plan",
+  "planning",
+  "explore",
+  "config",
+  "configure",
+];
+
+function childAgentMetadata(input) {
+  return [input.agentName, input.agentDisplayName, input.agentDescription]
+    .filter((value) => typeof value === "string" && value.trim())
+    .join(" ")
+    .toLowerCase();
+}
+
+function shouldInjectChildWorktreeGuidance(input) {
+  const metadata = childAgentMetadata(input);
+  if (!metadata) {
+    return false;
+  }
+
+  const matchesDenyList = NON_IMPLEMENTATION_CHILD_DENY_LIST.some((keyword) =>
+    metadata.includes(keyword),
+  );
+  if (matchesDenyList) {
+    return false;
+  }
+
+  return IMPLEMENTATION_CHILD_ALLOW_LIST.some((keyword) => metadata.includes(keyword));
+}
+
 function run(command, args, options = {}) {
   return new Promise((resolve) => {
     import("node:child_process").then(({ execFile }) => {
@@ -137,6 +194,21 @@ const session = await joinSession({
     },
     onPreToolUse: async (input) => {
       lastKnownCwd = input.cwd || lastKnownCwd;
+    },
+    onSubagentStart: async (input) => {
+      lastKnownCwd = input.cwd || lastKnownCwd;
+      if (!shouldInjectChildWorktreeGuidance(input)) {
+        return;
+      }
+
+      const cwd = input.cwd || lastKnownCwd || process.cwd();
+      const root = await repoRoot(cwd);
+      if (!root) {
+        return;
+      }
+
+      await session.log("worktree-manager: injected child guidance", { ephemeral: true });
+      return { additionalContext: WORKTREE_CHILD_GUIDANCE };
     },
   },
   tools: [
