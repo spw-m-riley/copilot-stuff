@@ -12,3 +12,5 @@ Keep keymaps, autocmds, options, and plugin side effects predictable, non-duplic
 ## Learned Rules
 
 <!-- New Rules appended below this line. Do not edit above this section -->
+1. [NEOVIM] When consuming `vim.treesitter.query:iter_matches()` results on Neovim 0.12+, treat each capture slot as a list of nodes, not always a bare `TSNode`; unwrap the first capture before calling node methods like `:range()` - recent runtime changes broke older plugins that assumed a single userdata per capture
+2. [NEOVIM] If a plugin starts causing cascading compatibility issues and the user says it is not worth more churn, remove the plugin cleanly instead of continuing to stack local shims - the user explicitly preferred dropping `ssr.nvim` over further debugging
