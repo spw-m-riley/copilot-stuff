@@ -67,3 +67,4 @@ This file will contain a growing ruleset that improves over time. **At session s
 <!-- New Rules appended below this line. Do not edit above this section -->
 1. [GIT] Never bypass GPG signing or 1Password-managed Git auth/signing for commits, tags, or pushes; if that trusted path blocks progress, stop and ask the user to restore or approve it instead - previous behavior tried to work around the user's security setup
 2. [ACTIONS] Always persist applicable learned rules proactively in the same turn you discover the lesson or receive the correction; never wait for the user to ask for a lesson summary or remind you to save it - prior sessions missed recording reusable lessons unless prompted
+3. [OTHER] Never recommend a Copilot CLI status line just to mirror information already visible in the default UI; only suggest it when it adds genuinely missing or derived state - user explicitly said the obvious candidate fields are already visible and not compelling
