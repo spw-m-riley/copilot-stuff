@@ -29,7 +29,7 @@ This file will contain a growing ruleset that improves over time. **At session s
 
 ### How it works
 
-1. When the user corrects you or you make a mistake, **immediately append a new rule** to the "Learned Rules" section at the bottom of this file.
+1. When the user corrects you or you make a mistake, **immediately append a new rule** to the appropriate `## Learned Rules` section before you consider the task complete.
 2. Rules are numbered sequentially and written as clear, imperative instructions.
 3. Format: `N. [CATEGORY] Never/Always do X - because Y`
 4. Categories: `[TYPESCRIPT]`, `[ACTIONS]`, `[GO]`, `[LUA]`, `[NEOVIM]`, `[GIT]`, `[OTHER]`
@@ -41,6 +41,11 @@ This file will contain a growing ruleset that improves over time. **At session s
 10. Use this file's `## Learned Rules` only for global rules that are not specific to any instruction file.
 11. Before modifying a file, read both this file's `## Learned Rules` section and the most specific matching instruction file's `## Learned Rules` section.
 12. If a file-specific rule conflicts with a global rule, the file-specific rule wins for work covered by that instruction file.
+13. Treat rule capture as mandatory task completion work, not optional cleanup or something to do only if the user asks.
+14. Do not wait for a "save that as a lesson" prompt. If a trigger happened, write the rule proactively in the same turn whenever possible.
+15. Before every final response, explicitly check whether any user correction, rejected approach, preference, or mistake from this task should have been saved as a rule; if yes, save it first, then report completion.
+16. If you are supervising sub-agents, you are still responsible for ensuring applicable learned rules are persisted in the correct instruction file before you finish.
+17. If you mention a lesson learned, a repeated pitfall, or "next time we should..." in your response, that is a strong signal that a learned rule likely needs to be written immediately.
 
 ### When to add a rule
 
@@ -48,6 +53,7 @@ This file will contain a growing ruleset that improves over time. **At session s
 - User rejects a file, approach, or pattern.
 - You hit a bug caused by a wrong assumption
 - User states a preference ("always use X", "never do Y")
+- You discover a reusable fix or pitfall during investigation, implementation, or validation that should change how future tasks are handled
 
 ### Rule format example
 
@@ -60,3 +66,4 @@ This file will contain a growing ruleset that improves over time. **At session s
 
 <!-- New Rules appended below this line. Do not edit above this section -->
 1. [GIT] Never bypass GPG signing or 1Password-managed Git auth/signing for commits, tags, or pushes; if that trusted path blocks progress, stop and ask the user to restore or approve it instead - previous behavior tried to work around the user's security setup
+2. [ACTIONS] Always persist applicable learned rules proactively in the same turn you discover the lesson or receive the correction; never wait for the user to ask for a lesson summary or remind you to save it - prior sessions missed recording reusable lessons unless prompted
