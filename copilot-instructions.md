@@ -5,6 +5,13 @@
 - Prefer live repository state, installed versions, and actual config files over stale templates, docs, or assumptions when behavior depends on the environment.
 - When parallel work happens in a Git repository, prefer isolated worktrees with one worktree per agent or task.
 
+## Git signing and 1Password policy
+
+- Never bypass commit, tag, or push-related signing/auth flows that are configured through GPG, SSH signing, or 1Password.
+- Never disable signing with flags or config overrides such as `--no-gpg-sign`, `git -c commit.gpgsign=false`, changing `commit.gpgsign`, changing `tag.gpgsign`, swapping `gpg.program`, or similar one-off bypasses.
+- Never work around 1Password-managed Git authentication or signing by changing credential helpers, SSH agents, askpass programs, or by substituting alternative credentials just to get a commit or push through.
+- If commit or push is blocked by signing, GPG, SSH, or 1Password, stop and surface the blocker clearly. Ask the user to unlock, sign in, approve, or repair the existing trusted setup instead of bypassing it.
+
 ## Planning policy
 
 - In plan mode, default to a reviewer loop before treating the plan as complete.
@@ -52,3 +59,4 @@ This file will contain a growing ruleset that improves over time. **At session s
 ## Learned Rules
 
 <!-- New Rules appended below this line. Do not edit above this section -->
+1. [GIT] Never bypass GPG signing or 1Password-managed Git auth/signing for commits, tags, or pushes; if that trusted path blocks progress, stop and ask the user to restore or approve it instead - previous behavior tried to work around the user's security setup
