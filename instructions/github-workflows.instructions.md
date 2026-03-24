@@ -12,3 +12,4 @@ applyTo: "**/.github/workflows/*.{yml,yaml}"
 ## Learned Rules
 
 <!-- New Rules appended below this line. Do not edit above this section -->
+1. [ACTIONS] When a packaging job writes build artifacts into a subdirectory (e.g. `iac/tf/.assets-web-app`) and then uploads them with `upload-artifact`, the `path` in the upload step must match the exact directory the job wrote to — not a parent directory. Verify staging paths end-to-end across package and deploy jobs; a mismatch (e.g. uploading `artifact-staging/iac/tf/.assets-*` when the job staged to `artifact-staging/.assets-*`) silently produces empty artifacts and causes downstream apply jobs to fail with missing plan files.
