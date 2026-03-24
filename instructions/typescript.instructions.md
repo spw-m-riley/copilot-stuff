@@ -11,3 +11,7 @@ Model distinct states with discriminated unions and use exhaustive checks for sw
 Validate untrusted inputs at runtime before treating them as typed values.
 Handle `null` and `undefined` explicitly instead of relying on non-null assertions.
 Keep exported APIs and shared utilities easy to consume with clear parameter and return types.
+
+## Learned Rules
+
+<!-- New Rules appended below this line. Do not edit above this section -->

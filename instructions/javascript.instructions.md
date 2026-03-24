@@ -8,3 +8,7 @@ Keep module syntax, import style, and runtime assumptions consistent with the fi
 Validate untrusted inputs at runtime before assuming object shapes or data types.
 Handle `null` and `undefined` explicitly rather than relying on truthiness when behavior matters.
 Keep exported APIs and shared utilities small, clear, and easy to consume.
+
+## Learned Rules
+
+<!-- New Rules appended below this line. Do not edit above this section -->

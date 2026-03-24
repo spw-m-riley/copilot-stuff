@@ -8,3 +8,7 @@ Prefer existing project tooling; when formatting YAML, favor `oxfmt` over `prett
 Use anchors and aliases sparingly; only reuse them when they make repeated structure clearer rather than harder to scan.
 Be explicit about booleans, strings, nulls, and multiline blocks when type or parsing behavior matters.
 Keep environment-specific values, secret references, and generated data easy to identify and trace.
+
+## Learned Rules
+
+<!-- New Rules appended below this line. Do not edit above this section -->
