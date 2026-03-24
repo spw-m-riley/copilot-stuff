@@ -10,3 +10,7 @@ applyTo: "**/*.json,**/*.jsonc,**/*.code-workspace"
 - Avoid trailing commas unless the target format explicitly allows them.
 - When editing configuration files, check nearby examples or schemas before adding new keys.
 - Do not rewrite lockfiles or generated JSON unless the task explicitly requires it.
+
+## Learned Rules
+
+<!-- New Rules appended below this line. Do not edit above this section -->

@@ -8,3 +8,7 @@ Use modern Neovim Lua APIs and the surrounding config's patterns consistently; a
 Keep plugin specs declarative and isolate plugin-specific setup to the relevant module instead of scattering it across the config.
 Prefer the existing formatter, linter, and LSP setup already used by the config rather than introducing parallel tooling.
 Keep keymaps, autocmds, options, and plugin side effects predictable, non-duplicated, and easy to trace when debugging behavior.
+
+## Learned Rules
+
+<!-- New Rules appended below this line. Do not edit above this section -->
