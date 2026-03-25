@@ -19,9 +19,13 @@
 - Every reviewer must review every round of plan revisions; do not drop a reviewer from later rounds.
 - Do not treat the plan as approved until all reviewers approve in the same round.
 - If any reviewer requests changes, update the plan and run another full review round with all reviewers.
-- Keep plans implementation-ready: include concrete tasks, dependencies, validation, and rollout notes rather than high-level prose.
-- When the work can be parallelized safely, make the plan fleet-ready and prefer isolated worktrees per agent or task.
 - Stay in planning mode until I explicitly ask to implement.
+
+## Session hygiene
+
+- Use `/tasks` as the default status surface for background agents, shells, and other long-running work.
+- Use `/compact` after long research or exploration phases, or when accumulated background results have made the active context noisy.
+- Refresh or create a handoff artifact before switching from research or planning into implementation when the next phase would otherwise need to reconstruct state from chat history.
 
 ## Self-Correcting Rules Engine
 
@@ -68,3 +72,5 @@ This file will contain a growing ruleset that improves over time. **At session s
 1. [GIT] Never bypass GPG signing or 1Password-managed Git auth/signing for commits, tags, or pushes; if that trusted path blocks progress, stop and ask the user to restore or approve it instead - previous behavior tried to work around the user's security setup
 2. [ACTIONS] Always persist applicable learned rules proactively in the same turn you discover the lesson or receive the correction; never wait for the user to ask for a lesson summary or remind you to save it - prior sessions missed recording reusable lessons unless prompted
 3. [OTHER] Never recommend a Copilot CLI status line just to mirror information already visible in the default UI; only suggest it when it adds genuinely missing or derived state - user explicitly said the obvious candidate fields are already visible and not compelling
+4. [OTHER] When introducing a shared structured artifact contract, always document the valid values for every shared status field on each contract type that uses it - leaving one contract type unspecified makes templates look valid while downstream agents still have to guess the allowed states
+5. [OTHER] Never propose or evaluate GitHub-side remote coding-agent setup for this `~/.copilot` workflow - the user said those agents are not allowed here

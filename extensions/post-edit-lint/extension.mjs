@@ -27,6 +27,10 @@ const TEXT_EXTENSIONS = new Set([
   ".zsh",
 ]);
 
+const MARKDOWN_EXTENSION = ".md";
+const WORKFLOW_CONTRACT_ASSETS_SEGMENT = `${path.sep}skills${path.sep}workflow-contracts${path.sep}assets${path.sep}`;
+const SESSION_STATE_SEGMENT = `${path.sep}session-state${path.sep}`;
+
 function run(command, args, options = {}) {
   return new Promise((resolve) => {
     execFile(
@@ -303,6 +307,42 @@ async function formatJsTs(filePath) {
   return summaries;
 }
 
+async function findWorkflowContractValidator(filePath) {
+  return findUp(path.dirname(filePath), (dir) =>
+    path.join(dir, "skills", "workflow-contracts", "scripts", "validate-contracts.mjs"),
+  );
+}
+
+async function shouldValidateWorkflowContract(filePath) {
+  const normalizedPath = path.resolve(filePath);
+  if (normalizedPath.includes(WORKFLOW_CONTRACT_ASSETS_SEGMENT)) {
+    return true;
+  }
+  if (!normalizedPath.includes(SESSION_STATE_SEGMENT)) {
+    return false;
+  }
+
+  const text = await readFile(filePath, "utf8");
+  const normalizedText = text.replace(/\r\n?/g, "\n");
+  return normalizedText.startsWith("---\n") && normalizedText.includes("\ncontract_type:");
+}
+
+async function validateWorkflowContract(filePath) {
+  if (!(await shouldValidateWorkflowContract(filePath))) {
+    return [];
+  }
+
+  const validatorPath = await findWorkflowContractValidator(filePath);
+  if (!validatorPath) {
+    return [];
+  }
+
+  const result = await run(process.execPath, [validatorPath, filePath], {
+    cwd: path.dirname(validatorPath),
+  });
+  return [formatSummary(`workflow-contract (${path.basename(filePath)})`, result)];
+}
+
 async function processFile(filePath) {
   if (!(await pathExists(filePath))) {
     return [];
@@ -323,6 +363,9 @@ async function processFile(filePath) {
   if (extension === ".sh" || extension === ".bash" || extension === ".zsh") {
     return formatShell(filePath);
   }
+  if (extension === MARKDOWN_EXTENSION) {
+    return validateWorkflowContract(filePath);
+  }
   return [];
 }
 
@@ -336,7 +379,11 @@ const session = await joinSession({
 
       const changedFiles = extractChangedPaths(input).filter((filePath) => {
         const extension = path.extname(filePath).toLowerCase();
-        return JS_TS_EXTENSIONS.has(extension) || TEXT_EXTENSIONS.has(extension);
+        return (
+          JS_TS_EXTENSIONS.has(extension) ||
+          TEXT_EXTENSIONS.has(extension) ||
+          extension === MARKDOWN_EXTENSION
+        );
       });
 
       if (changedFiles.length === 0) {
