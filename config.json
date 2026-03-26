@@ -13,9 +13,15 @@
   "update_terminal_title": true,
   "ide.auto_connect": true,
   "ide.open_diff_on_edit": true,
-  "model": "gpt-5.4",
-  "reasoning_effort": "high",
   "experimental": true,
   "firstLaunchAt": "2026-03-11T00:00:00.000Z",
-  "include_coauthor": false
+  "includeCoAuthoredBy": false,
+  "effortLevel": "high",
+  "statusLine": {
+    "type": "command",
+    "command": "$HOME/.copilot/bin/statusline",
+    "padding": 1
+  },
+  "model": "gpt-5.4",
+  "show_reasoning": false
 }

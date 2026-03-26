@@ -10,6 +10,10 @@
 /session-store.db-wal
 /session-state/
 
+/coherence.db
+/coherence.db-shm
+/coherence.db-wal
+
 # Local runtime output
 /logs/
 
