@@ -19,6 +19,7 @@
 
 # Downloaded/runtime package assets
 /pkg/
+/backups/
 
 # macOS/editor noise
 .DS_Store
