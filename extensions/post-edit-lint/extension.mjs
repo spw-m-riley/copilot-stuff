@@ -30,6 +30,9 @@ const TEXT_EXTENSIONS = new Set([
 const MARKDOWN_EXTENSION = ".md";
 const WORKFLOW_CONTRACT_ASSETS_SEGMENT = `${path.sep}skills${path.sep}workflow-contracts${path.sep}assets${path.sep}`;
 const SESSION_STATE_SEGMENT = `${path.sep}session-state${path.sep}`;
+const COHERENCE_JSON_SEGMENT = `${path.sep}coherence.json`;
+const COHERENCE_SCHEMA_JSON_SEGMENT = `${path.sep}schemas${path.sep}coherence.schema.json`;
+const COHERENCE_CONFIG_MJS_SEGMENT = `${path.sep}extensions${path.sep}coherence${path.sep}lib${path.sep}config.mjs`;
 
 function run(command, args, options = {}) {
   return new Promise((resolve) => {
@@ -343,6 +346,33 @@ async function validateWorkflowContract(filePath) {
   return [formatSummary(`workflow-contract (${path.basename(filePath)})`, result)];
 }
 
+async function findCoherenceSchemaValidator(filePath) {
+  return findUp(path.dirname(filePath), (dir) =>
+    path.join(dir, "extensions", "coherence", "scripts", "validate-config-schema.mjs"),
+  );
+}
+
+function isCoherenceSchemaTrigger(filePath) {
+  const normalized = path.resolve(filePath);
+  return (
+    normalized.endsWith(COHERENCE_JSON_SEGMENT) ||
+    normalized.endsWith(COHERENCE_SCHEMA_JSON_SEGMENT) ||
+    normalized.endsWith(COHERENCE_CONFIG_MJS_SEGMENT)
+  );
+}
+
+async function validateCoherenceSchema(filePath) {
+  const validatorPath = await findCoherenceSchemaValidator(filePath);
+  if (!validatorPath) {
+    return [];
+  }
+
+  const result = await run(process.execPath, [validatorPath], {
+    cwd: path.dirname(validatorPath),
+  });
+  return [formatSummary("coherence-schema-parity", result)];
+}
+
 async function processFile(filePath) {
   if (!(await pathExists(filePath))) {
     return [];
@@ -393,6 +423,11 @@ const session = await joinSession({
       const summaries = [];
       for (const filePath of changedFiles) {
         summaries.push(...(await processFile(filePath)));
+      }
+
+      const coherenceTriggerFile = changedFiles.find(isCoherenceSchemaTrigger);
+      if (coherenceTriggerFile) {
+        summaries.push(...(await validateCoherenceSchema(coherenceTriggerFile)));
       }
 
       if (summaries.length === 0) {

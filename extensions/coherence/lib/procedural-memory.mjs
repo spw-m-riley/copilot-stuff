@@ -1,5 +1,5 @@
 import path from "node:path";
-import { readdir, readFile } from "node:fs/promises";
+import { readFile, stat } from "node:fs/promises";
 
 function cleanLine(line) {
   return line.replace(/^\s+|\s+$/g, "");
@@ -49,31 +49,35 @@ export function detectRelevantInstructionFiles(prompt) {
   return [...matches];
 }
 
-async function readInstructionFile(filePath) {
+const parsedRuleCache = new Map();
+
+async function readCachedRules(filePath) {
   try {
-    return await readFile(filePath, "utf8");
+    const fileStat = await stat(filePath);
+    const cacheKey = `${filePath}:${fileStat.mtimeMs}:${fileStat.size}`;
+    const cached = parsedRuleCache.get(filePath);
+    if (cached && cached.cacheKey === cacheKey) {
+      return cached.rules;
+    }
+
+    const text = await readFile(filePath, "utf8");
+    const rules = extractLearnedRules(text);
+    parsedRuleCache.set(filePath, { cacheKey, rules });
+    return rules;
   } catch {
-    return "";
+    return [];
   }
 }
 
 export async function buildProceduralProfile({ prompt, relevantInstructionFiles, config }) {
-  const globalText = await readInstructionFile(config.paths.instructionsPath);
-  const globalRules = extractLearnedRules(globalText).slice(-8);
+  const globalRules = (await readCachedRules(config.paths.instructionsPath)).slice(-8);
 
-  const instructionDirEntries = await readdir(config.paths.scopedInstructionsDir);
   const selectedFiles = new Set(relevantInstructionFiles);
-  for (const entry of instructionDirEntries) {
-    if (entry.endsWith(".instructions.md") && selectedFiles.has(entry)) {
-      selectedFiles.add(entry);
-    }
-  }
 
   const scopedRules = [];
   for (const fileName of selectedFiles) {
     const filePath = path.join(config.paths.scopedInstructionsDir, fileName);
-    const text = await readInstructionFile(filePath);
-    const rules = extractLearnedRules(text).slice(-4);
+    const rules = (await readCachedRules(filePath)).slice(-4);
     if (rules.length > 0) {
       scopedRules.push(`### ${fileName}`);
       scopedRules.push(...rules);

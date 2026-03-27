@@ -14,6 +14,7 @@ These live in [`./extensions/`](./extensions/) and are auto-discovered by the Co
 
 | Extension | What it does |
 | --------- | ------------ |
+| `coherence` | Adds local memory tools plus `memory_capability_inventory`, which scans repo-local skills, agents, and extension/coherence tools into an explainable local-first routing manifest, a recommendation-only router core, and a built-in router evaluation corpus. It also now ships an opt-in `maintenanceScheduler` plus `maintenance_schedule_run`, reusing deferred extraction, bounded validation/replay runs, backlog review, and optional trace/index upkeep without auto-invoking anything heavy by default. The latest slice also adds `memory_evolution_ledger`, which can summarize review-gated improvement artifacts, capture manual router/maintenance/trace signals, generate proposal docs under `extensions/coherence/docs/proposals/`, and verify or repair those generated artifacts explicitly. |
 | `ci-migration-context` | Detects CI migration-related prompts such as CircleCI to GitHub Actions work and injects extra migration context in the parent turn, then propagates that checklist into relevant delegated child agents. |
 | `copilot-healthcheck` | Adds the `mr_healthcheck_run` tool, which performs a lightweight environment check for the current working directory and reports things like repo state and key local Copilot files/tools. |
 | `fleet-model-policy` | Applies prompt-time steering for fleet mode so implementation-heavy fleet work prefers `GPT-5.3-codex`, and now propagates that policy into delegated implementation-style child agents. |
@@ -32,6 +33,18 @@ Child-agent context propagation is currently enabled in:
 - `worktree-manager` (delegated implementation/edit/task-style subagents in git repos)
 
 This improves fleet-mode execution by making policy, routing, and worktree expectations available inside delegated child runs instead of limiting that context to the parent prompt.
+
+## Coherence rollout notes
+
+- `rollout.evolutionLedger` defaults to `true` and enables the additive Phase 5 ledger/report surface.
+
+- `rollout.proposalGeneration` defaults to `false`; turn it on when you want `memory_evolution_ledger` or maintenance backlog review to generate review-only proposal docs.
+
+- `rollout.generatedArtifactIntegrity` defaults to `true` and lets `memory_evolution_ledger` verify or repair generated proposal artifacts instead of silently tolerating drift.
+
+- `maintenanceScheduler.enabled` still defaults to `false`; when enabled alongside `rollout.proposalGeneration`, backlog review can generate proposals and run proposal-artifact integrity checks during bounded local maintenance sweeps.
+
+- When draft proposal artifacts exist, the Coherence session-start capsule adds a small `Pending Proposal Review` section so new proposals show up proactively at the start of a session.
 
 ## Prompt Tips
 

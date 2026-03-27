@@ -43,6 +43,7 @@ const TRANSFERABLE_PATTERNS = [
 const GLOBAL_PREFERENCE_PATTERNS = [
   /\bstyle\b/i,
   /\btone\b/i,
+  /\bvoice\b/i,
   /\brespond\b/i,
   /\breply\b/i,
   /\bhow you\b/i,
@@ -51,6 +52,13 @@ const GLOBAL_PREFERENCE_PATTERNS = [
   /\byour name\b/i,
   /\bcall you\b/i,
   /\bcoda\b/i,
+  /\bcolleague\b/i,
+  /\bcoworker\b/i,
+  /\bteammate\b/i,
+  /\bcollaborative\b/i,
+  /\blight(?:-|\s)?humou?r\b/i,
+  /\bhumou?r\b/i,
+  /\bjokes?\b/i,
 ];
 
 const ASSISTANT_IDENTITY_PATTERNS = [
@@ -63,8 +71,40 @@ const ASSISTANT_IDENTITY_PATTERNS = [
   /\bwhy i used the name coda\b/i,
 ];
 
+const USER_IDENTITY_PATTERNS = [
+  /^i(?:['’]m| am)\s+(.+?)[.!?]*$/iu,
+  /^my name is\s+(.+?)[.!?]*$/iu,
+  /^call me\s+(.+?)[.!?]*$/iu,
+];
+
+const USER_IDENTITY_STOPWORDS = new Set([
+  "back",
+  "done",
+  "good",
+  "here",
+  "ok",
+  "okay",
+  "ready",
+  "stuck",
+]);
+
 function normalizeText(value) {
   return String(value || "").replace(/\s+/g, " ").trim();
+}
+
+function normalizeCanonicalText(value) {
+  return normalizeText(value)
+    .toLowerCase()
+    .replace(/['’"]/g, "")
+    .replace(/[^a-z0-9\s-]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function stripGreetingPrefix(text) {
+  return normalizeText(text)
+    .replace(/^(?:hi|hello|hey)\s+[a-z][a-z0-9_-]{2,20}(?:[!?,.\s-]+|$)/iu, "")
+    .replace(/^(?:hi|hello|hey)(?:[!?,.\s-]+|$)/iu, "");
 }
 
 function normalizeRepository(repository) {
@@ -127,6 +167,87 @@ export function detectAssistantIdentityName(text) {
   return hasPattern(normalized, ASSISTANT_IDENTITY_PATTERNS) ? "Coda" : null;
 }
 
+function isCapitalizedNameToken(token) {
+  return /^[\p{Lu}][\p{L}'’-]*$/u.test(token) || /^[\p{Lu}]{2,}$/u.test(token);
+}
+
+function isLikelyUserIdentityName(candidate) {
+  const tokens = normalizeText(candidate).split(/\s+/).filter(Boolean);
+  if (tokens.length !== 1) {
+    return false;
+  }
+  if (USER_IDENTITY_STOPWORDS.has(tokens.join(" ").toLowerCase())) {
+    return false;
+  }
+  return tokens.every(isCapitalizedNameToken);
+}
+
+export function detectUserIdentityName(text) {
+  const normalized = normalizeText(text);
+  if (!normalized || normalized.length > 80) {
+    return null;
+  }
+
+  for (const variant of [normalized, stripGreetingPrefix(normalized)]) {
+    if (!variant) {
+      continue;
+    }
+    for (const pattern of USER_IDENTITY_PATTERNS) {
+      const match = variant.match(pattern);
+      const candidate = normalizeText(match?.[1]);
+      if (!candidate || !isLikelyUserIdentityName(candidate)) {
+        continue;
+      }
+      return candidate;
+    }
+  }
+
+  return null;
+}
+
+function extractUserIdentityNameFromContent(content) {
+  const match = normalizeText(content).match(/preferred name is\s+(.+?)[.!?]*$/iu);
+  const candidate = normalizeText(match?.[1]);
+  return isLikelyUserIdentityName(candidate) ? candidate : null;
+}
+
+export function buildSemanticCanonicalKey(memory) {
+  const type = normalizeText(memory?.type).toLowerCase();
+  const metadata = normalizeMetadata(memory?.metadata);
+  const content = normalizeText(memory?.content);
+
+  if (type === "user_identity") {
+    const preferredName = normalizeText(metadata.preferredName)
+      || extractUserIdentityNameFromContent(content);
+    if (!preferredName) {
+      return null;
+    }
+    return `user_identity:${normalizeCanonicalText(preferredName)}`;
+  }
+
+  if (type === "assistant_goal") {
+    const goal = normalizeCanonicalText(metadata.goal || content);
+    return goal ? `assistant_goal:${goal}` : null;
+  }
+
+  if (type === "recurring_mistake") {
+    const mistake = normalizeCanonicalText(metadata.mistake || content);
+    return mistake ? `recurring_mistake:${mistake}` : null;
+  }
+
+  if (type === "workstream_overlay") {
+    const overlayId = normalizeCanonicalText(
+      metadata.overlayId
+      || metadata.id
+      || metadata.title
+      || content,
+    );
+    return overlayId ? `workstream_overlay:${overlayId}` : null;
+  }
+
+  return null;
+}
+
 export function classifySemanticMemory(memory) {
   const explicitScope = normalizeScope(memory.scope, null);
   const repository = normalizeRepository(memory.repository);
@@ -148,7 +269,23 @@ export function classifySemanticMemory(memory) {
   ]);
   const type = normalizeText(memory.type).toLowerCase();
 
+  if (type === "interaction_style") {
+    return finalizeScope({
+      scope: MEMORY_SCOPE.GLOBAL,
+      repository,
+      metadata,
+    });
+  }
+
   if (type === "assistant_identity" || detectAssistantIdentityName(text)) {
+    return finalizeScope({
+      scope: MEMORY_SCOPE.GLOBAL,
+      repository,
+      metadata,
+    });
+  }
+
+  if (type === "user_identity") {
     return finalizeScope({
       scope: MEMORY_SCOPE.GLOBAL,
       repository,
@@ -159,6 +296,14 @@ export function classifySemanticMemory(memory) {
   if (["open_loop", "blocker", "commitment"].includes(type)) {
     return finalizeScope({
       scope: MEMORY_SCOPE.REPO,
+      repository,
+      metadata,
+    });
+  }
+
+  if (type === "workstream_overlay") {
+    return finalizeScope({
+      scope: repository ? MEMORY_SCOPE.REPO : MEMORY_SCOPE.GLOBAL,
       repository,
       metadata,
     });
@@ -177,6 +322,36 @@ export function classifySemanticMemory(memory) {
       });
     }
     if (transferable && !globalPreference) {
+      return finalizeScope({
+        scope: MEMORY_SCOPE.TRANSFERABLE,
+        repository,
+        metadata,
+      });
+    }
+    return finalizeScope({
+      scope: MEMORY_SCOPE.GLOBAL,
+      repository,
+      metadata,
+    });
+  }
+
+  if (type === "recurring_mistake") {
+    return finalizeScope({
+      scope: MEMORY_SCOPE.GLOBAL,
+      repository,
+      metadata,
+    });
+  }
+
+  if (type === "assistant_goal") {
+    if (repoSpecific) {
+      return finalizeScope({
+        scope: MEMORY_SCOPE.REPO,
+        repository,
+        metadata,
+      });
+    }
+    if (transferable) {
       return finalizeScope({
         scope: MEMORY_SCOPE.TRANSFERABLE,
         repository,

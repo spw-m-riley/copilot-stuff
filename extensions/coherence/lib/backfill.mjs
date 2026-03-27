@@ -1,4 +1,75 @@
+import { buildSemanticCanonicalKey } from "./memory-scope.mjs";
+import { retainMemory } from "./memory-operations.mjs";
 import { extractSessionMemories } from "./rule-extractor.mjs";
+
+function shouldTrackSessionImprovement(memory) {
+  return memory?.type === "assistant_goal" || memory?.type === "recurring_mistake";
+}
+
+function buildSessionImprovementArtifact({ sessionId, memory, episodeDigest, linkedMemoryId }) {
+  const canonicalKey = buildSemanticCanonicalKey(memory);
+  const repository = memory.repository ?? episodeDigest.repository ?? "global";
+  const scope = memory.scope ?? "repo";
+  const signalType = memory.metadata?.signalType ?? null;
+  const sourceLabel = signalType?.startsWith("repeated_") ? "Session-inferred" : "Session-derived";
+  const sourceCaseId = [
+    "session",
+    memory.type,
+    scope,
+    repository,
+    canonicalKey ?? String(memory.sourceTurnIndex ?? "na"),
+  ].join(":");
+
+  if (memory.type === "assistant_goal") {
+    const goal = memory.metadata?.goal ?? memory.content;
+    return {
+      sourceCaseId,
+      sourceKind: "session",
+      title: `${sourceLabel} assistant goal`,
+      summary: `Goal: ${goal}`,
+      linkedMemoryId,
+      evidence: {
+        sessionId,
+        repository,
+        memoryType: memory.type,
+        signalType,
+        sourceTurnIndex: memory.sourceTurnIndex ?? null,
+        content: memory.content,
+        goal,
+        examples: memory.metadata?.examples ?? [],
+        tags: memory.tags ?? [],
+      },
+      trace: {
+        episodeSummary: episodeDigest.summary,
+        themes: episodeDigest.themes ?? [],
+      },
+    };
+  }
+
+  const mistake = memory.metadata?.mistake ?? memory.content;
+  return {
+    sourceCaseId,
+    sourceKind: "session",
+    title: `${sourceLabel} recurring mistake`,
+    summary: `Mistake: ${mistake}`,
+    linkedMemoryId,
+    evidence: {
+      sessionId,
+      repository,
+      memoryType: memory.type,
+      signalType,
+      sourceTurnIndex: memory.sourceTurnIndex ?? null,
+      content: memory.content,
+      mistake,
+      examples: memory.metadata?.examples ?? [],
+      tags: memory.tags ?? [],
+    },
+    trace: {
+      episodeSummary: episodeDigest.summary,
+      themes: episodeDigest.themes ?? [],
+    },
+  };
+}
 
 export function applySessionExtraction({
   db,
@@ -12,6 +83,7 @@ export function applySessionExtraction({
     repository,
     sessionArtifacts,
     workspace,
+    config: db.config,
   });
   db.deleteGeneratedSemanticMemories(sessionId);
   db.upsertEpisodeDigest(extraction.episodeDigest);
@@ -20,7 +92,23 @@ export function applySessionExtraction({
     repository: extraction.episodeDigest.repository,
   });
   for (const memory of extraction.semanticMemories) {
-    db.insertSemanticMemory(memory);
+    const retained = retainMemory({
+      db,
+      kind: "semantic",
+      memory,
+    });
+    const linkedMemoryId = retained.id;
+    if (!linkedMemoryId) {
+      continue;
+    }
+    if (db.config?.rollout?.autoWriteImprovementGoals === true && shouldTrackSessionImprovement(memory)) {
+      db.upsertImprovementArtifact(buildSessionImprovementArtifact({
+        sessionId,
+        memory,
+        episodeDigest: extraction.episodeDigest,
+        linkedMemoryId,
+      }));
+    }
   }
   return extraction;
 }
@@ -48,7 +136,7 @@ export function backfillRecentSessions({
       sessionId: candidate.id,
       repository: candidate.repository ?? repository,
       sessionArtifacts: artifacts,
-      workspace: { workspace: null, events: [] },
+      workspace: { workspace: null },
     });
     created += 1;
   }
@@ -83,7 +171,7 @@ export function processDeferredExtractions({
         sessionId: job.session_id,
         repository: job.repository ?? repository,
         sessionArtifacts: artifacts,
-        workspace: { workspace: sessionStore.getWorkspaceMetadata(job.session_id), events: [] },
+        workspace: { workspace: sessionStore.getWorkspaceMetadata(job.session_id) },
       });
       db.completeDeferredExtraction(job.session_id);
       processed += 1;
@@ -205,7 +293,7 @@ export function processControlledBackfillRun({
         sessionId: item.session_id,
         repository: item.repository ?? run.repository,
         sessionArtifacts: artifacts,
-        workspace: { workspace: sessionStore.getWorkspaceMetadata(item.session_id), events: [] },
+        workspace: { workspace: sessionStore.getWorkspaceMetadata(item.session_id) },
       });
       const afterEpisode = db.getEpisodeDigestBySession(item.session_id);
       const afterSemanticCount = db.countGeneratedSemanticMemoriesBySession(item.session_id);
