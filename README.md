@@ -77,3 +77,31 @@ This improves fleet-mode execution by making policy, routing, and worktree expec
 ## Coherence visibility substrate
 
 Coherence now persists lightweight positive-path visibility state in `coherence_activity_state` (latest successful context injection/extraction/maintenance/trace) and bounded sampled retrieval history in `retrieval_trace_sample`. `memory_status` surfaces both so healthy behavior is visible without relying on warning-only signals.
+
+## Coherence Browser (local read-only MVP)
+
+Coherence now also includes a lightweight browser UI at `extensions/coherence/browser/` with a localhost-only Node server and static HTML/CSS/vanilla JS assets.
+
+Start it from this repo root:
+
+```bash
+node extensions/coherence/scripts/run-browser.mjs
+```
+
+Optional flags:
+
+- `--host 127.0.0.1` (default)
+- `--port 43111` (default)
+- `--repository owner/repo` (focus browser reads)
+- `--derived-store-path <path>` (override DB location)
+
+Then open `http://127.0.0.1:43111`.
+
+Views in MVP:
+
+- **Overview**: corpus counts, active workstreams, last successful activity, due maintenance tasks, latency trend
+- **Memories**: `semantic_memory` with filters (type, scope, repository, canonical key, active/superseded)
+- **Maintenance**: maintenance runs/task state, deferred queue, doctor reports, trace/plan context
+- **Episodes**: recent `episode_digest` and `day_summary` history
+
+The browser API is read-only and local-only by default.
