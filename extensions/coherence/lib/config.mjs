@@ -96,6 +96,10 @@ export const USER_CONFIG_DEFAULTS = Object.freeze({
     evolutionLedger: true,
     proposalGeneration: false,
     generatedArtifactIntegrity: true,
+    overlayAutoHydration: true,
+    coherenceDoctor: false,
+    reviewGate: false,
+    hybridRetrieval: true,
   },
 });
 
@@ -220,6 +224,22 @@ export async function loadConfig() {
     generatedArtifactIntegrity: normalizeBoolean(
       merged.rollout?.generatedArtifactIntegrity,
       USER_CONFIG_DEFAULTS.rollout.generatedArtifactIntegrity,
+    ),
+    overlayAutoHydration: normalizeBoolean(
+      merged.rollout?.overlayAutoHydration,
+      USER_CONFIG_DEFAULTS.rollout.overlayAutoHydration,
+    ),
+    coherenceDoctor: normalizeBoolean(
+      merged.rollout?.coherenceDoctor,
+      USER_CONFIG_DEFAULTS.rollout.coherenceDoctor,
+    ),
+    reviewGate: normalizeBoolean(
+      merged.rollout?.reviewGate,
+      USER_CONFIG_DEFAULTS.rollout.reviewGate,
+    ),
+    hybridRetrieval: normalizeBoolean(
+      merged.rollout?.hybridRetrieval,
+      USER_CONFIG_DEFAULTS.rollout.hybridRetrieval,
     ),
   };
 

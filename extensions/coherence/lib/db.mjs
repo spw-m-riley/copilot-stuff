@@ -16,7 +16,7 @@ import {
   buildStyleAddressingSection,
   isStyleAddressingMemory,
 } from "./style-addressing.mjs";
-import { readTemporalQueryNormalizationEnabled } from "./rollout-flags.mjs";
+import { readHybridRetrievalEnabled, readTemporalQueryNormalizationEnabled } from "./rollout-flags.mjs";
 import {
   extractTemporalContentTerms as extractNormalizedTemporalContentTerms,
   inferDateFromPrompt as inferNormalizedDateFromPrompt,
@@ -885,6 +885,42 @@ function dedupeEpisodesWithTrace(episodes, currentRepository = null) {
   };
 }
 
+function extractEntityTerms(query) {
+  const raw = String(query || "");
+  const entities = [];
+
+  // Backtick-quoted identifiers (e.g., `memory-operations.mjs`, `QueryNormalizer`)
+  for (const match of raw.matchAll(/`([^`]+)`/g)) {
+    const stem = match[1].replace(/\.[a-z]+$/i, "").replace(/[^a-z0-9]/gi, "").toLowerCase();
+    if (stem.length > 2) {
+      entities.push(stem);
+    }
+  }
+
+  // File names with common code extensions (e.g., memory-operations.mjs → memoryoperations)
+  for (const match of raw.matchAll(/\b([\w-]+)\.(mjs|cjs|js|ts|tsx|json|md|yaml|yml)\b/gi)) {
+    const stem = match[1].replace(/[^a-z0-9]/gi, "").toLowerCase();
+    if (stem.length > 2) {
+      entities.push(stem);
+    }
+  }
+
+  // CamelCase or PascalCase identifiers (contain an internal uppercase letter)
+  for (const match of raw.matchAll(/\b([A-Za-z][a-z]+(?:[A-Z][a-z]+)+)\b/g)) {
+    const full = normalizeMatchTerm(match[0].toLowerCase());
+    if (full.length > 2) {
+      entities.push(full);
+    }
+    for (const part of match[0].replace(/([A-Z])/g, " $1").trim().split(/\s+/)) {
+      const normalized = normalizeMatchTerm(part.toLowerCase());
+      if (normalized.length > 2 && !GENERIC_QUERY_TERMS.has(normalized)) {
+        entities.push(normalized);
+      }
+    }
+  }
+
+  return [...new Set(entities.map(normalizeMatchTerm).filter((t) => t.length > 2 && !GENERIC_QUERY_TERMS.has(t)))];
+}
 function buildImprovementArtifactEpisode(artifact, repository) {
   const evidence = parseJsonObject(artifact.evidence_json);
   const expectedEvidence = typeof evidence.expectedEvidence === "object"
@@ -1087,6 +1123,12 @@ export class CoherenceDb {
       if (currentVersion > 0 && currentVersion < 10) {
         this.applyPhase5ImprovementLoopMigration();
       }
+      if (currentVersion > 0 && currentVersion < 11) {
+        this.applyTrajectoryArtifactsMigration();
+      }
+      if (currentVersion > 0 && currentVersion < 12) {
+        this.applyIntentJournalMigration();
+      }
       for (const statement of SCHEMA_STATEMENTS) {
         this.db.exec(statement);
       }
@@ -1104,6 +1146,12 @@ export class CoherenceDb {
       }
       if (currentVersion < 10) {
         this.applyPhase5ImprovementLoopMigration();
+      }
+      if (currentVersion < 11) {
+        this.applyTrajectoryArtifactsMigration();
+      }
+      if (currentVersion < 12) {
+        this.applyIntentJournalMigration();
       }
       this.db.exec(`DELETE FROM coherence_schema_version;`);
       this.db.prepare(`INSERT INTO coherence_schema_version (version) VALUES (?)`).run(SCHEMA_VERSION);
@@ -1424,6 +1472,68 @@ export class CoherenceDb {
     `);
   }
 
+  applyTrajectoryArtifactsMigration() {
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS trajectory_artifact (
+        id TEXT PRIMARY KEY,
+        kind TEXT NOT NULL,
+        repository TEXT,
+        source_case_id TEXT,
+        source_kind TEXT,
+        improvement_artifact_id TEXT,
+        event_key TEXT,
+        summary TEXT NOT NULL,
+        severity TEXT NOT NULL DEFAULT 'info',
+        outcome TEXT NOT NULL DEFAULT 'captured',
+        latency_ms INTEGER,
+        target_ms INTEGER,
+        context_json TEXT NOT NULL DEFAULT '{}',
+        trace_json TEXT NOT NULL DEFAULT '{}',
+        created_at TEXT NOT NULL
+      );
+    `);
+    this.db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_trajectory_artifact_kind_created
+        ON trajectory_artifact(kind, created_at DESC);
+    `);
+    this.db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_trajectory_artifact_source_created
+        ON trajectory_artifact(source_kind, source_case_id, created_at DESC);
+    `);
+    this.db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_trajectory_artifact_repository_kind_created
+        ON trajectory_artifact(repository, kind, created_at DESC);
+    `);
+  }
+
+  applyIntentJournalMigration() {
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS intent_journal (
+        id TEXT PRIMARY KEY,
+        repository TEXT,
+        session_id TEXT,
+        turn_hint TEXT,
+        intent_kind TEXT NOT NULL DEFAULT 'journal',
+        summary TEXT NOT NULL,
+        rationale TEXT,
+        context_json TEXT NOT NULL DEFAULT '{}',
+        created_at TEXT NOT NULL
+      );
+    `);
+    this.db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_intent_journal_repository_created
+        ON intent_journal(repository, created_at DESC);
+    `);
+    this.db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_intent_journal_kind_created
+        ON intent_journal(intent_kind, created_at DESC);
+    `);
+    this.db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_intent_journal_session_created
+        ON intent_journal(session_id, created_at DESC);
+    `);
+  }
+
   ensureOpen() {
     if (!this.db) {
       throw new Error("coherence database is not initialized");
@@ -1441,7 +1551,8 @@ export class CoherenceDb {
         SUM(CASE WHEN type = 'assistant_goal' THEN 1 ELSE 0 END) AS assistant_goal_count,
         SUM(CASE WHEN type = 'recurring_mistake' THEN 1 ELSE 0 END) AS recurring_mistake_count,
         SUM(CASE WHEN type = 'user_identity' THEN 1 ELSE 0 END) AS user_identity_count,
-        SUM(CASE WHEN type = 'workstream_overlay' THEN 1 ELSE 0 END) AS workstream_overlay_count
+        SUM(CASE WHEN type = 'workstream_overlay' THEN 1 ELSE 0 END) AS workstream_overlay_count,
+        SUM(CASE WHEN type = 'directive' THEN 1 ELSE 0 END) AS directive_count
       FROM semantic_memory
       WHERE superseded_by IS NULL
     `).get();
@@ -1513,6 +1624,25 @@ export class CoherenceDb {
       SELECT COUNT(*) AS count
       FROM maintenance_task_state
     `).get().count;
+    const trajectoryCounts = this.db.prepare(`
+      SELECT
+        COUNT(*) AS total_count,
+        SUM(CASE WHEN kind = 'replay_failure' THEN 1 ELSE 0 END) AS replay_failure_count,
+        SUM(CASE WHEN kind = 'validation_miss' THEN 1 ELSE 0 END) AS validation_miss_count,
+        SUM(CASE WHEN kind = 'proposal_failure' THEN 1 ELSE 0 END) AS proposal_failure_count,
+        SUM(CASE WHEN kind = 'latency_outlier' THEN 1 ELSE 0 END) AS latency_outlier_count
+      FROM trajectory_artifact
+    `).get();
+    const intentJournalCounts = this.db.prepare(`
+      SELECT
+        COUNT(*) AS total_count,
+        SUM(CASE WHEN intent_kind = 'routing' THEN 1 ELSE 0 END) AS routing_count,
+        SUM(CASE WHEN intent_kind = 'rollout' THEN 1 ELSE 0 END) AS rollout_count,
+        SUM(CASE WHEN intent_kind = 'reviewer' THEN 1 ELSE 0 END) AS reviewer_count,
+        SUM(CASE WHEN intent_kind = 'fallback' THEN 1 ELSE 0 END) AS fallback_count,
+        SUM(CASE WHEN intent_kind = 'serendipity' THEN 1 ELSE 0 END) AS serendipity_count
+      FROM intent_journal
+    `).get();
 
     return {
       semanticCount,
@@ -1537,6 +1667,7 @@ export class CoherenceDb {
       recurringMistakeCount: semanticGrowth?.recurring_mistake_count ?? 0,
       userIdentityCount: semanticGrowth?.user_identity_count ?? 0,
       workstreamOverlayCount: semanticGrowth?.workstream_overlay_count ?? 0,
+      directiveCount: semanticGrowth?.directive_count ?? 0,
       improvementActiveCount: improvementCounts?.active_count ?? 0,
       improvementResolvedCount: improvementCounts?.resolved_count ?? 0,
       improvementSupersededCount: improvementCounts?.superseded_count ?? 0,
@@ -1565,7 +1696,225 @@ export class CoherenceDb {
       lastMaintenanceStatus: maintenanceLatest?.status ?? null,
       lastMaintenanceStartedAt: maintenanceLatest?.started_at ?? null,
       lastMaintenanceCompletedAt: maintenanceLatest?.completed_at ?? null,
+      trajectoryArtifactCount: trajectoryCounts?.total_count ?? 0,
+      trajectoryReplayFailureCount: trajectoryCounts?.replay_failure_count ?? 0,
+      trajectoryValidationMissCount: trajectoryCounts?.validation_miss_count ?? 0,
+      trajectoryProposalFailureCount: trajectoryCounts?.proposal_failure_count ?? 0,
+      trajectoryLatencyOutlierCount: trajectoryCounts?.latency_outlier_count ?? 0,
+      intentJournalCount: intentJournalCounts?.total_count ?? 0,
+      intentRoutingCount: intentJournalCounts?.routing_count ?? 0,
+      intentRolloutCount: intentJournalCounts?.rollout_count ?? 0,
+      intentReviewerCount: intentJournalCounts?.reviewer_count ?? 0,
+      intentFallbackCount: intentJournalCounts?.fallback_count ?? 0,
+      intentSerendipityCount: intentJournalCounts?.serendipity_count ?? 0,
     };
+  }
+
+  insertIntentJournalEntry({
+    repository = null,
+    sessionId = null,
+    turnHint = null,
+    intentKind = "journal",
+    summary,
+    rationale = null,
+    context = {},
+  }) {
+    this.ensureOpen();
+    const normalizedSummary = String(summary || "").trim();
+    if (!normalizedSummary) {
+      throw new Error("summary is required");
+    }
+    const normalizedIntentKind = String(intentKind || "").trim().toLowerCase() || "journal";
+    const allowedKinds = new Set(["journal", "routing", "rollout", "reviewer", "fallback", "serendipity"]);
+    const safeIntentKind = allowedKinds.has(normalizedIntentKind) ? normalizedIntentKind : "journal";
+    const id = crypto.randomUUID();
+    this.db.prepare(`
+      INSERT INTO intent_journal (
+        id,
+        repository,
+        session_id,
+        turn_hint,
+        intent_kind,
+        summary,
+        rationale,
+        context_json,
+        created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      id,
+      normalizeRepository(repository),
+      typeof sessionId === "string" && sessionId.trim().length > 0 ? sessionId.trim() : null,
+      typeof turnHint === "string" && turnHint.trim().length > 0 ? turnHint.trim() : null,
+      safeIntentKind,
+      normalizedSummary,
+      typeof rationale === "string" && rationale.trim().length > 0 ? rationale.trim() : null,
+      JSON.stringify(context ?? {}),
+      nowIso(),
+    );
+    return id;
+  }
+
+  listIntentJournalEntries({
+    repository,
+    sessionId,
+    intentKind,
+    limit = 10,
+  } = {}) {
+    this.ensureOpen();
+    const where = [];
+    const params = [];
+    if (typeof repository === "string" && repository.trim().length > 0) {
+      where.push("repository = ?");
+      params.push(repository.trim());
+    }
+    if (typeof sessionId === "string" && sessionId.trim().length > 0) {
+      where.push("session_id = ?");
+      params.push(sessionId.trim());
+    }
+    if (typeof intentKind === "string" && intentKind.trim().length > 0) {
+      where.push("intent_kind = ?");
+      params.push(intentKind.trim().toLowerCase());
+    }
+    params.push(limit);
+    const rows = this.db.prepare(`
+      SELECT
+        id,
+        repository,
+        session_id,
+        turn_hint,
+        intent_kind,
+        summary,
+        rationale,
+        context_json,
+        created_at
+      FROM intent_journal
+      ${where.length > 0 ? `WHERE ${where.join(" AND ")}` : ""}
+      ORDER BY created_at DESC
+      LIMIT ?
+    `).all(...params);
+    return rows.map((row) => ({
+      ...row,
+      context: parseJsonObject(row.context_json),
+    }));
+  }
+
+  insertTrajectoryArtifact({
+    kind,
+    repository = null,
+    sourceCaseId = null,
+    sourceKind = null,
+    improvementArtifactId = null,
+    eventKey = null,
+    summary,
+    severity = "info",
+    outcome = "captured",
+    latencyMs = null,
+    targetMs = null,
+    context = {},
+    trace = {},
+  }) {
+    this.ensureOpen();
+    const normalizedKind = String(kind || "").trim();
+    const normalizedSummary = String(summary || "").trim();
+    if (!normalizedKind) {
+      throw new Error("kind is required");
+    }
+    if (!normalizedSummary) {
+      throw new Error("summary is required");
+    }
+    const id = crypto.randomUUID();
+    this.db.prepare(`
+      INSERT INTO trajectory_artifact (
+        id,
+        kind,
+        repository,
+        source_case_id,
+        source_kind,
+        improvement_artifact_id,
+        event_key,
+        summary,
+        severity,
+        outcome,
+        latency_ms,
+        target_ms,
+        context_json,
+        trace_json,
+        created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      id,
+      normalizedKind,
+      normalizeRepository(repository),
+      sourceCaseId ? String(sourceCaseId) : null,
+      sourceKind ? String(sourceKind) : null,
+      improvementArtifactId ? String(improvementArtifactId) : null,
+      eventKey ? String(eventKey) : null,
+      normalizedSummary,
+      String(severity || "info"),
+      String(outcome || "captured"),
+      Number.isFinite(latencyMs) ? Math.round(latencyMs) : null,
+      Number.isFinite(targetMs) ? Math.round(targetMs) : null,
+      JSON.stringify(context ?? {}),
+      JSON.stringify(trace ?? {}),
+      nowIso(),
+    );
+    return id;
+  }
+
+  listTrajectoryArtifacts({
+    kind,
+    sourceKind,
+    sourceCaseId,
+    repository,
+    limit = 10,
+  } = {}) {
+    this.ensureOpen();
+    const where = [];
+    const params = [];
+    if (typeof kind === "string" && kind.trim().length > 0) {
+      where.push("kind = ?");
+      params.push(kind.trim());
+    }
+    if (typeof sourceKind === "string" && sourceKind.trim().length > 0) {
+      where.push("source_kind = ?");
+      params.push(sourceKind.trim());
+    }
+    if (typeof sourceCaseId === "string" && sourceCaseId.trim().length > 0) {
+      where.push("source_case_id = ?");
+      params.push(sourceCaseId.trim());
+    }
+    if (typeof repository === "string" && repository.trim().length > 0) {
+      where.push("repository = ?");
+      params.push(repository.trim());
+    }
+    params.push(limit);
+    const rows = this.db.prepare(`
+      SELECT
+        id,
+        kind,
+        repository,
+        source_case_id,
+        source_kind,
+        improvement_artifact_id,
+        event_key,
+        summary,
+        severity,
+        outcome,
+        latency_ms,
+        target_ms,
+        context_json,
+        trace_json,
+        created_at
+      FROM trajectory_artifact
+      ${where.length > 0 ? `WHERE ${where.join(" AND ")}` : ""}
+      ORDER BY created_at DESC
+      LIMIT ?
+    `).all(...params);
+    return rows.map((row) => ({
+      ...row,
+      context: parseJsonObject(row.context_json),
+      trace: parseJsonObject(row.trace_json),
+    }));
   }
 
   getSemanticMemoryByIds(ids) {
@@ -3038,6 +3387,16 @@ export class CoherenceDb {
   findRelevantEpisodesDetailed({ prompt, repository, includeOtherRepositories = false, scopes = [], limit = 5 }) {
     const primaryTerms = extractDirectTerms(prompt);
     const terms = extractFtsTerms(prompt);
+    const hybridEnabled = readHybridRetrievalEnabled(this.config);
+    const entityTerms = hybridEnabled ? extractEntityTerms(prompt) : [];
+    // Merge entity terms into both the primary and general term sets so they receive
+    // both the per-term weight contribution and the primary-term boost in scoring.
+    const effectivePrimaryTerms = hybridEnabled
+      ? [...new Set([...primaryTerms, ...entityTerms])]
+      : primaryTerms;
+    const effectiveTerms = hybridEnabled
+      ? [...new Set([...terms, ...entityTerms])]
+      : terms;
     const lexicalQuery = (primaryTerms.length > 0 ? primaryTerms : terms).join(" ");
     const improvementRows = this.listImprovementArtifacts({
       sourceKind: IMPROVEMENT_SOURCE_KIND.REPLAY,
@@ -3104,15 +3463,33 @@ export class CoherenceDb {
     const deduped = dedupeEpisodesWithTrace([...exactMatches, ...fallbackPool], repository);
     const candidatePool = deduped.rows;
     const exactMatchIds = new Set(exactMatches.map((episode) => episode.session_id));
-    const termWeights = buildTermWeights(candidatePool, terms);
+    const termWeights = buildTermWeights(candidatePool, effectiveTerms);
+
+    // Build rank maps for RRF fusion: preserve the FTS (BM25) order and the recency order
+    // so the final scoring blends both signals rather than discarding FTS rank.
+    const ftsRankMap = hybridEnabled
+      ? new Map(rawExactMatches.map((ep, i) => [ep.session_id, i]))
+      : new Map();
+    const recencyRankMap = hybridEnabled
+      ? new Map(rawFallbackPool.map((ep, i) => [ep.session_id, i]))
+      : new Map();
+    const ftsMissRank = rawExactMatches.length;
+    const recencyMissRank = rawFallbackPool.length;
 
     const ranked = candidatePool
       .filter((episode) => !seen.has(episode.session_id) || exactMatchIds.has(episode.session_id))
-      .map((episode) => ({
-        episode,
-        score: scoreEpisodeAgainstWeightedTerms(episode, terms, primaryTerms, termWeights, exactMatchIds),
-      }))
-      .filter((entry) => entry.score > 0)
+      .map((episode) => {
+        const termScore = scoreEpisodeAgainstWeightedTerms(episode, effectiveTerms, effectivePrimaryTerms, termWeights, exactMatchIds);
+        const rrfBoost = hybridEnabled
+          ? computeRrfScore(episode.session_id, ftsRankMap, recencyRankMap, ftsMissRank, recencyMissRank) * RRF_SCALE
+          : 0;
+        return {
+          episode,
+          score: termScore + rrfBoost,
+          termScore,
+        };
+      })
+      .filter((entry) => entry.termScore > 0)
       .sort((left, right) => {
         if (right.score !== left.score) {
           return right.score - left.score;
@@ -3145,8 +3522,10 @@ export class CoherenceDb {
         repository,
         includeOtherRepositories,
         eligibleScopes: scopes.length > 0 ? [...scopes] : buildLocalEligibility(repository),
-        primaryTerms,
-        terms,
+        primaryTerms: effectivePrimaryTerms,
+        entityTerms: hybridEnabled ? entityTerms : [],
+        hybridEnabled,
+        terms: effectiveTerms,
         lexicalQuery,
         rankedRows: ranked
           .slice(0, Math.max(limit * 3, 12))
@@ -3831,4 +4210,14 @@ function inferDateFromPrompt(prompt, config = null) {
     return value.toISOString().slice(0, 10);
   }
   return inferNormalizedDateFromPrompt(prompt);
+}
+
+const RRF_K = 60;
+
+const RRF_SCALE = 30;
+
+function computeRrfScore(sessionId, ftsRankMap, recencyRankMap, ftsMissRank, recencyMissRank) {
+  const ftsRank = ftsRankMap.has(sessionId) ? ftsRankMap.get(sessionId) : ftsMissRank;
+  const recencyRank = recencyRankMap.has(sessionId) ? recencyRankMap.get(sessionId) : recencyMissRank;
+  return (1 / (RRF_K + ftsRank)) + (1 / (RRF_K + recencyRank));
 }

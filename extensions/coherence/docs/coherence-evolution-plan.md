@@ -270,6 +270,13 @@ Rollout notes:
 - generated artifacts only; never sign or mutate user-authored source of truth files silently
 - keep proposal/ledger artifacts additive so rollback is “disable and ignore”, not schema surgery
 
+### Wave 3 minimal landed slice — intent journaling
+
+- Added a bounded `intent_journal` table and indexes in the coherence DB schema for durable local intent capture.
+- Added `memory_intent_journal` with `action=list|record` and constrained kinds (`journal`, `routing`, `rollout`, `reviewer`, `fallback`, `serendipity`).
+- Extended `memory_status`/DB stats with intent-journal counters so this slice is observable without adding a parallel dashboard.
+- Scope is intentionally minimal and additive: no autonomous routing changes, no automatic cross-worktree import path, and no trusted-source mutation.
+
 ## Dependencies
 
 - Phase 1 is the new foundation and should land first.

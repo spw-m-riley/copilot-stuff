@@ -1,5 +1,6 @@
 import { detectPromptContextNeed } from "./capsule-assembler.mjs";
 import {
+  readDirectivesEnabled,
   readMemoryOperationsEnabled,
   readRetentionSanitizationEnabled,
   readWorkstreamOverlaysEnabled,
@@ -17,6 +18,34 @@ function estimateTokens(text) {
 
 function normalizeText(value) {
   return String(value || "").replace(/\s+/g, " ").trim();
+}
+
+function fetchDirectives({ db, repository, includeOtherRepositories, config }) {
+  if (!readDirectivesEnabled(config)) {
+    return { rows: [], text: "", trace: { enabled: false, reason: "directives_disabled" } };
+  }
+  const rows = db.searchSemantic({
+    query: "",
+    repository,
+    includeOtherRepositories,
+    types: ["directive"],
+    limit: 6,
+  });
+  if (rows.length === 0) {
+    return { rows: [], text: "", trace: { enabled: true, reason: "no_directives_found" } };
+  }
+  const lines = ["## Standing Directives", ""];
+  for (const row of rows) {
+    const content = normalizeText(row.content);
+    if (content) {
+      lines.push(`- ${content}`);
+    }
+  }
+  return {
+    rows,
+    text: lines.join("\n"),
+    trace: { enabled: true, reason: "directives_included", count: rows.length },
+  };
 }
 
 function sanitizeSemanticMemory(memory) {
@@ -683,7 +712,12 @@ export function recallMemory({
     limit: Math.max(1, Math.min(2, limit)),
   });
 
+  const directives = need.identityOnly !== true
+    ? fetchDirectives({ db, repository, includeOtherRepositories, config: db.config })
+    : { rows: [], text: "", trace: { enabled: false, reason: "identity_only_skip" } };
+
   const text = [
+    directives.text,
     workstreamLookup.text,
     base.text,
   ].filter(Boolean).join("\n\n");
@@ -691,6 +725,7 @@ export function recallMemory({
     ? base.trace.output.sectionTitles
     : [];
   const sectionTitles = [
+    ...(directives.text ? ["Standing Directives"] : []),
     ...(workstreamLookup.text ? ["Active Workstream"] : []),
     ...baseSections,
   ];
@@ -703,6 +738,7 @@ export function recallMemory({
     trace: {
       ...base.trace,
       lookups: {
+        directives: directives.trace,
         workstreamOverlays: workstreamLookup.trace,
         ...(base.trace?.lookups ?? {}),
       },
@@ -712,6 +748,7 @@ export function recallMemory({
         estimatedTokens: estimateTokens(text),
       },
     },
+    directives: directives.rows,
     overlays: workstreamLookup.overlays,
     estimatedTokens: estimateTokens(text),
   };

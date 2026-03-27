@@ -137,6 +137,11 @@ async function hydrateSelectionFromConfig() {
   }
   if (
     !selection.reasoningEffort &&
+    typeof parsed.effortLevel === "string"
+  ) {
+    selection.reasoningEffort = parsed.effortLevel;
+  } else if (
+    !selection.reasoningEffort &&
     typeof parsed.reasoning_effort === "string"
   ) {
     selection.reasoningEffort = parsed.reasoning_effort;

@@ -18,6 +18,8 @@ import {
   resolveWorkspacePath,
 } from "./lib/workspace-reader.mjs";
 import { assembleMemoryCapsule, detectPromptContextNeed } from "./lib/capsule-assembler.mjs";
+import { hydrateWorkstreamOverlay } from "./lib/overlay-hydrator.mjs";
+import { readOverlayAutoHydrationEnabled } from "./lib/rollout-flags.mjs";
 
 let lastKnownCwd = process.cwd();
 
@@ -390,6 +392,31 @@ async function maybeRunMaintenanceScheduler(session, activeRuntime, repository) 
   });
 }
 
+function maybeHydrateOverlay(session, activeRuntime, workspacePath, repository, sessionId) {
+  if (!readOverlayAutoHydrationEnabled(activeRuntime.config)) {
+    return;
+  }
+  if (!activeRuntime.db || !workspacePath) {
+    return;
+  }
+  queueMicrotask(async () => {
+    try {
+      await hydrateWorkstreamOverlay({
+        db: activeRuntime.db,
+        workspacePath,
+        repository,
+        sessionId,
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      await session.log(`coherence overlay hydration skipped: ${message}`, {
+        ephemeral: true,
+        level: "warning",
+      });
+    }
+  });
+}
+
 const session = await joinSession({
   onPermissionRequest: approveAll,
   hooks: {
@@ -398,7 +425,7 @@ const session = await joinSession({
       lastKnownCwd = input.cwd || lastKnownCwd;
 
       const context = await getContext(session, invocation.sessionId, input.cwd);
-      const { runtime: activeRuntime, repository } = context;
+      const { runtime: activeRuntime, repository, workspacePath } = context;
 
       if (!activeRuntime.initialized || activeRuntime.lastError) {
         return;
@@ -415,6 +442,7 @@ const session = await joinSession({
       }
 
       await maybeRunMaintenanceScheduler(session, activeRuntime, repository);
+      maybeHydrateOverlay(session, activeRuntime, workspacePath, repository, invocation.sessionId);
 
       const relevantInstructionFiles = detectRelevantInstructionFiles(input.initialPrompt ?? "");
       const proceduralProfile = await buildProceduralProfile({
