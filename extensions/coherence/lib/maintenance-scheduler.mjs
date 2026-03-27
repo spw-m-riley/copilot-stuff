@@ -9,6 +9,7 @@ import {
   generateProposalArtifacts,
   verifyProposalArtifacts,
 } from "./proposal-generator.mjs";
+import { runDoctorObservation } from "./coherence-doctor.mjs";
 
 const TASK_ORDER = Object.freeze([
   "deferredExtraction",
@@ -17,6 +18,7 @@ const TASK_ORDER = Object.freeze([
   "backlogReview",
   "traceCompaction",
   "indexUpkeep",
+  "doctorSnapshot",
 ]);
 
 const TASK_LABELS = Object.freeze({
@@ -26,6 +28,7 @@ const TASK_LABELS = Object.freeze({
   backlogReview: "Backlog Review",
   traceCompaction: "Trace Compaction",
   indexUpkeep: "Index Upkeep",
+  doctorSnapshot: "Doctor Snapshot",
 });
 
 function normalizeBoolean(value, fallback) {
@@ -133,6 +136,7 @@ function buildMaintenanceOptions(config) {
       backlogReview: normalizeBoolean(tasks.backlogReview, true),
       traceCompaction: normalizeBoolean(tasks.traceCompaction, false),
       indexUpkeep: normalizeBoolean(tasks.indexUpkeep, false),
+      doctorSnapshot: normalizeBoolean(tasks.doctorSnapshot, false),
     },
     taskCadenceMinutes: {
       deferredExtraction: clampInteger(cadence.deferredExtraction, 0, { min: 0, max: 7 * 24 * 60 }),
@@ -141,6 +145,7 @@ function buildMaintenanceOptions(config) {
       backlogReview: clampInteger(cadence.backlogReview, 6 * 60, { min: 0, max: 30 * 24 * 60 }),
       traceCompaction: clampInteger(cadence.traceCompaction, 60, { min: 0, max: 30 * 24 * 60 }),
       indexUpkeep: clampInteger(cadence.indexUpkeep, 12 * 60, { min: 0, max: 30 * 24 * 60 }),
+      doctorSnapshot: clampInteger(cadence.doctorSnapshot, 24 * 60, { min: 0, max: 30 * 24 * 60 }),
     },
   });
 }
@@ -160,6 +165,9 @@ function isTaskEnabled({ taskName, options, runtime, trigger }) {
   }
   if (taskName === "traceCompaction") {
     return runtime.traceRecorder?.isEnabled?.() === true;
+  }
+  if (taskName === "doctorSnapshot") {
+    return runtime.config?.rollout?.coherenceDoctor === true;
   }
   return true;
 }
@@ -277,7 +285,10 @@ export function buildMaintenancePlan({
   }));
 
   const dueTasks = tasks.filter((task) => task.selected && task.enabled && task.due);
-  const selectedTasks = dueTasks.slice(0, options.maxTasksPerRun);
+  const triggerBoundDueTasks = trigger === "session_start"
+    ? dueTasks.filter((task) => task.taskName === "deferredExtraction")
+    : dueTasks;
+  const selectedTasks = triggerBoundDueTasks.slice(0, options.maxTasksPerRun);
   const deferredTask = tasks.find((task) => task.taskName === "deferredExtraction") ?? null;
 
   return {
@@ -288,10 +299,10 @@ export function buildMaintenancePlan({
     autoRunOnSessionStart: options.autoRunOnSessionStart,
     maxTasksPerRun: options.maxTasksPerRun,
     tasks,
-    dueTasks,
+    dueTasks: triggerBoundDueTasks,
     selectedTasks,
     deferredTask,
-    skippedDueToCap: Math.max(0, dueTasks.length - selectedTasks.length),
+    skippedDueToCap: Math.max(0, triggerBoundDueTasks.length - selectedTasks.length),
     requestedTasks: normalizedRequested,
     force,
     recentRuns: runtime.db.listMaintenanceRuns({ limit: 5 }),
@@ -453,6 +464,27 @@ async function executeTask({
       status: "completed",
       cursor: entry.state?.cursor ?? 0,
       summary: result,
+    };
+  }
+
+  if (taskName === "doctorSnapshot") {
+    const result = runDoctorObservation({
+      runtime,
+      repository,
+      dryRun: false,
+      trajectoryLimit: 20,
+    });
+    return {
+      status: result.incidentCount > 0 ? "needs_attention" : "completed",
+      cursor: entry.state?.cursor ?? 0,
+      summary: {
+        incidentCount: result.incidentCount,
+        criticalCount: result.criticalCount,
+        warningCount: result.warningCount,
+        infoCount: result.infoCount,
+        recordedArtifactId: result.recordedArtifactId,
+        generatedAt: result.generatedAt,
+      },
     };
   }
 
