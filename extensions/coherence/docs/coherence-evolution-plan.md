@@ -43,6 +43,13 @@ safe improvement layer
   -> richer status/dashboard surfaces
 ```
 
+## Current observability and browser slices
+
+- The visibility substrate now persists positive-path activity in `coherence_activity_state` and bounded sampled retrieval history in `retrieval_trace_sample`, which powers richer `memory_status` output and browser overview state.
+- The local browser under `extensions/coherence/browser/` is now a localhost-only, read-only Node server plus static HTML/CSS/vanilla JS with `Overview`, `Memories`, `Maintenance`, `Episodes`, and a secondary `Drill-down` tab.
+- The drill-down view is intentionally scoped: it centers on a selected memory, workstream, or session and renders provenance, supersession lineage, canonical grouping, linked improvement artifacts, and episode/day grouping without replacing the overview-first landing flow.
+- Maintenance operationalization stays on the existing `run-maintenance.mjs`/scheduler path: session start remains bounded to cheap work, while broader upkeep is expected to run through explicit or scheduled script invocations.
+
 ## Phased plan
 
 ### Phase 1 — Memory operations layer

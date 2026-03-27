@@ -104,5 +104,26 @@ Views in MVP:
 - **Memories**: `semantic_memory` with filters (type, scope, repository, canonical key, active/superseded)
 - **Maintenance**: maintenance runs/task state, deferred queue, doctor reports, trace/plan context
 - **Episodes**: recent `episode_digest` and `day_summary` history
+- **Drill-down**: focused relationship graphs for a selected memory, workstream, or session, including provenance, supersession, canonical clustering, linked improvements, and day grouping
 
 The browser API is read-only and local-only by default.
+
+## Coherence maintenance workflow
+
+The bounded session-start path is now intentionally small: when scheduler support is enabled, session start should stay focused on cheap deferred extraction work rather than broad upkeep. Heavier maintenance is meant to run explicitly or from an external scheduler around the existing script entrypoint:
+
+```bash
+node extensions/coherence/scripts/run-maintenance.mjs --status
+node extensions/coherence/scripts/run-maintenance.mjs --recommended-schedule
+```
+
+Use `--status` to inspect recent runs and due tasks, and `--recommended-schedule` to see the intended cadence for validation, replay, backlog review, doctor snapshots, trace compaction, and index upkeep before wiring the script into `cron`, `launchd`, or another local scheduler.
+
+## How to tell Coherence is healthy
+
+Healthy Coherence should now be visible on the success path, not only when latency warnings fire.
+
+- `memory_status` shows durable last-success activity for context injection, extraction, maintenance, and trace recording, plus sampled retrieval history.
+- The browser `Overview` tab shows those same positive-path signals alongside due maintenance work and the recent latency trend.
+- `node extensions/coherence/scripts/run-maintenance.mjs --status` shows maintenance task state and recent run history when the scheduler path is active.
+- If Coherence looks stale or slow, use `memory_doctor_report` for a deeper read-only diagnostic snapshot before changing config.
