@@ -91,6 +91,7 @@ node extensions/coherence/scripts/run-browser.mjs
 Optional flags:
 
 - `--host 127.0.0.1` (default)
+- `--host` accepts loopback values only: `127.0.0.1`, `localhost`, or `::1`
 - `--port 43111` (default)
 - `--repository owner/repo` (focus browser reads)
 - `--derived-store-path <path>` (override DB location)

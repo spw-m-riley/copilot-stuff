@@ -27,6 +27,16 @@ function mergeDeep(base, override) {
   return merged;
 }
 
+const ALLOWED_LOOPBACK_HOSTS = new Set(["127.0.0.1", "localhost", "::1"]);
+
+function normalizeLoopbackHost(value) {
+  const host = String(value ?? "").trim().toLowerCase();
+  if (!ALLOWED_LOOPBACK_HOSTS.has(host)) {
+    throw new Error("host must be loopback-only: 127.0.0.1, localhost, or ::1");
+  }
+  return host;
+}
+
 function parseArgs(argv) {
   const args = {
     host: "127.0.0.1",
@@ -37,7 +47,7 @@ function parseArgs(argv) {
   for (let index = 0; index < argv.length; index += 1) {
     const part = argv[index];
     if (part === "--host") {
-      args.host = String(argv[index + 1] ?? args.host);
+      args.host = normalizeLoopbackHost(argv[index + 1] ?? args.host);
       index += 1;
       continue;
     }
