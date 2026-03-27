@@ -1,4 +1,4 @@
-export const SCHEMA_VERSION = 12;
+export const SCHEMA_VERSION = 13;
 
 export const SCHEMA_STATEMENTS = [
   `
@@ -283,6 +283,60 @@ export const SCHEMA_STATEMENTS = [
   `
     CREATE INDEX IF NOT EXISTS idx_trajectory_artifact_repository_kind_created
       ON trajectory_artifact(repository, kind, created_at DESC);
+  `,
+  `
+    CREATE TABLE IF NOT EXISTS coherence_activity_state (
+      scope_key TEXT PRIMARY KEY,
+      scope_type TEXT NOT NULL,
+      repository TEXT,
+      last_context_injection_at TEXT,
+      last_context_injection_hook TEXT,
+      last_context_injection_sections_json TEXT NOT NULL DEFAULT '[]',
+      last_context_injection_trace_id TEXT,
+      last_context_injection_duration_ms INTEGER,
+      last_extraction_completion_at TEXT,
+      last_extraction_repository TEXT,
+      last_maintenance_completion_at TEXT,
+      last_maintenance_status TEXT,
+      last_maintenance_run_id TEXT,
+      last_trace_recorded_at TEXT,
+      last_trace_hook TEXT,
+      last_trace_id TEXT,
+      updated_at TEXT NOT NULL
+    );
+  `,
+  `
+    CREATE INDEX IF NOT EXISTS idx_coherence_activity_state_scope_type_repository
+      ON coherence_activity_state(scope_type, repository);
+  `,
+  `
+    CREATE TABLE IF NOT EXISTS retrieval_trace_sample (
+      id TEXT PRIMARY KEY,
+      repository TEXT,
+      scope_type TEXT NOT NULL DEFAULT 'repo',
+      hook TEXT NOT NULL,
+      route TEXT,
+      route_reason TEXT,
+      context_injected INTEGER NOT NULL DEFAULT 0,
+      latency_ms INTEGER,
+      prompt_preview TEXT,
+      section_titles_json TEXT NOT NULL DEFAULT '[]',
+      prompt_need_json TEXT NOT NULL DEFAULT '{}',
+      eligibility_json TEXT NOT NULL DEFAULT '{}',
+      lookups_json TEXT NOT NULL DEFAULT '{}',
+      omissions_json TEXT NOT NULL DEFAULT '[]',
+      output_json TEXT NOT NULL DEFAULT '{}',
+      trace_json TEXT NOT NULL DEFAULT '{}',
+      recorded_at TEXT NOT NULL
+    );
+  `,
+  `
+    CREATE INDEX IF NOT EXISTS idx_retrieval_trace_sample_repository_recorded
+      ON retrieval_trace_sample(repository, recorded_at DESC);
+  `,
+  `
+    CREATE INDEX IF NOT EXISTS idx_retrieval_trace_sample_scope_recorded
+      ON retrieval_trace_sample(scope_type, recorded_at DESC);
   `,
   `
     CREATE TABLE IF NOT EXISTS intent_journal (

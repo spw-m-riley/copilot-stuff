@@ -623,6 +623,7 @@ export async function runMaintenanceSweep({
   runtime.db.completeMaintenanceRun({
     runId,
     status,
+    repository,
     completedAt,
     completedCount,
     needsAttentionCount,
