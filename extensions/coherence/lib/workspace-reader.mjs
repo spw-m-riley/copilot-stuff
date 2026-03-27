@@ -26,26 +26,11 @@ export function resolveWorkspacePath(workspacePath, sessionId) {
   return path.join(os.homedir(), ".copilot", "session-state", sessionId);
 }
 
-async function readJsonLines(filePath) {
-  if (!existsSync(filePath)) {
-    return [];
-  }
-  const text = await readFile(filePath, "utf8");
-  return text
-    .split("\n")
-    .filter((line) => line.trim().length > 0)
-    .map((line) => JSON.parse(line));
-}
-
 export async function readWorkspaceContext(workspacePath) {
   const workspaceFile = path.join(workspacePath, "workspace.yaml");
-  const eventsFile = path.join(workspacePath, "events.jsonl");
-
   const workspaceText = existsSync(workspaceFile) ? await readFile(workspaceFile, "utf8") : "";
-  const events = await readJsonLines(eventsFile);
 
   return {
     workspace: workspaceText ? parseSimpleYaml(workspaceText) : null,
-    events,
   };
 }

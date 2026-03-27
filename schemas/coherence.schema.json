@@ -1,0 +1,445 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Coherence User Configuration",
+  "description": "User-authorable settings for the Coherence extension (~/.copilot/coherence.json). Runtime-only fields such as configPath are excluded. All paths.* values default to paths derived from the user home directory at runtime and should not be set here unless you need to override them.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference URI. Stripped at load time and never treated as a config key."
+    },
+    "enabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "Enable or disable the Coherence extension. Can also be controlled via the COHERENCE_ENABLED environment variable, which takes precedence over this field."
+    },
+    "paths": {
+      "type": "object",
+      "description": "Override default file-system paths used by Coherence. All values are strings. Defaults are derived from the user home directory at runtime and are environment-specific, so only set these when you need a non-default layout.",
+      "additionalProperties": false,
+      "properties": {
+        "copilotHome": {
+          "type": "string",
+          "description": "Base directory for Copilot CLI data. Runtime default: ~/.copilot"
+        },
+        "rawStorePath": {
+          "type": "string",
+          "description": "Path to the raw session-store SQLite database. Runtime default: <copilotHome>/session-store.db"
+        },
+        "derivedStorePath": {
+          "type": "string",
+          "description": "Path to the derived Coherence SQLite database. Runtime default: <copilotHome>/coherence.db"
+        },
+        "backupDir": {
+          "type": "string",
+          "description": "Directory for Coherence database backups. Runtime default: <copilotHome>/backups/coherence"
+        },
+        "instructionsPath": {
+          "type": "string",
+          "description": "Path to the global Copilot instructions markdown file. Runtime default: <copilotHome>/copilot-instructions.md"
+        },
+        "scopedInstructionsDir": {
+          "type": "string",
+          "description": "Directory containing per-pattern instruction files. Runtime default: <copilotHome>/instructions"
+        }
+      }
+    },
+    "budgets": {
+      "type": "object",
+      "description": "Token budgets for the different memory capsule categories injected into the context window.",
+      "additionalProperties": false,
+      "properties": {
+        "procedural": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 220,
+          "description": "Token budget for procedural (rule and preference) memory."
+        },
+        "semantic": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 420,
+          "description": "Token budget for semantic (factual) memory."
+        },
+        "episodes": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 320,
+          "description": "Token budget for episodic memory (prior session excerpts)."
+        },
+        "commitments": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 180,
+          "description": "Token budget for commitment and goal memory."
+        },
+        "total": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 1200,
+          "description": "Overall token budget cap across all memory categories combined."
+        }
+      }
+    },
+    "limits": {
+      "type": "object",
+      "description": "Row and result limits for memory retrieval queries.",
+      "additionalProperties": false,
+      "properties": {
+        "semanticSearchLimit": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 8,
+          "description": "Maximum number of semantic memory entries returned per retrieval query."
+        },
+        "episodeSearchLimit": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 5,
+          "description": "Maximum number of episode entries returned per retrieval query."
+        },
+        "promptContextLimit": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 6,
+          "description": "Maximum number of memory entries injected into the prompt context per request."
+        },
+        "crossRepoPreferenceLimit": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 2,
+          "description": "Maximum number of cross-repository preference memories to surface when local recall is weak."
+        },
+        "crossRepoEpisodeLimit": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 2,
+          "description": "Maximum number of cross-repository episode memories to surface when local recall is weak."
+        },
+        "metricWindowSize": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 200,
+          "description": "Rolling window size in sessions used for latency and quality metric calculations."
+        },
+        "recentSessionsFallbackLimit": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 3,
+          "description": "Number of recent sessions to include as fallback context when targeted recall returns nothing useful."
+        }
+      }
+    },
+    "latencyTargetsMs": {
+      "type": "object",
+      "description": "P95 latency targets in milliseconds for key Coherence lifecycle hooks. Coherence will emit warnings when observed latency exceeds these thresholds.",
+      "additionalProperties": false,
+      "properties": {
+        "sessionStartP95": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 100,
+          "description": "P95 latency target in milliseconds for the session-start hook."
+        },
+        "userPromptSubmittedP95": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 150,
+          "description": "P95 latency target in milliseconds for the user-prompt-submitted hook."
+        }
+      }
+    },
+    "latencyReadinessMinSamples": {
+      "type": "object",
+      "description": "Minimum sample counts required before latency readiness checks become active. Checks are skipped until the sample threshold is met to avoid false positives during warm-up.",
+      "additionalProperties": false,
+      "properties": {
+        "sessionStart": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 20,
+          "description": "Minimum number of session-start samples before P95 latency checks are enforced."
+        },
+        "userPromptSubmitted": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 50,
+          "description": "Minimum number of user-prompt-submitted samples before P95 latency checks are enforced."
+        }
+      }
+    },
+    "deferredExtraction": {
+      "type": "object",
+      "description": "Settings for the background memory-extraction pipeline that runs between sessions.",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable or disable the deferred extraction pipeline entirely."
+        },
+        "autoEnqueueOnSessionEnd": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically enqueue sessions for memory extraction when they end."
+        },
+        "autoProcessOnSessionStart": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically process queued extraction jobs when a new session starts."
+        },
+        "processCurrentRepositoryOnly": {
+          "type": "boolean",
+          "default": true,
+          "description": "When processing queued jobs, restrict extraction to the current repository only."
+        },
+        "maxJobsPerRun": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 2,
+          "description": "Maximum number of extraction jobs to process in a single run."
+        },
+        "retryDelayMinutes": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 15,
+          "description": "Minutes to wait before retrying a failed extraction job."
+        }
+      }
+    },
+    "maintenanceScheduler": {
+      "type": "object",
+      "description": "Local-first maintenance scheduler settings. The scheduler runs bounded upkeep opportunistically during local sessions or explicit script/tool invocations rather than as an always-on daemon.",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable or disable the maintenance scheduler entirely. Default-off keeps the new upkeep path rollback-safe until explicitly turned on."
+        },
+        "autoRunOnSessionStart": {
+          "type": "boolean",
+          "default": true,
+          "description": "When true, allow the local scheduler to evaluate and run due maintenance tasks opportunistically at session start."
+        },
+        "maxTasksPerRun": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 4,
+          "description": "Maximum number of maintenance tasks that may run in a single sweep. This cap keeps automatic upkeep bounded."
+        },
+        "validationCaseLimit": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 3,
+          "description": "Maximum number of validation corpus cases to execute in one maintenance sweep. Cases rotate over time using a persisted cursor."
+        },
+        "replayCaseLimit": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 2,
+          "description": "Maximum number of replay corpus cases to execute in one maintenance sweep. Cases rotate over time using a persisted cursor."
+        },
+        "backlogReviewLimit": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 10,
+          "description": "Maximum number of stale improvement backlog artifacts to surface in one maintenance review."
+        },
+        "backlogStaleAfterHours": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 72,
+          "description": "Treat active improvement backlog artifacts older than this many hours as stale during maintenance review."
+        },
+        "tasks": {
+          "type": "object",
+          "description": "Per-task enable flags for the local maintenance scheduler.",
+          "additionalProperties": false,
+          "properties": {
+            "deferredExtraction": {
+              "type": "boolean",
+              "default": true,
+              "description": "Allow scheduled deferred extraction processing."
+            },
+            "validationCorpus": {
+              "type": "boolean",
+              "default": true,
+              "description": "Allow scheduled bounded validation corpus runs."
+            },
+            "replayCorpus": {
+              "type": "boolean",
+              "default": true,
+              "description": "Allow scheduled bounded replay corpus runs."
+            },
+            "backlogReview": {
+              "type": "boolean",
+              "default": true,
+              "description": "Allow scheduled stale backlog review and status summaries."
+            },
+            "traceCompaction": {
+              "type": "boolean",
+              "default": false,
+              "description": "Allow optional trace-recorder compaction. This only runs when the trace recorder rollout is enabled."
+            },
+            "indexUpkeep": {
+              "type": "boolean",
+              "default": false,
+              "description": "Allow optional SQLite index upkeep such as PRAGMA optimize and a passive WAL checkpoint."
+            }
+          }
+        },
+        "taskCadenceMinutes": {
+          "type": "object",
+          "description": "Per-task minimum cadence in minutes. A value of 0 means the task is due every eligible maintenance sweep.",
+          "additionalProperties": false,
+          "properties": {
+            "deferredExtraction": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "description": "Cadence for deferred extraction processing."
+            },
+            "validationCorpus": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 720,
+              "description": "Cadence for bounded validation corpus runs."
+            },
+            "replayCorpus": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 1440,
+              "description": "Cadence for bounded replay corpus runs."
+            },
+            "backlogReview": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 360,
+              "description": "Cadence for stale backlog review."
+            },
+            "traceCompaction": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 60,
+              "description": "Cadence for optional trace-recorder compaction."
+            },
+            "indexUpkeep": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 720,
+              "description": "Cadence for optional SQLite index upkeep."
+            }
+          }
+        }
+      }
+    },
+    "traceRecorder": {
+      "type": "object",
+      "description": "Bounded in-memory settings for optional prompt/session trace capture. These caps keep the recorder rollback-safe and cheap to disable.",
+      "additionalProperties": false,
+      "properties": {
+        "maxRecords": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 40,
+          "description": "Maximum number of recent trace records to retain in memory before evicting the oldest entries."
+        },
+        "maxAgeMs": {
+          "type": "integer",
+          "minimum": 60000,
+          "default": 1800000,
+          "description": "Maximum age in milliseconds for retained trace records before they expire from the in-memory recorder."
+        },
+        "maxRowsPerLookup": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 3,
+          "description": "Maximum number of matched and included rows to retain per lookup inside a recorded trace."
+        },
+        "maxFilteredRowsPerLookup": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 3,
+          "description": "Maximum number of dropped/filtered rows to retain per lookup inside a recorded trace."
+        },
+        "maxPromptChars": {
+          "type": "integer",
+          "minimum": 32,
+          "default": 160,
+          "description": "Maximum number of prompt-preview characters stored for a recorded trace."
+        },
+        "maxRowChars": {
+          "type": "integer",
+          "minimum": 32,
+          "default": 160,
+          "description": "Maximum number of row-summary characters stored for matched, included, or filtered lookup samples."
+        },
+        "maxContextChars": {
+          "type": "integer",
+          "minimum": 64,
+          "default": 600,
+          "description": "Maximum number of generated-context characters stored per recorded trace."
+        }
+      }
+    },
+    "rollout": {
+      "type": "object",
+      "description": "Feature flags for experimental or opt-in Coherence capabilities.",
+      "additionalProperties": false,
+      "properties": {
+        "ambientPersonaMode": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable ambient persona mode, where Coherence proactively applies style and tone preferences without explicit prompting."
+        },
+        "autoWriteImprovementGoals": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable automatic writing of improvement goals to the instructions file based on session observations."
+        },
+        "memoryOperations": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable the explicit Phase 1 memory-operations boundary. When false, runtime prompt recall falls back to the legacy prompt-context path."
+        },
+        "workstreamOverlays": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable workstream overlay retain/recall behavior. When false, persisted overlay rows are ignored by runtime recall."
+        },
+        "temporalQueryNormalization": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable the richer temporal-query normalization used by prompt-time recall."
+        },
+        "retentionSanitization": {
+          "type": "boolean",
+          "default": true,
+          "description": "Strip injected Coherence context from retained transcripts before extraction and explicit retain writes."
+        },
+        "traceRecorder": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable the optional bounded trace recorder used to inspect prompt-need classification, lookup outcomes, injected context, and router-ready decisions."
+        },
+        "evolutionLedger": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable the additive Phase 5 evolution-ledger surfaces that summarize review-gated improvement artifacts and manual signals."
+        },
+        "proposalGeneration": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable generation of review-gated proposal artifacts under extensions/coherence/docs/proposals during explicit tool calls or maintenance backlog review."
+        },
+        "generatedArtifactIntegrity": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable explicit verification and repair of generated proposal artifacts and indexes instead of silently tolerating drift."
+        }
+      }
+    }
+  }
+}

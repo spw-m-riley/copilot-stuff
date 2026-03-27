@@ -6,9 +6,11 @@ import { readFile } from "node:fs/promises";
 const COPILOT_HOME = path.join(os.homedir(), ".copilot");
 const CONFIG_PATH = path.join(COPILOT_HOME, "coherence.json");
 
-const DEFAULT_CONFIG = Object.freeze({
+// Fields the user may set in coherence.json.  `configPath` is the only
+// runtime-only field — it is never read from the file.  `paths.*` entries have
+// runtime-derived defaults but may be overridden in the file.
+export const USER_CONFIG_DEFAULTS = Object.freeze({
   enabled: false,
-  configPath: CONFIG_PATH,
   paths: {
     copilotHome: COPILOT_HOME,
     rawStorePath: path.join(COPILOT_HOME, "session-store.db"),
@@ -37,6 +39,10 @@ const DEFAULT_CONFIG = Object.freeze({
     sessionStartP95: 100,
     userPromptSubmittedP95: 150,
   },
+  latencyReadinessMinSamples: {
+    sessionStart: 20,
+    userPromptSubmitted: 50,
+  },
   deferredExtraction: {
     enabled: true,
     autoEnqueueOnSessionEnd: true,
@@ -45,7 +51,58 @@ const DEFAULT_CONFIG = Object.freeze({
     maxJobsPerRun: 2,
     retryDelayMinutes: 15,
   },
+  maintenanceScheduler: {
+    enabled: false,
+    autoRunOnSessionStart: true,
+    maxTasksPerRun: 4,
+    validationCaseLimit: 3,
+    replayCaseLimit: 2,
+    backlogReviewLimit: 10,
+    backlogStaleAfterHours: 72,
+    tasks: {
+      deferredExtraction: true,
+      validationCorpus: true,
+      replayCorpus: true,
+      backlogReview: true,
+      traceCompaction: false,
+      indexUpkeep: false,
+    },
+    taskCadenceMinutes: {
+      deferredExtraction: 0,
+      validationCorpus: 12 * 60,
+      replayCorpus: 24 * 60,
+      backlogReview: 6 * 60,
+      traceCompaction: 60,
+      indexUpkeep: 12 * 60,
+    },
+  },
+  traceRecorder: {
+    maxRecords: 40,
+    maxAgeMs: 30 * 60 * 1000,
+    maxRowsPerLookup: 3,
+    maxFilteredRowsPerLookup: 3,
+    maxPromptChars: 160,
+    maxRowChars: 160,
+    maxContextChars: 600,
+  },
+  rollout: {
+    ambientPersonaMode: false,
+    autoWriteImprovementGoals: false,
+    memoryOperations: true,
+    workstreamOverlays: true,
+    temporalQueryNormalization: true,
+    retentionSanitization: true,
+    traceRecorder: false,
+    evolutionLedger: true,
+    proposalGeneration: false,
+    generatedArtifactIntegrity: true,
+  },
 });
+
+// Keys that may legally appear in coherence.json.  $schema is stripped before
+// this check so editors can annotate files without triggering warnings.
+// configPath is intentionally absent — it is runtime-only.
+const SUPPORTED_USER_KEYS = new Set(Object.keys(USER_CONFIG_DEFAULTS));
 
 function isPlainObject(value) {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -84,11 +141,33 @@ function normalizeBoolean(value, fallback) {
   return fallback;
 }
 
-function normalizeConfigShape(value) {
+// Strip editor/schema metadata and warn on unrecognised keys.  Returns only
+// the user-authorable subset so unknown keys never reach the merge step.
+function normalizeFileConfig(value) {
   if (!isPlainObject(value)) {
     return {};
   }
-  return value;
+
+  // eslint-disable-next-line no-unused-vars
+  const { $schema: _ignored, maintenance: legacyMaintenance, ...rest } = value;
+
+  const cleaned = {};
+  for (const [key, val] of Object.entries(rest)) {
+    if (SUPPORTED_USER_KEYS.has(key)) {
+      cleaned[key] = val;
+    } else {
+      console.warn(
+        `[coherence] coherence.json: unsupported key "${key}" — ignored`,
+      );
+    }
+  }
+  if (isPlainObject(legacyMaintenance) && !("maintenanceScheduler" in cleaned)) {
+    console.warn(
+      "[coherence] coherence.json: \"maintenance\" is deprecated — use \"maintenanceScheduler\"",
+    );
+    cleaned.maintenanceScheduler = legacyMaintenance;
+  }
+  return cleaned;
 }
 
 export async function loadConfig() {
@@ -96,15 +175,62 @@ export async function loadConfig() {
   if (existsSync(CONFIG_PATH)) {
     const raw = await readFile(CONFIG_PATH, "utf8");
     const parsed = JSON.parse(raw);
-    fileConfig = normalizeConfigShape(parsed);
+    fileConfig = normalizeFileConfig(parsed);
   }
 
-  const merged = mergeDeep(DEFAULT_CONFIG, fileConfig);
+  const merged = mergeDeep(USER_CONFIG_DEFAULTS, fileConfig);
   const envEnabled = process.env.COHERENCE_ENABLED;
+  const normalizedRollout = {
+    ambientPersonaMode: normalizeBoolean(
+      merged.rollout?.ambientPersonaMode,
+      USER_CONFIG_DEFAULTS.rollout.ambientPersonaMode,
+    ),
+    autoWriteImprovementGoals: normalizeBoolean(
+      merged.rollout?.autoWriteImprovementGoals,
+      USER_CONFIG_DEFAULTS.rollout.autoWriteImprovementGoals,
+    ),
+    memoryOperations: normalizeBoolean(
+      merged.rollout?.memoryOperations,
+      USER_CONFIG_DEFAULTS.rollout.memoryOperations,
+    ),
+    workstreamOverlays: normalizeBoolean(
+      merged.rollout?.workstreamOverlays,
+      USER_CONFIG_DEFAULTS.rollout.workstreamOverlays,
+    ),
+    temporalQueryNormalization: normalizeBoolean(
+      merged.rollout?.temporalQueryNormalization,
+      USER_CONFIG_DEFAULTS.rollout.temporalQueryNormalization,
+    ),
+    retentionSanitization: normalizeBoolean(
+      merged.rollout?.retentionSanitization,
+      USER_CONFIG_DEFAULTS.rollout.retentionSanitization,
+    ),
+    traceRecorder: normalizeBoolean(
+      merged.rollout?.traceRecorder,
+      USER_CONFIG_DEFAULTS.rollout.traceRecorder,
+    ),
+    evolutionLedger: normalizeBoolean(
+      merged.rollout?.evolutionLedger,
+      USER_CONFIG_DEFAULTS.rollout.evolutionLedger,
+    ),
+    proposalGeneration: normalizeBoolean(
+      merged.rollout?.proposalGeneration,
+      USER_CONFIG_DEFAULTS.rollout.proposalGeneration,
+    ),
+    generatedArtifactIntegrity: normalizeBoolean(
+      merged.rollout?.generatedArtifactIntegrity,
+      USER_CONFIG_DEFAULTS.rollout.generatedArtifactIntegrity,
+    ),
+  };
 
   return {
     ...merged,
+    rollout: {
+      ...merged.rollout,
+      ...normalizedRollout,
+    },
     enabled: normalizeBoolean(envEnabled, merged.enabled),
+    // configPath is the only runtime-only field — always computed, never read from file.
     configPath: CONFIG_PATH,
   };
 }

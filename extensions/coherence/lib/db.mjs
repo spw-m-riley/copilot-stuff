@@ -4,6 +4,7 @@ import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
 
 import {
+  buildSemanticCanonicalKey,
   classifyEpisodeDigest,
   classifySemanticMemory,
   detectAssistantIdentityName,
@@ -11,10 +12,40 @@ import {
   normalizeScope,
 } from "./memory-scope.mjs";
 import { SCHEMA_STATEMENTS, SCHEMA_VERSION } from "./schema.mjs";
+import {
+  buildStyleAddressingSection,
+  isStyleAddressingMemory,
+} from "./style-addressing.mjs";
+import { readTemporalQueryNormalizationEnabled } from "./rollout-flags.mjs";
+import {
+  extractTemporalContentTerms as extractNormalizedTemporalContentTerms,
+  inferDateFromPrompt as inferNormalizedDateFromPrompt,
+} from "./query-normalizer.mjs";
 
 const SCOPE_SOURCE = Object.freeze({
   AUTO: "auto",
   MANUAL: "manual",
+});
+
+const IMPROVEMENT_SOURCE_KIND = Object.freeze({
+  SESSION: "session",
+  SIGNAL: "signal",
+  VALIDATION: "validation",
+  REPLAY: "replay",
+});
+
+const IMPROVEMENT_STATUS = Object.freeze({
+  ACTIVE: "active",
+  RESOLVED: "resolved",
+  SUPERSEDED: "superseded",
+});
+
+const IMPROVEMENT_REVIEW_STATE = Object.freeze({
+  NONE: "none",
+  DRAFT: "draft",
+  APPROVED: "approved",
+  REJECTED: "rejected",
+  SUPERSEDED: "superseded",
 });
 
 function nowIso() {
@@ -27,6 +58,82 @@ function escapeSqlString(value) {
 
 function estimateTokens(text) {
   return Math.ceil(String(text || "").length / 4);
+}
+
+function normalizeImprovementReviewState(value, fallback = IMPROVEMENT_REVIEW_STATE.NONE) {
+  switch (String(value || "").trim().toLowerCase()) {
+    case IMPROVEMENT_REVIEW_STATE.DRAFT:
+      return IMPROVEMENT_REVIEW_STATE.DRAFT;
+    case IMPROVEMENT_REVIEW_STATE.APPROVED:
+      return IMPROVEMENT_REVIEW_STATE.APPROVED;
+    case IMPROVEMENT_REVIEW_STATE.REJECTED:
+      return IMPROVEMENT_REVIEW_STATE.REJECTED;
+    case IMPROVEMENT_REVIEW_STATE.SUPERSEDED:
+      return IMPROVEMENT_REVIEW_STATE.SUPERSEDED;
+    case IMPROVEMENT_REVIEW_STATE.NONE:
+      return IMPROVEMENT_REVIEW_STATE.NONE;
+    default:
+      return fallback;
+  }
+}
+
+function mapPromptSectionSource(title) {
+  switch (String(title || "")) {
+    case "Relevant Day Summary":
+      return "day_summary";
+    case "Relevant Prior Work":
+      return "related_work";
+    case "Response Style And Addressing":
+      return "style_addressing";
+    case "Relevant Commitments, Preferences, And Identity":
+      return "commitments";
+    case "Cross-Repo Examples":
+      return "cross_repo_examples";
+    case "Cross-Repo Hints":
+      return "cross_repo_hints";
+    case "Transferable Cross-Repo Preferences":
+      return "cross_repo_preferences";
+    case "Active Workstream":
+      return "workstream_overlays";
+    case "Pending Proposal Review":
+      return "proposal_awareness";
+    default:
+      return "context";
+  }
+}
+
+function buildOutputSectionDetails(text) {
+  const details = [];
+  let currentTitle = null;
+  let currentLines = [];
+
+  const flush = () => {
+    if (!currentTitle) {
+      return;
+    }
+    const sectionText = [`## ${currentTitle}`, ...currentLines].join("\n").trim();
+    details.push({
+      title: currentTitle,
+      source: mapPromptSectionSource(currentTitle),
+      usedTokens: estimateTokens(sectionText),
+      entryCount: currentLines.filter((line) => /^\s*[-[]/.test(line)).length,
+    });
+  };
+
+  for (const line of String(text || "").split("\n")) {
+    const heading = line.match(/^##\s+(.+)$/);
+    if (heading) {
+      flush();
+      currentTitle = heading[1].trim();
+      currentLines = [];
+      continue;
+    }
+    if (currentTitle) {
+      currentLines.push(line);
+    }
+  }
+  flush();
+  return details;
 }
 
 function normalizeText(value) {
@@ -57,6 +164,44 @@ const GENERIC_QUERY_TERMS = new Set([
   "working",
 ]);
 
+const TEMPORAL_QUERY_SCAFFOLD_TERMS = new Set([
+  "can",
+  "config",
+  "configuration",
+  "did",
+  "do",
+  "for",
+  "friday",
+  "here",
+  "last",
+  "monday",
+  "our",
+  "ours",
+  "project",
+  "recall",
+  "remember",
+  "repo",
+  "repository",
+  "saturday",
+  "setup",
+  "sunday",
+  "thursday",
+  "this",
+  "today",
+  "tuesday",
+  "wednesday",
+  "week",
+  "what",
+  "when",
+  "where",
+  "which",
+  "with",
+  "workspace",
+  "you",
+  "your",
+  "yesterday",
+]);
+
 const QUERY_ALIASES = {
   audit: ["auditable", "override", "scope"],
   auditable: ["audit", "override", "scope"],
@@ -70,12 +215,14 @@ const QUERY_ALIASES = {
   past: ["history", "prior"],
   previous: ["history", "prior"],
   prompt: ["shaping", "context", "classification"],
+  phase: ["slice", "stage", "shaping", "prompt"],
   recall: ["memory", "history", "remember"],
   remember: ["memory", "history", "coherence"],
   remembering: ["memory", "history", "coherence"],
   restore: ["rollback", "snapshot", "backfill"],
   retrieval: ["memory", "history", "coherence"],
   rollback: ["restore", "snapshot", "backfill"],
+  controlled: ["backfill", "rollback", "restore", "snapshot"],
   scope: ["override", "audit", "transferable", "global", "repo"],
   session: ["conversation", "history"],
   shaping: ["prompt", "context", "classification"],
@@ -124,6 +271,14 @@ function extractDirectTerms(query) {
     .filter((term) => !GENERIC_QUERY_TERMS.has(term));
 }
 
+function extractTemporalContentTerms(query, config = null) {
+  if (!readTemporalQueryNormalizationEnabled(config)) {
+    return extractDirectTerms(query)
+      .filter((term) => !TEMPORAL_QUERY_SCAFFOLD_TERMS.has(term));
+  }
+  return extractNormalizedTemporalContentTerms(query);
+}
+
 function sanitizeFtsQuery(query) {
   const terms = extractFtsTerms(query);
   if (terms.length === 0) {
@@ -160,6 +315,40 @@ function parseJsonObject(value) {
   } catch {
     return {};
   }
+}
+
+function ensureArray(value) {
+  return Array.isArray(value) ? value : [];
+}
+
+function clampInteger(value, fallback, { min = 0, max = Number.MAX_SAFE_INTEGER } = {}) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) {
+    return fallback;
+  }
+  return Math.min(max, Math.max(min, Math.round(numeric)));
+}
+
+function normalizeImprovementSourceKind(value) {
+  if (value === IMPROVEMENT_SOURCE_KIND.SESSION) {
+    return IMPROVEMENT_SOURCE_KIND.SESSION;
+  }
+  if (value === IMPROVEMENT_SOURCE_KIND.SIGNAL) {
+    return IMPROVEMENT_SOURCE_KIND.SIGNAL;
+  }
+  return value === IMPROVEMENT_SOURCE_KIND.REPLAY
+    ? IMPROVEMENT_SOURCE_KIND.REPLAY
+    : IMPROVEMENT_SOURCE_KIND.VALIDATION;
+}
+
+function normalizeImprovementStatus(value, fallback = IMPROVEMENT_STATUS.ACTIVE) {
+  if (value === IMPROVEMENT_STATUS.RESOLVED) {
+    return IMPROVEMENT_STATUS.RESOLVED;
+  }
+  if (value === IMPROVEMENT_STATUS.SUPERSEDED) {
+    return IMPROVEMENT_STATUS.SUPERSEDED;
+  }
+  return fallback;
 }
 
 function normalizeRepository(repository) {
@@ -319,6 +508,18 @@ function formatEpisodeContextLine(episode, { terms = [], index = 0 } = {}) {
   return `- ${prefix}${summary}${repositoryLabel} — ${details.slice(0, 2).join(" | ")}`;
 }
 
+function formatDaySummaryContextLine(summary, currentRepository = null) {
+  const label = summary.repository
+    ? currentRepository && summary.repository === currentRepository
+      ? ""
+      : ` in ${summary.repository}`
+    : "";
+  return [
+    `[MEMORY: day summary for ${summary.date_key}${label}]`,
+    normalizeText(summary.summary),
+  ].join("\n");
+}
+
 function formatSemanticContextLine(memory) {
   const scopeLabel = memory.scope === MEMORY_SCOPE.GLOBAL
     ? "/global"
@@ -356,6 +557,9 @@ function serializeSemanticTraceRow(memory, currentRepository = null) {
     scopeSource: memory.scope_source ?? null,
     repository: memory.repository ?? null,
     updatedAt: memory.updated_at ?? null,
+    canonicalKey: memory.canonical_key ?? null,
+    reinforcementCount: memory.reinforcement_count ?? 1,
+    lastSeenAt: memory.last_seen_at ?? null,
     crossRepo: isCrossRepoRow(memory, currentRepository),
     content: normalizeText(memory.content),
   };
@@ -378,6 +582,23 @@ function serializeEpisodeTraceRow(episode, currentRepository = null) {
     openItems: parseJsonArray(episode.open_items_json).map(normalizeText).filter(Boolean).slice(0, 6),
     themes: parseJsonArray(episode.themes_json).map(normalizeText).filter(Boolean).slice(0, 6),
   };
+}
+
+function serializeDaySummaryTraceRow(summary, currentRepository = null) {
+  return {
+    repository: summary.repository ?? null,
+    dateKey: summary.date_key ?? null,
+    computedAt: summary.computed_at ?? null,
+    crossRepo: isCrossRepoRow(summary, currentRepository),
+    summary: normalizeText(summary.summary),
+  };
+}
+
+function shouldIncludeStyleAddressingContext(need) {
+  if (need?.identityOnly === true || need?.wantsStyleContext === true) {
+    return true;
+  }
+  return need?.hasTemporalSignal !== true && need?.seriousPrompt !== true;
 }
 
 function serializeSessionTraceRow(session, currentRepository = null) {
@@ -664,6 +885,69 @@ function dedupeEpisodesWithTrace(episodes, currentRepository = null) {
   };
 }
 
+function buildImprovementArtifactEpisode(artifact, repository) {
+  const evidence = parseJsonObject(artifact.evidence_json);
+  const expectedEvidence = typeof evidence.expectedEvidence === "object"
+    && evidence.expectedEvidence !== null
+    && !Array.isArray(evidence.expectedEvidence)
+    ? evidence.expectedEvidence
+    : parseJsonObject(evidence.expectedEvidence);
+  const expectedItems = Array.isArray(expectedEvidence.items)
+    ? expectedEvidence.items
+    : parseJsonArray(expectedEvidence.items);
+  const expectedSnippets = expectedItems
+    .flatMap((item) => parseJsonArray(item?.includesAny))
+    .map(normalizeText)
+    .filter(Boolean);
+  const rankedOutcome = normalizeText(evidence.rankingOutcome);
+  const missCategory = normalizeText(evidence.missCategory);
+  const prompt = normalizeText(evidence.prompt);
+  const caseId = normalizeText(artifact.source_case_id);
+  const summary = normalizeText(artifact.summary);
+  const title = normalizeText(artifact.title);
+  const updatedAt = artifact.updated_at ?? nowIso();
+  const dateKey = String(updatedAt).slice(0, 10);
+  const normalizedRepository = normalizeRepository(repository);
+
+  const decisions = [
+    title,
+    summary,
+    rankedOutcome ? `ranking outcome: ${rankedOutcome}` : "",
+    missCategory ? `miss category: ${missCategory}` : "",
+    ...expectedSnippets.slice(0, 8),
+  ].map(normalizeText).filter(Boolean);
+
+  const actions = [
+    prompt ? `prompt: ${prompt}` : "",
+    caseId ? `case: ${caseId}` : "",
+    `source kind: ${normalizeText(artifact.source_kind) || IMPROVEMENT_SOURCE_KIND.REPLAY}`,
+  ].map(normalizeText).filter(Boolean);
+
+  return {
+    id: `improvement:${artifact.id}`,
+    session_id: `improvement:${caseId || artifact.id}`,
+    scope: MEMORY_SCOPE.GLOBAL,
+    scope_source: SCOPE_SOURCE.AUTO,
+    repository: normalizedRepository,
+    summary: `Replay improvement artifact: ${title}${summary ? ` — ${summary}` : ""}`,
+    actions_json: jsonText(actions),
+    decisions_json: jsonText(decisions),
+    files_changed_json: jsonText([]),
+    themes_json: jsonText([
+      "replay",
+      "improvement",
+      caseId,
+      ...expectedSnippets.slice(0, 4),
+    ].map(normalizeText).filter(Boolean)),
+    open_items_json: jsonText([
+      `Need durable retrieval evidence for ${caseId || "replay target"}`,
+    ]),
+    significance: 8,
+    date_key: dateKey,
+    updated_at: updatedAt,
+  };
+}
+
 export class CoherenceDb {
   constructor(config) {
     this.config = config;
@@ -748,6 +1032,17 @@ export class CoherenceDb {
     };
   }
 
+  runIndexUpkeep() {
+    this.ensureOpen();
+    const optimizeRows = this.db.prepare(`PRAGMA optimize`).all();
+    const checkpoint = this.db.prepare(`PRAGMA wal_checkpoint(PASSIVE)`).get();
+    return {
+      optimizeRows,
+      checkpoint,
+      completedAt: nowIso(),
+    };
+  }
+
   getCurrentVersion() {
     const hasVersionTable = this.db
       .prepare(
@@ -784,6 +1079,14 @@ export class CoherenceDb {
         this.ensureColumn("episode_digest", "scope_override_source", `TEXT`);
         this.ensureColumn("episode_digest", "scope_override_at", `TEXT`);
       }
+      if (currentVersion > 0 && currentVersion < 7) {
+        this.ensureColumn("semantic_memory", "canonical_key", "TEXT");
+        this.ensureColumn("semantic_memory", "reinforcement_count", "INTEGER NOT NULL DEFAULT 1");
+        this.ensureColumn("semantic_memory", "last_seen_at", "TEXT");
+      }
+      if (currentVersion > 0 && currentVersion < 10) {
+        this.applyPhase5ImprovementLoopMigration();
+      }
       for (const statement of SCHEMA_STATEMENTS) {
         this.db.exec(statement);
       }
@@ -792,6 +1095,15 @@ export class CoherenceDb {
       }
       if (currentVersion < 5) {
         this.applyScopeGovernanceMigration();
+      }
+      if (currentVersion < 7) {
+        this.applyGrowthMemoryMigration();
+      }
+      if (currentVersion < 8) {
+        this.applyImprovementBacklogMigration();
+      }
+      if (currentVersion < 10) {
+        this.applyPhase5ImprovementLoopMigration();
       }
       this.db.exec(`DELETE FROM coherence_schema_version;`);
       this.db.prepare(`INSERT INTO coherence_schema_version (version) VALUES (?)`).run(SCHEMA_VERSION);
@@ -943,6 +1255,175 @@ export class CoherenceDb {
     `).run();
   }
 
+  applyGrowthMemoryMigration() {
+    this.ensureColumn("semantic_memory", "canonical_key", "TEXT");
+    this.ensureColumn("semantic_memory", "reinforcement_count", "INTEGER NOT NULL DEFAULT 1");
+    this.ensureColumn("semantic_memory", "last_seen_at", "TEXT");
+
+    this.db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_semantic_memory_canonical_key
+        ON semantic_memory(canonical_key);
+    `);
+    this.db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_semantic_memory_user_identity_canonical
+        ON semantic_memory(type, canonical_key, superseded_by, updated_at DESC);
+    `);
+    try {
+      this.db.exec(`INSERT INTO semantic_fts(semantic_fts) VALUES('rebuild');`);
+    } catch {
+      // best-effort rebuild for legacy DBs before bulk updates
+    }
+
+    this.db.prepare(`
+      UPDATE semantic_memory
+      SET reinforcement_count = CASE
+        WHEN reinforcement_count IS NULL OR reinforcement_count < 1 THEN 1
+        ELSE reinforcement_count
+      END
+    `).run();
+    this.db.prepare(`
+      UPDATE semantic_memory
+      SET last_seen_at = COALESCE(last_seen_at, updated_at, created_at)
+      WHERE last_seen_at IS NULL
+    `).run();
+
+    const semanticRows = this.db.prepare(`
+      SELECT id, type, content, metadata_json
+      FROM semantic_memory
+      WHERE superseded_by IS NULL
+        AND type IN ('user_identity', 'assistant_goal', 'recurring_mistake', 'workstream_overlay')
+    `).all();
+    const updateCanonical = this.db.prepare(`
+      UPDATE semantic_memory
+      SET canonical_key = ?
+      WHERE id = ?
+    `);
+    for (const row of semanticRows) {
+      const canonicalKey = buildSemanticCanonicalKey({
+        type: row.type,
+        content: row.content,
+        metadata: parseJsonObject(row.metadata_json),
+      });
+      if (!canonicalKey) {
+        continue;
+      }
+      updateCanonical.run(canonicalKey, row.id);
+    }
+
+    const duplicateKeys = this.db.prepare(`
+      SELECT canonical_key
+      FROM semantic_memory
+      WHERE superseded_by IS NULL
+        AND type = 'user_identity'
+        AND canonical_key IS NOT NULL
+      GROUP BY canonical_key
+      HAVING COUNT(*) > 1
+    `).all();
+
+    for (const { canonical_key: canonicalKey } of duplicateKeys) {
+      const candidates = this.db.prepare(`
+        SELECT
+          id,
+          confidence,
+          reinforcement_count,
+          last_seen_at,
+          updated_at,
+          tags,
+          metadata_json,
+          scope_source
+        FROM semantic_memory
+        WHERE superseded_by IS NULL
+          AND type = 'user_identity'
+          AND canonical_key = ?
+        ORDER BY
+          CASE WHEN COALESCE(scope_source, 'auto') = 'manual' THEN 0 ELSE 1 END,
+          confidence DESC,
+          reinforcement_count DESC,
+          updated_at DESC
+      `).all(canonicalKey);
+      if (candidates.length <= 1) {
+        continue;
+      }
+
+      const [winner, ...losers] = candidates;
+      let reinforcementTotal = 0;
+      let latestSeen = winner.last_seen_at || winner.updated_at || nowIso();
+      let mergedTags = winner.tags || "";
+      let mergedMetadata = parseJsonObject(winner.metadata_json);
+      let maxConfidence = Number.isFinite(winner.confidence) ? winner.confidence : 1.0;
+
+      for (const candidate of candidates) {
+        reinforcementTotal += Number.isInteger(candidate.reinforcement_count)
+          ? candidate.reinforcement_count
+          : 1;
+        if (candidate.last_seen_at && candidate.last_seen_at > latestSeen) {
+          latestSeen = candidate.last_seen_at;
+        }
+        mergedTags = mergeTagText(mergedTags, candidate.tags);
+        mergedMetadata = {
+          ...parseJsonObject(candidate.metadata_json),
+          ...mergedMetadata,
+        };
+        const candidateConfidence = Number.isFinite(candidate.confidence) ? candidate.confidence : 1.0;
+        if (candidateConfidence > maxConfidence) {
+          maxConfidence = candidateConfidence;
+        }
+      }
+
+      this.db.prepare(`
+        UPDATE semantic_memory
+        SET confidence = ?,
+            reinforcement_count = ?,
+            last_seen_at = ?,
+            tags = ?,
+            metadata_json = ?,
+            updated_at = ?
+        WHERE id = ?
+      `).run(
+        maxConfidence,
+        Math.max(reinforcementTotal, 1),
+        latestSeen,
+        mergedTags,
+        JSON.stringify(mergedMetadata),
+        nowIso(),
+        winner.id,
+      );
+
+      const supersededAt = nowIso();
+      const supersedeStatement = this.db.prepare(`
+        UPDATE semantic_memory
+        SET superseded_by = ?, updated_at = ?
+        WHERE id = ?
+      `);
+      for (const loser of losers) {
+        supersedeStatement.run(winner.id, supersededAt, loser.id);
+      }
+    }
+  }
+
+  applyImprovementBacklogMigration() {
+    this.ensureColumn("improvement_backlog", "linked_memory_id", "TEXT");
+  }
+
+  applyPhase5ImprovementLoopMigration() {
+    this.ensureColumn("improvement_backlog", "proposal_type", "TEXT");
+    this.ensureColumn("improvement_backlog", "proposal_path", "TEXT");
+    this.ensureColumn("improvement_backlog", "proposal_hash", "TEXT");
+    this.ensureColumn("improvement_backlog", "review_state", `TEXT NOT NULL DEFAULT 'none'`);
+    this.ensureColumn("improvement_backlog", "review_requested_at", "TEXT");
+    this.ensureColumn("improvement_backlog", "review_requested_by", "TEXT");
+    this.ensureColumn("improvement_backlog", "reviewer_decision", "TEXT");
+    this.ensureColumn("improvement_backlog", "reviewer_notes_json", `TEXT NOT NULL DEFAULT '{}'`);
+    this.db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_improvement_backlog_review_state_updated
+        ON improvement_backlog(review_state, updated_at DESC);
+    `);
+    this.db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_improvement_backlog_proposal_path
+        ON improvement_backlog(proposal_path);
+    `);
+  }
+
   ensureOpen() {
     if (!this.db) {
       throw new Error("coherence database is not initialized");
@@ -953,6 +1434,17 @@ export class CoherenceDb {
     this.ensureOpen();
     const semanticCount = this.db.prepare(`SELECT COUNT(*) AS count FROM semantic_memory`).get().count;
     const episodeCount = this.db.prepare(`SELECT COUNT(*) AS count FROM episode_digest`).get().count;
+    const semanticGrowth = this.db.prepare(`
+      SELECT
+        SUM(CASE WHEN canonical_key IS NOT NULL THEN 1 ELSE 0 END) AS canonical_count,
+        SUM(CASE WHEN reinforcement_count > 1 THEN 1 ELSE 0 END) AS reinforced_count,
+        SUM(CASE WHEN type = 'assistant_goal' THEN 1 ELSE 0 END) AS assistant_goal_count,
+        SUM(CASE WHEN type = 'recurring_mistake' THEN 1 ELSE 0 END) AS recurring_mistake_count,
+        SUM(CASE WHEN type = 'user_identity' THEN 1 ELSE 0 END) AS user_identity_count,
+        SUM(CASE WHEN type = 'workstream_overlay' THEN 1 ELSE 0 END) AS workstream_overlay_count
+      FROM semantic_memory
+      WHERE superseded_by IS NULL
+    `).get();
     const semanticScopes = this.db.prepare(`
       SELECT
         SUM(CASE WHEN scope = 'global' THEN 1 ELSE 0 END) AS global_count,
@@ -988,6 +1480,39 @@ export class CoherenceDb {
     `).get();
     const row = this.db.prepare(`SELECT MAX(version) AS version FROM coherence_schema_version`).get();
     const overrideAuditCount = this.db.prepare(`SELECT COUNT(*) AS count FROM scope_override_audit`).get().count;
+    const improvementCounts = this.db.prepare(`
+      SELECT
+        COUNT(*) AS total_count,
+        SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) AS active_count,
+        SUM(CASE WHEN status = 'resolved' THEN 1 ELSE 0 END) AS resolved_count,
+        SUM(CASE WHEN status = 'superseded' THEN 1 ELSE 0 END) AS superseded_count,
+        SUM(CASE WHEN proposal_path IS NOT NULL THEN 1 ELSE 0 END) AS proposal_count,
+        SUM(CASE WHEN review_state = 'draft' THEN 1 ELSE 0 END) AS draft_proposal_count,
+        SUM(CASE WHEN review_state = 'approved' THEN 1 ELSE 0 END) AS approved_proposal_count,
+        SUM(CASE WHEN review_state = 'rejected' THEN 1 ELSE 0 END) AS rejected_proposal_count,
+        SUM(CASE WHEN review_state = 'superseded' THEN 1 ELSE 0 END) AS superseded_proposal_count
+      FROM improvement_backlog
+    `).get();
+    const maintenanceCounts = this.db.prepare(`
+      SELECT
+        SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) AS completed_count,
+        SUM(CASE WHEN status = 'needs_attention' THEN 1 ELSE 0 END) AS needs_attention_count,
+        SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) AS failed_count,
+        SUM(CASE WHEN status = 'skipped' THEN 1 ELSE 0 END) AS skipped_count
+      FROM maintenance_run
+      WHERE dry_run = 0
+    `).get();
+    const maintenanceLatest = this.db.prepare(`
+      SELECT status, started_at, completed_at
+      FROM maintenance_run
+      WHERE dry_run = 0
+      ORDER BY updated_at DESC
+      LIMIT 1
+    `).get();
+    const maintenanceTaskCount = this.db.prepare(`
+      SELECT COUNT(*) AS count
+      FROM maintenance_task_state
+    `).get().count;
 
     return {
       semanticCount,
@@ -1006,6 +1531,20 @@ export class CoherenceDb {
       backupDir: this.config.paths.backupDir,
       lastBackupPath: this.lastBackupPath,
       overrideAuditCount,
+      semanticCanonicalCount: semanticGrowth?.canonical_count ?? 0,
+      semanticReinforcedCount: semanticGrowth?.reinforced_count ?? 0,
+      assistantGoalCount: semanticGrowth?.assistant_goal_count ?? 0,
+      recurringMistakeCount: semanticGrowth?.recurring_mistake_count ?? 0,
+      userIdentityCount: semanticGrowth?.user_identity_count ?? 0,
+      workstreamOverlayCount: semanticGrowth?.workstream_overlay_count ?? 0,
+      improvementActiveCount: improvementCounts?.active_count ?? 0,
+      improvementResolvedCount: improvementCounts?.resolved_count ?? 0,
+      improvementSupersededCount: improvementCounts?.superseded_count ?? 0,
+      improvementProposalCount: improvementCounts?.proposal_count ?? 0,
+      draftProposalCount: improvementCounts?.draft_proposal_count ?? 0,
+      approvedProposalCount: improvementCounts?.approved_proposal_count ?? 0,
+      rejectedProposalCount: improvementCounts?.rejected_proposal_count ?? 0,
+      supersededProposalCount: improvementCounts?.superseded_proposal_count ?? 0,
       backfillRunningCount: backfillCounts?.running_count ?? 0,
       backfillCompletedCount: backfillCounts?.completed_count ?? 0,
       backfillFailedCount: backfillCounts?.failed_count ?? 0,
@@ -1014,6 +1553,18 @@ export class CoherenceDb {
       deferredRunningCount: deferredCounts?.running_count ?? 0,
       deferredFailedCount: deferredCounts?.failed_count ?? 0,
       deferredCompletedCount: deferredCounts?.completed_count ?? 0,
+      improvementCount: improvementCounts?.total_count ?? 0,
+      improvementActiveCount: improvementCounts?.active_count ?? 0,
+      improvementResolvedCount: improvementCounts?.resolved_count ?? 0,
+      improvementSupersededCount: improvementCounts?.superseded_count ?? 0,
+      maintenanceCompletedCount: maintenanceCounts?.completed_count ?? 0,
+      maintenanceNeedsAttentionCount: maintenanceCounts?.needs_attention_count ?? 0,
+      maintenanceFailedCount: maintenanceCounts?.failed_count ?? 0,
+      maintenanceSkippedCount: maintenanceCounts?.skipped_count ?? 0,
+      maintenanceTaskStateCount: maintenanceTaskCount,
+      lastMaintenanceStatus: maintenanceLatest?.status ?? null,
+      lastMaintenanceStartedAt: maintenanceLatest?.started_at ?? null,
+      lastMaintenanceCompletedAt: maintenanceLatest?.completed_at ?? null,
     };
   }
 
@@ -1027,7 +1578,8 @@ export class CoherenceDb {
       SELECT
         id, type, content, confidence, source_session_id, source_turn_index,
         scope, scope_source, scope_override_actor, scope_override_reason, scope_override_source, scope_override_at,
-        repository, tags, created_at, updated_at, superseded_by, expires_at, metadata_json
+        repository, tags, created_at, updated_at, superseded_by, canonical_key, reinforcement_count,
+        last_seen_at, expires_at, metadata_json
       FROM semantic_memory
       WHERE id IN (${placeholders})
       ORDER BY updated_at DESC
@@ -1262,6 +1814,283 @@ export class CoherenceDb {
     `).all(...params);
   }
 
+  upsertImprovementArtifact({
+    sourceCaseId,
+    sourceKind,
+    title,
+    summary,
+    evidence = {},
+    trace = {},
+    linkedMemoryId = null,
+  }) {
+    this.ensureOpen();
+    const normalizedSourceCaseId = String(sourceCaseId || "").trim();
+    const normalizedTitle = String(title || "").trim();
+    const normalizedSummary = String(summary || "").trim();
+    if (!normalizedSourceCaseId) {
+      throw new Error("sourceCaseId is required");
+    }
+    if (!normalizedTitle) {
+      throw new Error("title is required");
+    }
+    if (!normalizedSummary) {
+      throw new Error("summary is required");
+    }
+    const normalizedSourceKind = normalizeImprovementSourceKind(sourceKind);
+    const timestamp = nowIso();
+    const activeExisting = this.db.prepare(`
+      SELECT id
+      FROM improvement_backlog
+      WHERE source_case_id = ?
+        AND source_kind = ?
+        AND status = 'active'
+      ORDER BY updated_at DESC
+      LIMIT 1
+    `).get(normalizedSourceCaseId, normalizedSourceKind);
+    if (activeExisting?.id) {
+      this.db.prepare(`
+        UPDATE improvement_backlog
+        SET title = ?,
+            summary = ?,
+            evidence_json = ?,
+            trace_json = ?,
+            linked_memory_id = COALESCE(?, linked_memory_id),
+            updated_at = ?
+        WHERE id = ?
+      `).run(
+        normalizedTitle,
+        normalizedSummary,
+        JSON.stringify(evidence ?? {}),
+        JSON.stringify(trace ?? {}),
+        linkedMemoryId ?? null,
+        timestamp,
+        activeExisting.id,
+      );
+      return activeExisting.id;
+    }
+
+    const artifactId = crypto.randomUUID();
+    this.db.prepare(`
+      INSERT INTO improvement_backlog (
+        id, source_case_id, source_kind, title, summary, evidence_json, trace_json,
+        status, linked_memory_id, superseded_by, created_at, updated_at, resolved_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, 'active', ?, NULL, ?, ?, NULL)
+    `).run(
+      artifactId,
+      normalizedSourceCaseId,
+      normalizedSourceKind,
+      normalizedTitle,
+      normalizedSummary,
+      JSON.stringify(evidence ?? {}),
+      JSON.stringify(trace ?? {}),
+      linkedMemoryId ?? null,
+      timestamp,
+      timestamp,
+    );
+    return artifactId;
+  }
+
+  updateImprovementArtifactStatus({
+    id,
+    status,
+    supersededBy = null,
+  }) {
+    this.ensureOpen();
+    const normalizedId = String(id || "").trim();
+    if (!normalizedId) {
+      throw new Error("id is required");
+    }
+    const nextStatus = normalizeImprovementStatus(status, IMPROVEMENT_STATUS.ACTIVE);
+    const timestamp = nowIso();
+    const resolvedAt = nextStatus === IMPROVEMENT_STATUS.RESOLVED ? timestamp : null;
+    this.db.prepare(`
+      UPDATE improvement_backlog
+      SET status = ?,
+          superseded_by = CASE
+            WHEN ? = 'superseded' THEN COALESCE(?, superseded_by)
+            ELSE NULL
+          END,
+          review_state = CASE
+            WHEN ? = 'superseded' AND proposal_path IS NOT NULL THEN 'superseded'
+            ELSE review_state
+          END,
+          resolved_at = ?,
+          updated_at = ?
+      WHERE id = ?
+    `).run(
+      nextStatus,
+      nextStatus,
+      supersededBy ?? null,
+      nextStatus,
+      resolvedAt,
+      timestamp,
+      normalizedId,
+    );
+  }
+
+  getImprovementArtifact(id) {
+    this.ensureOpen();
+    const normalizedId = String(id || "").trim();
+    if (!normalizedId) {
+      return null;
+    }
+    const row = this.db.prepare(`
+      SELECT
+        id,
+        source_case_id,
+        source_kind,
+        title,
+        summary,
+        evidence_json,
+        trace_json,
+        status,
+        linked_memory_id,
+        superseded_by,
+        proposal_type,
+        proposal_path,
+        proposal_hash,
+        review_state,
+        review_requested_at,
+        review_requested_by,
+        reviewer_decision,
+        reviewer_notes_json,
+        created_at,
+        updated_at,
+        resolved_at
+      FROM improvement_backlog
+      WHERE id = ?
+      LIMIT 1
+    `).get(normalizedId);
+    if (!row) {
+      return null;
+    }
+    return {
+      ...row,
+      evidence: parseJsonObject(row.evidence_json),
+      trace: parseJsonObject(row.trace_json),
+      reviewer_notes: parseJsonObject(row.reviewer_notes_json),
+    };
+  }
+
+  setImprovementArtifactProposal({
+    id,
+    proposalType,
+    proposalPath,
+    proposalHash,
+    reviewState = IMPROVEMENT_REVIEW_STATE.DRAFT,
+    reviewRequestedAt = null,
+    reviewRequestedBy = null,
+    reviewerDecision = null,
+    reviewerNotes = {},
+  }) {
+    this.ensureOpen();
+    const normalizedId = String(id || "").trim();
+    if (!normalizedId) {
+      throw new Error("id is required");
+    }
+    const nextReviewState = normalizeImprovementReviewState(reviewState, IMPROVEMENT_REVIEW_STATE.DRAFT);
+    const timestamp = nowIso();
+    this.db.prepare(`
+      UPDATE improvement_backlog
+      SET proposal_type = ?,
+          proposal_path = ?,
+          proposal_hash = ?,
+          review_state = ?,
+          review_requested_at = ?,
+          review_requested_by = ?,
+          reviewer_decision = ?,
+          reviewer_notes_json = ?,
+          updated_at = ?
+      WHERE id = ?
+    `).run(
+      proposalType ?? null,
+      proposalPath ?? null,
+      proposalHash ?? null,
+      nextReviewState,
+      reviewRequestedAt ?? null,
+      reviewRequestedBy ?? null,
+      reviewerDecision ?? null,
+      JSON.stringify(reviewerNotes ?? {}),
+      timestamp,
+      normalizedId,
+    );
+  }
+
+  listImprovementArtifacts({
+    sourceKind,
+    sourceCaseId,
+    status,
+    reviewState,
+    hasProposal,
+    updatedBefore,
+    sort = "updated_desc",
+    limit = 10,
+  } = {}) {
+    this.ensureOpen();
+    const where = [];
+    const params = [];
+    if (typeof sourceKind === "string" && sourceKind.trim().length > 0) {
+      where.push("source_kind = ?");
+      params.push(normalizeImprovementSourceKind(sourceKind));
+    }
+    if (typeof sourceCaseId === "string" && sourceCaseId.trim().length > 0) {
+      where.push("source_case_id = ?");
+      params.push(sourceCaseId.trim());
+    }
+    if (typeof status === "string" && status.trim().length > 0) {
+      where.push("status = ?");
+      params.push(normalizeImprovementStatus(status.trim(), IMPROVEMENT_STATUS.ACTIVE));
+    }
+    if (typeof reviewState === "string" && reviewState.trim().length > 0) {
+      where.push("review_state = ?");
+      params.push(normalizeImprovementReviewState(reviewState.trim()));
+    }
+    if (hasProposal === true) {
+      where.push("proposal_path IS NOT NULL");
+    } else if (hasProposal === false) {
+      where.push("proposal_path IS NULL");
+    }
+    if (typeof updatedBefore === "string" && updatedBefore.trim().length > 0) {
+      where.push("updated_at <= ?");
+      params.push(updatedBefore.trim());
+    }
+    params.push(limit);
+    const rows = this.db.prepare(`
+      SELECT
+        id,
+        source_case_id,
+        source_kind,
+        title,
+        summary,
+        evidence_json,
+        trace_json,
+        status,
+        linked_memory_id,
+        superseded_by,
+        proposal_type,
+        proposal_path,
+        proposal_hash,
+        review_state,
+        review_requested_at,
+        review_requested_by,
+        reviewer_decision,
+        reviewer_notes_json,
+        created_at,
+        updated_at,
+        resolved_at
+      FROM improvement_backlog
+      ${where.length > 0 ? `WHERE ${where.join(" AND ")}` : ""}
+      ORDER BY updated_at ${sort === "updated_asc" ? "ASC" : "DESC"}
+      LIMIT ?
+    `).all(...params);
+    return rows.map((row) => ({
+      ...row,
+      evidence: parseJsonObject(row.evidence_json),
+      trace: parseJsonObject(row.trace_json),
+      reviewer_notes: parseJsonObject(row.reviewer_notes_json),
+    }));
+  }
+
   countGeneratedSemanticMemoriesBySession(sessionId) {
     this.ensureOpen();
     return this.db.prepare(`
@@ -1468,6 +2297,181 @@ export class CoherenceDb {
     `).all(limit);
   }
 
+  createMaintenanceRun({
+    trigger,
+    repository = null,
+    dryRun = false,
+    plannedTasks = [],
+  }) {
+    this.ensureOpen();
+    const id = crypto.randomUUID();
+    const timestamp = nowIso();
+    this.db.prepare(`
+      INSERT INTO maintenance_run (
+        id, trigger, repository, dry_run, status, planned_tasks_json, summary_json,
+        started_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      id,
+      String(trigger || "manual"),
+      normalizeRepository(repository),
+      dryRun ? 1 : 0,
+      dryRun ? "planned" : "running",
+      JSON.stringify(ensureArray(plannedTasks)),
+      JSON.stringify({}),
+      timestamp,
+      timestamp,
+    );
+    return id;
+  }
+
+  completeMaintenanceRun({
+    runId,
+    status,
+    completedAt = null,
+    completedCount = 0,
+    needsAttentionCount = 0,
+    failedCount = 0,
+    skippedCount = 0,
+    summary = {},
+  }) {
+    this.ensureOpen();
+    this.db.prepare(`
+      UPDATE maintenance_run
+      SET status = ?,
+          summary_json = ?,
+          completed_count = ?,
+          needs_attention_count = ?,
+          failed_count = ?,
+          skipped_count = ?,
+          completed_at = ?,
+          updated_at = ?
+      WHERE id = ?
+    `).run(
+      String(status || "completed"),
+      JSON.stringify(summary ?? {}),
+      completedCount,
+      needsAttentionCount,
+      failedCount,
+      skippedCount,
+      completedAt,
+      nowIso(),
+      runId,
+    );
+  }
+
+  listMaintenanceRuns({ limit = 10 } = {}) {
+    this.ensureOpen();
+    const rows = this.db.prepare(`
+      SELECT
+        id, trigger, repository, dry_run, status, planned_tasks_json, summary_json,
+        completed_count, needs_attention_count, failed_count, skipped_count,
+        started_at, updated_at, completed_at
+      FROM maintenance_run
+      ORDER BY updated_at DESC
+      LIMIT ?
+    `).all(limit);
+    return rows.map((row) => ({
+      ...row,
+      plannedTasks: parseJsonArray(row.planned_tasks_json),
+      summary: parseJsonObject(row.summary_json),
+    }));
+  }
+
+  listMaintenanceTaskStates() {
+    this.ensureOpen();
+    const rows = this.db.prepare(`
+      SELECT
+        task_name, last_status, last_trigger, last_repository, last_started_at,
+        last_completed_at, last_duration_ms, cursor, total_runs, total_failures,
+        total_needs_attention, last_summary_json, updated_at
+      FROM maintenance_task_state
+      ORDER BY task_name ASC
+    `).all();
+    return rows.map((row) => ({
+      ...row,
+      lastSummary: parseJsonObject(row.last_summary_json),
+    }));
+  }
+
+  recordMaintenanceTaskStart({
+    taskName,
+    trigger,
+    repository = null,
+    startedAt = nowIso(),
+  }) {
+    this.ensureOpen();
+    this.db.prepare(`
+      INSERT INTO maintenance_task_state (
+        task_name, last_status, last_trigger, last_repository, last_started_at,
+        last_completed_at, last_duration_ms, cursor, total_runs, total_failures,
+        total_needs_attention, last_summary_json, updated_at
+      ) VALUES (?, 'running', ?, ?, ?, NULL, 0, 0, 0, 0, 0, '{}', ?)
+      ON CONFLICT(task_name) DO UPDATE SET
+        last_status = 'running',
+        last_trigger = excluded.last_trigger,
+        last_repository = excluded.last_repository,
+        last_started_at = excluded.last_started_at,
+        updated_at = excluded.updated_at
+    `).run(
+      taskName,
+      String(trigger || "manual"),
+      normalizeRepository(repository),
+      startedAt,
+      startedAt,
+    );
+  }
+
+  recordMaintenanceTaskResult({
+    taskName,
+    status,
+    trigger,
+    repository = null,
+    startedAt = null,
+    completedAt = nowIso(),
+    durationMs = 0,
+    cursor = 0,
+    summary = {},
+  }) {
+    this.ensureOpen();
+    const normalizedStatus = String(status || "completed");
+    this.db.prepare(`
+      INSERT INTO maintenance_task_state (
+        task_name, last_status, last_trigger, last_repository, last_started_at,
+        last_completed_at, last_duration_ms, cursor, total_runs, total_failures,
+        total_needs_attention, last_summary_json, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?)
+      ON CONFLICT(task_name) DO UPDATE SET
+        last_status = excluded.last_status,
+        last_trigger = excluded.last_trigger,
+        last_repository = excluded.last_repository,
+        last_started_at = COALESCE(excluded.last_started_at, maintenance_task_state.last_started_at),
+        last_completed_at = excluded.last_completed_at,
+        last_duration_ms = excluded.last_duration_ms,
+        cursor = excluded.cursor,
+        total_runs = maintenance_task_state.total_runs + 1,
+        total_failures = maintenance_task_state.total_failures
+          + CASE WHEN excluded.last_status = 'failed' THEN 1 ELSE 0 END,
+        total_needs_attention = maintenance_task_state.total_needs_attention
+          + CASE WHEN excluded.last_status = 'needs_attention' THEN 1 ELSE 0 END,
+        last_summary_json = excluded.last_summary_json,
+        updated_at = excluded.updated_at
+    `).run(
+      taskName,
+      normalizedStatus,
+      String(trigger || "manual"),
+      normalizeRepository(repository),
+      startedAt,
+      completedAt,
+      clampInteger(durationMs, 0, { min: 0, max: 24 * 60 * 60 * 1000 }),
+      clampInteger(cursor, 0, { min: 0, max: Number.MAX_SAFE_INTEGER }),
+      normalizedStatus === "failed" ? 1 : 0,
+      normalizedStatus === "needs_attention" ? 1 : 0,
+      JSON.stringify(summary ?? {}),
+      completedAt,
+    );
+  }
+
   insertSemanticMemory(memory) {
     this.ensureOpen();
     const timestamp = nowIso();
@@ -1477,16 +2481,37 @@ export class CoherenceDb {
     const scope = classification.scope;
     const tagsText = Array.isArray(memory.tags) ? memory.tags.join(" ") : "";
     const sourceText = typeof classification.metadata?.source === "string" ? classification.metadata.source : "";
+    const canonicalKey = buildSemanticCanonicalKey({
+      ...memory,
+      metadata: classification.metadata,
+      content: memory.content,
+      type: memory.type,
+    });
+    const incomingReinforcement = Number.isInteger(memory.reinforcementCount)
+      ? Math.max(1, memory.reinforcementCount)
+      : 1;
+    const incomingLastSeenAt = memory.lastSeenAt ?? timestamp;
     const manualScopeMatch = this.db.prepare(`
-      SELECT id, tags, metadata_json, scope, repository, scope_source
+      SELECT
+        id, tags, metadata_json, scope, repository, scope_source, confidence,
+        reinforcement_count, last_seen_at
       FROM semantic_memory
       WHERE superseded_by IS NULL
         AND type = ?
-        AND content = ?
+        AND (
+          (? IS NOT NULL AND canonical_key = ?)
+          OR (? IS NULL AND content = ?)
+        )
         AND scope_source = 'manual'
       ORDER BY updated_at DESC
       LIMIT 1
-    `).get(memory.type, memory.content);
+    `).get(
+      memory.type,
+      canonicalKey,
+      canonicalKey,
+      canonicalKey,
+      memory.content,
+    );
     if (manualScopeMatch?.id) {
       const existingMetadata = parseJsonObject(manualScopeMatch.metadata_json);
       this.db.prepare(`
@@ -1496,7 +2521,14 @@ export class CoherenceDb {
             source_session_id = COALESCE(?, source_session_id),
             source_turn_index = COALESCE(?, source_turn_index),
             tags = ?,
-            metadata_json = ?
+            metadata_json = ?,
+            canonical_key = COALESCE(canonical_key, ?),
+            reinforcement_count = MAX(1, COALESCE(reinforcement_count, 1) + ?),
+            last_seen_at = CASE
+              WHEN ? IS NULL THEN COALESCE(last_seen_at, ?)
+              WHEN last_seen_at IS NULL OR ? > last_seen_at THEN ?
+              ELSE last_seen_at
+            END
         WHERE id = ?
       `).run(
         typeof memory.confidence === "number" ? memory.confidence : 1.0,
@@ -1508,22 +2540,34 @@ export class CoherenceDb {
           ...existingMetadata,
           ...classification.metadata,
         }),
+        canonicalKey,
+        incomingReinforcement,
+        incomingLastSeenAt,
+        incomingLastSeenAt,
+        incomingLastSeenAt,
+        incomingLastSeenAt,
         manualScopeMatch.id,
       );
       return manualScopeMatch.id;
     }
     const existing = this.db.prepare(`
-      SELECT id, tags, metadata_json, scope_source
+      SELECT id, tags, metadata_json, scope_source, reinforcement_count, last_seen_at
       FROM semantic_memory
       WHERE superseded_by IS NULL
         AND type = ?
-        AND content = ?
+        AND (
+          (? IS NOT NULL AND canonical_key = ?)
+          OR (? IS NULL AND content = ?)
+        )
         AND scope = ?
         AND IFNULL(repository, '') = IFNULL(?, '')
       ORDER BY updated_at DESC
       LIMIT 1
     `).get(
       memory.type,
+      canonicalKey,
+      canonicalKey,
+      canonicalKey,
       memory.content,
       scope,
       repository,
@@ -1543,12 +2587,27 @@ export class CoherenceDb {
       if ((manualExisting || lockedScope) && !manualIncoming) {
         this.db.prepare(`
           UPDATE semantic_memory
-          SET updated_at = ?, confidence = MAX(confidence, ?), tags = ?
+          SET updated_at = ?,
+              confidence = MAX(confidence, ?),
+              tags = ?,
+              canonical_key = COALESCE(canonical_key, ?),
+              reinforcement_count = MAX(1, COALESCE(reinforcement_count, 1) + ?),
+              last_seen_at = CASE
+                WHEN ? IS NULL THEN COALESCE(last_seen_at, ?)
+                WHEN last_seen_at IS NULL OR ? > last_seen_at THEN ?
+                ELSE last_seen_at
+              END
           WHERE id = ?
         `).run(
           timestamp,
           typeof memory.confidence === "number" ? memory.confidence : 1.0,
           mergeTagText(existing.tags, tagsText),
+          canonicalKey,
+          incomingReinforcement,
+          incomingLastSeenAt,
+          incomingLastSeenAt,
+          incomingLastSeenAt,
+          incomingLastSeenAt,
           existing.id,
         );
         return existing.id;
@@ -1561,7 +2620,14 @@ export class CoherenceDb {
             source_session_id = COALESCE(?, source_session_id),
             source_turn_index = COALESCE(?, source_turn_index),
             tags = ?,
-            metadata_json = ?
+            metadata_json = ?,
+            canonical_key = COALESCE(canonical_key, ?),
+            reinforcement_count = MAX(1, COALESCE(reinforcement_count, 1) + ?),
+            last_seen_at = CASE
+              WHEN ? IS NULL THEN COALESCE(last_seen_at, ?)
+              WHEN last_seen_at IS NULL OR ? > last_seen_at THEN ?
+              ELSE last_seen_at
+            END
         WHERE id = ?
       `).run(
         typeof memory.confidence === "number" ? memory.confidence : 1.0,
@@ -1573,6 +2639,12 @@ export class CoherenceDb {
           ...existingMetadata,
           ...classification.metadata,
         }),
+        canonicalKey,
+        incomingReinforcement,
+        incomingLastSeenAt,
+        incomingLastSeenAt,
+        incomingLastSeenAt,
+        incomingLastSeenAt,
         existing.id,
       );
       return existing.id;
@@ -1581,8 +2653,9 @@ export class CoherenceDb {
     this.db.prepare(`
       INSERT INTO semantic_memory (
         id, type, content, confidence, source_session_id, source_turn_index,
-        scope, repository, tags, created_at, updated_at, superseded_by, expires_at, metadata_json
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        scope, repository, tags, created_at, updated_at, superseded_by, canonical_key,
+        reinforcement_count, last_seen_at, expires_at, metadata_json
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       id,
       memory.type,
@@ -1596,6 +2669,9 @@ export class CoherenceDb {
       memory.createdAt ?? timestamp,
       timestamp,
       memory.supersededBy ?? null,
+      canonicalKey,
+      incomingReinforcement,
+      incomingLastSeenAt,
       memory.expiresAt ?? null,
       JSON.stringify(classification.metadata),
     );
@@ -1849,7 +2925,11 @@ export class CoherenceDb {
         sm.confidence,
         sm.repository,
         sm.updated_at,
-        sm.source_session_id
+        sm.source_session_id,
+        sm.canonical_key,
+        sm.reinforcement_count,
+        sm.last_seen_at,
+        sm.metadata_json
       FROM semantic_memory sm
     `;
 
@@ -1890,7 +2970,11 @@ export class CoherenceDb {
     sql += ` LIMIT ? `;
     params.push(limit);
 
-    return dedupeSemanticRows(this.db.prepare(sql).all(...params));
+    return dedupeSemanticRows(this.db.prepare(sql).all(...params))
+      .map((row) => ({
+        ...row,
+        metadata: parseJsonObject(row.metadata_json),
+      }));
   }
 
   searchEpisodes({ query, repository, includeOtherRepositories = false, scopes = [], limit = 5 }) {
@@ -1955,6 +3039,17 @@ export class CoherenceDb {
     const primaryTerms = extractDirectTerms(prompt);
     const terms = extractFtsTerms(prompt);
     const lexicalQuery = (primaryTerms.length > 0 ? primaryTerms : terms).join(" ");
+    const improvementRows = this.listImprovementArtifacts({
+      sourceKind: IMPROVEMENT_SOURCE_KIND.REPLAY,
+      status: IMPROVEMENT_STATUS.ACTIVE,
+      limit: Math.max(limit * 3, 12),
+    });
+    const improvementEpisodes = improvementRows
+      .filter((artifact) => {
+        const evidence = parseJsonObject(artifact.evidence_json);
+        return evidence.caseType === "ranking_target";
+      })
+      .map((artifact) => buildImprovementArtifactEpisode(artifact, repository));
     const rawExactMatches = this.searchEpisodes({
       query: lexicalQuery,
       repository,
@@ -1962,8 +3057,12 @@ export class CoherenceDb {
       scopes,
       limit: Math.max(limit * 2, 8),
     });
+    const rawExactPool = [
+      ...rawExactMatches,
+      ...improvementEpisodes,
+    ];
     const exactFiltered = [];
-    const exactMatches = rawExactMatches.filter((episode) => {
+    const exactMatches = rawExactPool.filter((episode) => {
       const reason = explainEpisodeExclusionReason(episode);
       if (!reason) {
         return true;
@@ -1984,8 +3083,12 @@ export class CoherenceDb {
       scopes,
       limit: Math.max(limit * 8, 24),
     });
+    const fallbackSource = [
+      ...rawFallbackPool,
+      ...improvementEpisodes,
+    ];
     const fallbackFiltered = [];
-    const fallbackPool = rawFallbackPool.filter((episode) => {
+    const fallbackPool = fallbackSource.filter((episode) => {
       const reason = explainEpisodeExclusionReason(episode);
       if (!reason) {
         return true;
@@ -2084,6 +3187,138 @@ export class CoherenceDb {
     `).get(date, repo, repo);
   }
 
+  getDaySummaries({ date, repository, includeOtherRepositories = false, limit = 4 }) {
+    this.ensureOpen();
+    const repo = normalizeRepository(repository);
+    const params = [date];
+    let sql = `
+      SELECT date_key, repository, summary, episode_ids_json, computed_at
+      FROM day_summary
+      WHERE date_key = ?
+    `;
+
+    if (!includeOtherRepositories) {
+      const scopedRepo = normalizeDaySummaryRepository(repository);
+      sql += ` AND ((? = '' AND repository = '') OR repository = ?) `;
+      params.push(scopedRepo, scopedRepo);
+    }
+
+    sql += `
+      ORDER BY
+        CASE
+          WHEN ? IS NOT NULL AND repository = ? THEN 0
+          WHEN repository IS NULL OR repository = '' THEN 1
+          ELSE 2
+        END,
+        computed_at DESC,
+        repository ASC
+      LIMIT ?
+    `;
+    params.push(repo, repo, limit);
+    return this.db.prepare(sql).all(...params);
+  }
+
+  findRelevantEpisodesByDateDetailed({ date, repository, includeOtherRepositories = false, limit = 5 }) {
+    this.ensureOpen();
+    const repo = normalizeRepository(repository);
+    const params = [date];
+    let sql = `
+      SELECT
+        ed.id,
+        ed.session_id,
+        ed.scope,
+        ed.scope_source,
+        ed.repository,
+        ed.summary,
+        ed.actions_json,
+        ed.decisions_json,
+        ed.files_changed_json,
+        ed.themes_json,
+        ed.open_items_json,
+        ed.significance,
+        ed.date_key,
+        ed.updated_at
+      FROM episode_digest ed
+      WHERE ed.date_key = ?
+    `;
+
+    if (!includeOtherRepositories) {
+      if (repo) {
+        sql += ` AND (ed.scope = ? OR ed.repository = ?) `;
+        params.push(MEMORY_SCOPE.GLOBAL, repo);
+      } else {
+        sql += ` AND ed.scope = ? `;
+        params.push(MEMORY_SCOPE.GLOBAL);
+      }
+    }
+
+    sql += `
+      ORDER BY
+        CASE
+          WHEN ? IS NOT NULL AND ed.repository = ? THEN 0
+          WHEN ed.scope = ? THEN 1
+          ELSE 2
+        END,
+        ed.significance DESC,
+        ed.updated_at DESC
+      LIMIT ?
+    `;
+    params.push(repo, repo, MEMORY_SCOPE.GLOBAL, Math.max(limit * 3, 12));
+
+    const rawRows = this.db.prepare(sql).all(...params);
+    const filtered = [];
+    const eligibleRows = rawRows.filter((episode) => {
+      const reason = explainEpisodeExclusionReason(episode);
+      if (!reason) {
+        return true;
+      }
+      filtered.push({
+        stage: "date_matches",
+        reason,
+        row: serializeEpisodeTraceRow(episode, repository),
+      });
+      return false;
+    });
+
+    const deduped = dedupeEpisodesWithTrace(eligibleRows, repository);
+    const ordered = deduped.rows;
+    const genericFiltered = ordered.some((episode) => !isGenericWorkSummary(episode.summary))
+      ? ordered
+          .filter((episode) => isGenericWorkSummary(episode.summary))
+          .map((episode) => ({
+            stage: "preference",
+            reason: "generic_work_summary",
+            row: serializeEpisodeTraceRow(episode, repository),
+          }))
+      : [];
+    const preferred = ordered.some((episode) => !isGenericWorkSummary(episode.summary))
+      ? ordered.filter((episode) => !isGenericWorkSummary(episode.summary))
+      : ordered;
+    const includedRows = preferred.slice(0, limit);
+
+    return {
+      episodes: includedRows,
+      trace: {
+        prompt: `date:${date}`,
+        repository,
+        includeOtherRepositories,
+        eligibleScopes: includeOtherRepositories ? [] : buildLocalEligibility(repository),
+        primaryTerms: [],
+        terms: [],
+        lexicalQuery: "",
+        rankedRows: preferred
+          .slice(0, Math.max(limit * 3, 12))
+          .map((episode) => serializeEpisodeTraceRow(episode, repository)),
+        includedRows: includedRows.map((episode) => serializeEpisodeTraceRow(episode, repository)),
+        filtered: [
+          ...filtered,
+          ...deduped.filtered,
+          ...genericFiltered,
+        ],
+      },
+    };
+  }
+
   explainPromptContext({
     prompt,
     repository,
@@ -2097,6 +3332,9 @@ export class CoherenceDb {
     const identityName = detectAssistantIdentityName(prompt);
     const need = promptNeed ?? {
       identityOnly: false,
+      directAddressed: false,
+      wantsContinuity: false,
+      wantsStyleContext: false,
       wantsRepoLocalTaskContext: true,
       allowCrossRepoFallback: includeOtherRepositories,
       hasTemporalSignal: Boolean(promptTerms.length > 0),
@@ -2109,7 +3347,7 @@ export class CoherenceDb {
           query: prompt,
           repository,
           includeOtherRepositories: false,
-          types: ["commitment", "open_loop", "rejected_approach", "blocker", "user_preference", "assistant_identity"],
+          types: ["commitment", "open_loop", "rejected_approach", "blocker", "user_preference", "assistant_identity", "user_identity", "assistant_goal", "recurring_mistake"],
           limit,
         }).map((memory) => ({
           ...memory,
@@ -2124,24 +3362,112 @@ export class CoherenceDb {
           types: ["assistant_identity"],
           scopes: [MEMORY_SCOPE.GLOBAL],
           limit: 2,
+      }).map((memory) => ({
+          ...memory,
+          currentRepository: repository,
+        }))
+      : [];
+    const localMemories = dedupeSemanticContextRows([
+      ...identityMemories,
+      ...memories,
+    ]).filter((memory) => !isStyleAddressingMemory(memory));
+    const assistantPersonaRows = this.searchSemantic({
+      query: identityName || "coda assistant name",
+      repository,
+      includeOtherRepositories: false,
+      types: ["assistant_identity"],
+      scopes: [MEMORY_SCOPE.GLOBAL],
+      limit: 2,
+    }).map((memory) => ({
+      ...memory,
+      currentRepository: repository,
+    }));
+    const relationshipPreferenceRows = !identityOnly
+      ? this.searchSemantic({
+          query: prompt,
+          repository,
+          includeOtherRepositories: false,
+          types: ["user_preference", "rejected_approach", "user_identity", "recurring_mistake"],
+          scopes: [MEMORY_SCOPE.GLOBAL, MEMORY_SCOPE.REPO],
+          limit: 3,
         }).map((memory) => ({
           ...memory,
           currentRepository: repository,
         }))
       : [];
-    const localMemories = dedupeSemanticContextRows([...identityMemories, ...memories]);
+    const styleSection = buildStyleAddressingSection({
+      prompt,
+      promptNeed: need,
+      config: this.config,
+      assistantPersonaRows,
+      relationshipPreferenceRows,
+      renderSemantic: formatSemanticContextLine,
+    });
 
-    const temporalDate = need.hasTemporalSignal ? inferDateFromPrompt(prompt) : null;
-    const daySummary = temporalDate
-      ? this.getDaySummary({ date: temporalDate, repository })
-      : null;
-    const episodeDetails = allowRepoLocalTaskContext
-      ? this.findRelevantEpisodesDetailed({
-          prompt,
+    const temporalDate = need.hasTemporalSignal ? inferDateFromPrompt(prompt, this.config) : null;
+    const temporalContentTerms = temporalDate ? extractTemporalContentTerms(prompt, this.config) : [];
+    const pureTemporalRecall = temporalDate !== null && temporalContentTerms.length === 0;
+    const effectiveStyleSection = pureTemporalRecall && need.wantsStyleContext !== true
+      ? {
+          ...styleSection,
+          text: "",
+          trace: {
+            ...styleSection.trace,
+            enabled: false,
+            includeAmbient: false,
+            reason: "suppressed_for_pure_temporal_recall",
+          },
+        }
+      : styleSection;
+    const daySummaryRows = temporalDate
+      ? this.getDaySummaries({
+          date: temporalDate,
           repository,
-          includeOtherRepositories: false,
-          limit: Math.max(2, Math.floor(limit / 2)),
+          includeOtherRepositories: allowCrossRepoFallback && pureTemporalRecall,
+          limit: pureTemporalRecall && allowCrossRepoFallback
+            ? Math.max(2, Math.min(limit, 4))
+            : 1,
         })
+      : [];
+    const includedDaySummaryRows = daySummaryRows.filter((summary) => {
+      if (pureTemporalRecall || temporalContentTerms.length === 0) {
+        return true;
+      }
+      const summaryTokens = tokenizeText(summary.summary);
+      return temporalContentTerms.some((term) => summaryTokens.has(term));
+    });
+    const shouldSuppressEpisodesForTemporalSummaries = pureTemporalRecall && includedDaySummaryRows.length > 0;
+    const episodeDetails = allowRepoLocalTaskContext
+      ? shouldSuppressEpisodesForTemporalSummaries
+        ? {
+            episodes: [],
+            trace: {
+              prompt,
+              repository,
+              includeOtherRepositories: allowCrossRepoFallback,
+              eligibleScopes: allowCrossRepoFallback ? [] : buildLocalEligibility(repository),
+              primaryTerms: [],
+              terms: [],
+              lexicalQuery: "",
+              rankedRows: [],
+              includedRows: [],
+              filtered: [],
+              reason: "suppressed_by_day_summaries",
+            },
+          }
+        : pureTemporalRecall
+          ? this.findRelevantEpisodesByDateDetailed({
+              date: temporalDate,
+              repository,
+              includeOtherRepositories: allowCrossRepoFallback,
+              limit: Math.max(2, Math.floor(limit / 2)),
+            })
+          : this.findRelevantEpisodesDetailed({
+              prompt,
+              repository,
+              includeOtherRepositories: false,
+              limit: Math.max(2, Math.floor(limit / 2)),
+            })
       : {
           episodes: [],
           trace: {
@@ -2163,18 +3489,19 @@ export class CoherenceDb {
         ...episode,
         currentRepository: repository,
       }));
+    const allowGenericCrossRepoFallback = allowCrossRepoFallback && !pureTemporalRecall;
     const crossRepoPreferenceLimit = Math.max(1, Math.min(2, Math.floor(limit / 2) || 1));
-    const crossRepoPreferenceRows = allowCrossRepoFallback
+    const crossRepoPreferenceRows = allowGenericCrossRepoFallback
       ? this.searchSemantic({
           query: prompt,
           repository,
           includeOtherRepositories: true,
-          types: ["user_preference", "rejected_approach"],
+          types: ["user_preference", "rejected_approach", "recurring_mistake"],
           scopes: [MEMORY_SCOPE.TRANSFERABLE],
           limit: Math.max(limit * 4, 8),
         })
       : [];
-    const crossRepoPreferences = allowCrossRepoFallback
+    const crossRepoPreferences = allowGenericCrossRepoFallback
       ? crossRepoPreferenceRows
           .filter((memory) => isCrossRepoRow(memory, repository))
           .slice(0, crossRepoPreferenceLimit)
@@ -2183,7 +3510,7 @@ export class CoherenceDb {
             currentRepository: repository,
           }))
       : [];
-    const crossRepoEpisodeDetails = allowCrossRepoFallback
+    const crossRepoEpisodeDetails = allowGenericCrossRepoFallback
       ? this.findRelevantEpisodesDetailed({
           prompt,
           repository,
@@ -2192,7 +3519,7 @@ export class CoherenceDb {
           limit: Math.max(limit * 4, 8),
         })
       : null;
-    const crossRepoEpisodes = allowCrossRepoFallback
+    const crossRepoEpisodes = allowGenericCrossRepoFallback
       ? crossRepoEpisodeDetails.episodes
           .filter((episode) => isCrossRepoRow(episode, repository))
           .slice(0, Math.max(1, Math.min(2, Math.floor(limit / 2) || 1)))
@@ -2201,7 +3528,7 @@ export class CoherenceDb {
             currentRepository: repository,
           }))
       : [];
-    const crossRepoHints = allowCrossRepoFallback && sessionStore
+    const crossRepoHints = allowGenericCrossRepoFallback && sessionStore
       ? sessionStore.findRelevantSessions({
           prompt,
           repository: null,
@@ -2226,12 +3553,12 @@ export class CoherenceDb {
       eligibility: {
         localSemantic: buildLocalEligibility(repository),
         localEpisodes: buildLocalEligibility(repository),
-        crossRepoFallback: includeOtherRepositories ? [MEMORY_SCOPE.TRANSFERABLE] : [],
+        crossRepoFallback: allowCrossRepoFallback ? [MEMORY_SCOPE.TRANSFERABLE] : [],
       },
       lookups: {
         localMemories: {
           query: prompt,
-          types: ["commitment", "open_loop", "rejected_approach", "blocker", "user_preference", "assistant_identity"],
+          types: ["commitment", "open_loop", "rejected_approach", "blocker", "user_preference", "assistant_identity", "user_identity", "assistant_goal", "recurring_mistake"],
           rows: memories.map((memory) => serializeSemanticTraceRow(memory, repository)),
           includedRows: localMemories.map((memory) => serializeSemanticTraceRow(memory, repository)),
         },
@@ -2241,14 +3568,33 @@ export class CoherenceDb {
           rows: identityMemories.map((memory) => serializeSemanticTraceRow(memory, repository)),
           includedRows: identityMemories.map((memory) => serializeSemanticTraceRow(memory, repository)),
         },
+        styleAddressing: {
+          enabled: effectiveStyleSection.trace.enabled,
+          ambientEnabled: effectiveStyleSection.trace.ambientEnabled,
+          includeAmbient: effectiveStyleSection.trace.includeAmbient,
+          promptLocal: effectiveStyleSection.trace.promptLocal,
+          rows: [
+            ...assistantPersonaRows.map((memory) => serializeSemanticTraceRow(memory, repository)),
+            ...relationshipPreferenceRows.map((memory) => serializeSemanticTraceRow(memory, repository)),
+          ],
+          includedRows: effectiveStyleSection.trace.includeAmbient
+            ? [
+                ...assistantPersonaRows.map((memory) => serializeSemanticTraceRow(memory, repository)),
+                ...relationshipPreferenceRows.map((memory) => serializeSemanticTraceRow(memory, repository)),
+              ]
+            : [],
+          reason: effectiveStyleSection.trace.reason,
+        },
         daySummary: {
           date: temporalDate,
+          rows: daySummaryRows.map((summary) => serializeDaySummaryTraceRow(summary, repository)),
+          includedRows: includedDaySummaryRows.map((summary) => serializeDaySummaryTraceRow(summary, repository)),
           included: false,
           reason: null,
         },
         localEpisodes: episodeDetails.trace,
         crossRepoPreferences: {
-          enabled: allowCrossRepoFallback,
+          enabled: allowGenericCrossRepoFallback,
           scopes: [MEMORY_SCOPE.TRANSFERABLE],
           rows: crossRepoPreferenceRows.map((memory) => serializeSemanticTraceRow(memory, repository)),
           includedRows: crossRepoPreferences.map((memory) => serializeSemanticTraceRow(memory, repository)),
@@ -2262,7 +3608,7 @@ export class CoherenceDb {
           reason: null,
         },
         crossRepoEpisodes: {
-          enabled: allowCrossRepoFallback,
+          enabled: allowGenericCrossRepoFallback,
           scopes: [MEMORY_SCOPE.TRANSFERABLE],
           rankedRows: crossRepoEpisodeDetails?.trace?.rankedRows ?? [],
           includedRows: crossRepoEpisodes.map((episode) => serializeEpisodeTraceRow(episode, repository)),
@@ -2279,7 +3625,7 @@ export class CoherenceDb {
           reason: null,
         },
         crossRepoHints: {
-          enabled: allowCrossRepoFallback && !!sessionStore,
+          enabled: allowGenericCrossRepoFallback && !!sessionStore,
           rows: crossRepoHints.map((session) => serializeSessionTraceRow(session, repository)),
           includedRows: [],
           reason: null,
@@ -2288,25 +3634,25 @@ export class CoherenceDb {
       omissions: [],
       output: {
         sectionTitles: [],
+        sectionDetails: [],
         estimatedTokens: 0,
       },
     };
-    const daySummaryTokens = daySummary?.summary ? tokenizeText(daySummary.summary) : new Set();
-    const daySummaryMatches = promptTerms.length === 0
-      || promptTerms.some((term) => daySummaryTokens.has(term));
-    if (daySummary?.summary && daySummaryMatches) {
+    const renderTerms = temporalContentTerms.length > 0 ? temporalContentTerms : promptTerms;
+    if (includedDaySummaryRows.length > 0) {
       trace.lookups.daySummary.included = true;
-      lines.push(
-        "## Relevant Day Summary",
-        "",
-        `[MEMORY: day summary for ${daySummary.date_key}]`,
-        daySummary.summary,
-      );
+      lines.push("## Relevant Day Summary", "");
+      includedDaySummaryRows.forEach((summary, index) => {
+        if (index > 0) {
+          lines.push("");
+        }
+        lines.push(formatDaySummaryContextLine(summary, repository));
+      });
       trace.output.sectionTitles.push("Relevant Day Summary");
     } else if (!need.hasTemporalSignal || !temporalDate) {
       trace.lookups.daySummary.reason = "no_temporal_signal";
       trace.omissions.push({ stage: "day_summary", reason: "no_temporal_signal" });
-    } else if (!daySummary?.summary) {
+    } else if (daySummaryRows.length === 0) {
       trace.lookups.daySummary.reason = "missing_day_summary";
       trace.omissions.push({ stage: "day_summary", reason: "missing_day_summary", date: temporalDate });
     } else {
@@ -2320,7 +3666,7 @@ export class CoherenceDb {
       }
       lines.push("## Relevant Prior Work", "");
       for (const [index, episode] of episodes.entries()) {
-        const line = formatEpisodeContextLine(episode, { terms: promptTerms, index });
+        const line = formatEpisodeContextLine(episode, { terms: renderTerms, index });
         if (line) {
           lines.push(line);
         }
@@ -2329,8 +3675,20 @@ export class CoherenceDb {
     } else {
       trace.omissions.push({
         stage: "local_episodes",
-        reason: allowRepoLocalTaskContext ? "no_relevant_episode_matches" : "identity_only_prompt",
+        reason: allowRepoLocalTaskContext
+          ? episodeDetails.trace?.reason ?? "no_relevant_episode_matches"
+          : "identity_only_prompt",
       });
+    }
+
+    if (effectiveStyleSection.text) {
+      if (lines.length > 0) {
+        lines.push("");
+      }
+      lines.push(effectiveStyleSection.text);
+      trace.output.sectionTitles.push(effectiveStyleSection.title);
+    } else {
+      trace.omissions.push({ stage: "style_addressing", reason: effectiveStyleSection.trace.reason });
     }
 
     if (localMemories.length > 0) {
@@ -2373,9 +3731,14 @@ export class CoherenceDb {
       }
       trace.lookups.crossRepoHints.includedRows = crossRepoHints.map((session) => serializeSessionTraceRow(session, repository));
       trace.output.sectionTitles.push("Cross-Repo Hints");
-    } else if (!allowCrossRepoFallback) {
-      trace.lookups.crossRepoHints.reason = "cross_repo_lookup_disabled";
-      trace.omissions.push({ stage: "cross_repo_hints", reason: "cross_repo_lookup_disabled" });
+    } else if (!allowGenericCrossRepoFallback) {
+      trace.lookups.crossRepoHints.reason = pureTemporalRecall
+        ? "handled_by_temporal_day_summaries"
+        : "cross_repo_lookup_disabled";
+      trace.omissions.push({
+        stage: "cross_repo_hints",
+        reason: pureTemporalRecall ? "handled_by_temporal_day_summaries" : "cross_repo_lookup_disabled",
+      });
     } else if (!sessionStore) {
       trace.lookups.crossRepoHints.reason = "session_store_unavailable";
       trace.omissions.push({ stage: "cross_repo_hints", reason: "session_store_unavailable" });
@@ -2396,19 +3759,24 @@ export class CoherenceDb {
         lines.push(formatSemanticContextLine(memory));
       }
       trace.output.sectionTitles.push("Transferable Cross-Repo Preferences");
-    } else if (!allowCrossRepoFallback) {
-      trace.lookups.crossRepoPreferences.reason = "cross_repo_lookup_disabled";
+    } else if (!allowGenericCrossRepoFallback) {
+      trace.lookups.crossRepoPreferences.reason = pureTemporalRecall
+        ? "handled_by_temporal_day_summaries"
+        : "cross_repo_lookup_disabled";
     } else {
       trace.lookups.crossRepoPreferences.reason = "no_transferable_preferences";
     }
 
     if (crossRepoEpisodes.length === 0) {
-      trace.lookups.crossRepoEpisodes.reason = allowCrossRepoFallback
+      trace.lookups.crossRepoEpisodes.reason = allowGenericCrossRepoFallback
         ? "no_cross_repo_examples"
-        : "cross_repo_lookup_disabled";
+        : pureTemporalRecall
+          ? "handled_by_temporal_day_summaries"
+          : "cross_repo_lookup_disabled";
     }
 
     const text = lines.join("\n");
+    trace.output.sectionDetails = buildOutputSectionDetails(text);
     trace.output.estimatedTokens = estimateTokens(text);
     return {
       text,
@@ -2435,29 +3803,32 @@ export class CoherenceDb {
   }
 }
 
-function inferDateFromPrompt(prompt) {
-  const text = String(prompt || "").toLowerCase();
-  const now = new Date();
+function inferDateFromPrompt(prompt, config = null) {
+  if (!readTemporalQueryNormalizationEnabled(config)) {
+    const text = String(prompt || "").toLowerCase();
+    const now = new Date();
 
-  if (text.includes("today")) {
-    return now.toISOString().slice(0, 10);
-  }
-  if (text.includes("yesterday")) {
+    if (text.includes("today")) {
+      return now.toISOString().slice(0, 10);
+    }
+    if (text.includes("yesterday")) {
+      const value = new Date(now);
+      value.setDate(value.getDate() - 1);
+      return value.toISOString().slice(0, 10);
+    }
+
+    const weekdays = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+    const namedDay = weekdays.find((weekday) => text.includes(weekday));
+    if (!namedDay) {
+      return null;
+    }
+
+    const targetIndex = weekdays.indexOf(namedDay);
+    const currentIndex = now.getDay();
+    const diff = (currentIndex - targetIndex + 7) % 7 || 7;
     const value = new Date(now);
-    value.setDate(value.getDate() - 1);
+    value.setDate(value.getDate() - diff);
     return value.toISOString().slice(0, 10);
   }
-
-  const weekdays = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
-  const namedDay = weekdays.find((weekday) => text.includes(weekday));
-  if (!namedDay) {
-    return null;
-  }
-
-  const targetIndex = weekdays.indexOf(namedDay);
-  const currentIndex = now.getDay();
-  const diff = (currentIndex - targetIndex + 7) % 7 || 7;
-  const value = new Date(now);
-  value.setDate(value.getDate() - diff);
-  return value.toISOString().slice(0, 10);
+  return inferNormalizedDateFromPrompt(prompt);
 }

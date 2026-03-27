@@ -1,8 +1,56 @@
 import { assembleMemoryCapsule, detectPromptContextNeed } from "./capsule-assembler.mjs";
+import { recallMemory } from "./memory-operations.mjs";
 import { buildProceduralProfile, detectRelevantInstructionFiles } from "./procedural-memory.mjs";
 
 function ensureArray(value) {
   return Array.isArray(value) ? value : [];
+}
+
+function latencySnapshot(metrics) {
+  const sessionStart = metrics?.sessionStart ?? {};
+  const userPromptSubmitted = metrics?.userPromptSubmitted ?? {};
+  return {
+    sessionStartP95Ms: Math.round(metrics?.sessionStartP95 ?? 0),
+    userPromptSubmittedP95Ms: Math.round(metrics?.userPromptSubmittedP95 ?? 0),
+    sessionStartSamples: metrics?.sampleSize?.sessionStart ?? 0,
+    userPromptSubmittedSamples: metrics?.sampleSize?.userPromptSubmitted ?? 0,
+    sessionStartP95Readiness: sessionStart.readiness ?? "unknown",
+    userPromptSubmittedP95Readiness: userPromptSubmitted.readiness ?? "unknown",
+    sessionStartMinSamplesForP95: sessionStart.minSamples ?? 0,
+    userPromptSubmittedMinSamplesForP95: userPromptSubmitted.minSamples ?? 0,
+    sessionStart: {
+      p50Ms: sessionStart.p50Ms ?? 0,
+      p95Ms: sessionStart.p95Ms ?? 0,
+      averageMs: sessionStart.averageMs ?? 0,
+      maxMs: sessionStart.maxMs ?? 0,
+      latestMs: sessionStart.latestMs ?? 0,
+      readiness: sessionStart.readiness ?? "unknown",
+      samples: sessionStart.samples ?? 0,
+      minSamples: sessionStart.minSamples ?? 0,
+      targetMs: sessionStart.targetMs ?? 0,
+      targetStatus: sessionStart.targetStatus ?? "unknown",
+      recentAverageMs: sessionStart.recentAverageMs ?? 0,
+      previousAverageMs: sessionStart.previousAverageMs ?? 0,
+      trend: sessionStart.trend ?? "unknown",
+      trendDeltaMs: sessionStart.trendDeltaMs ?? 0,
+    },
+    userPromptSubmitted: {
+      p50Ms: userPromptSubmitted.p50Ms ?? 0,
+      p95Ms: userPromptSubmitted.p95Ms ?? 0,
+      averageMs: userPromptSubmitted.averageMs ?? 0,
+      maxMs: userPromptSubmitted.maxMs ?? 0,
+      latestMs: userPromptSubmitted.latestMs ?? 0,
+      readiness: userPromptSubmitted.readiness ?? "unknown",
+      samples: userPromptSubmitted.samples ?? 0,
+      minSamples: userPromptSubmitted.minSamples ?? 0,
+      targetMs: userPromptSubmitted.targetMs ?? 0,
+      targetStatus: userPromptSubmitted.targetStatus ?? "unknown",
+      recentAverageMs: userPromptSubmitted.recentAverageMs ?? 0,
+      previousAverageMs: userPromptSubmitted.previousAverageMs ?? 0,
+      trend: userPromptSubmitted.trend ?? "unknown",
+      trendDeltaMs: userPromptSubmitted.trendDeltaMs ?? 0,
+    },
+  };
 }
 
 function getByPath(object, path) {
@@ -83,6 +131,7 @@ function renderLookup(name, lookup) {
     lines.push(`- ranked: ${rankedRows.length}`);
   }
   lines.push(`- included: ${includedRows.length}`);
+  lines.push(`- dropped: ${filtered.length}`);
   if (lookup.reason) {
     lines.push(`- reason: ${lookup.reason}`);
   }
@@ -99,9 +148,16 @@ function renderLookup(name, lookup) {
   return lines.join("\n");
 }
 
+function renderLatencyMetric(label, metric) {
+  return [
+    `- ${label}: samples=${metric?.samples ?? 0} readiness=${metric?.readiness ?? "unknown"} target=${metric?.targetMs ?? 0}ms status=${metric?.targetStatus ?? "unknown"} p50=${metric?.p50Ms ?? 0} p95=${metric?.p95Ms ?? 0} avg=${metric?.averageMs ?? 0} max=${metric?.maxMs ?? 0} latest=${metric?.latestMs ?? 0} recentAvg=${metric?.recentAverageMs ?? 0} previousAvg=${metric?.previousAverageMs ?? 0} trend=${metric?.trend ?? "unknown"} delta=${metric?.trendDeltaMs ?? 0}`,
+  ].join("\n");
+}
+
 function normalizeComparisonText(value) {
   return String(value || "")
     .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -155,6 +211,104 @@ function flattenTraceRows(trace) {
   }
 
   return { ranked, included };
+}
+
+function countTraceRows(lookup) {
+  const rows = ensureArray(lookup?.rows);
+  const rankedRows = ensureArray(lookup?.rankedRows);
+  const includedRows = ensureArray(lookup?.includedRows);
+  return Math.max(rows.length, rankedRows.length, includedRows.length);
+}
+
+function buildDiagnosticInsights(cases) {
+  const caseList = ensureArray(cases);
+  const totalCases = caseList.length;
+  const lookupMap = new Map();
+  const sectionMap = new Map();
+  const omissionMap = new Map();
+
+  for (const item of caseList) {
+    for (const title of ensureArray(item.sectionTitles)) {
+      sectionMap.set(title, (sectionMap.get(title) ?? 0) + 1);
+    }
+
+    for (const omission of ensureArray(item.trace?.omissions)) {
+      const key = `${omission.stage}:${omission.reason}`;
+      omissionMap.set(key, (omissionMap.get(key) ?? 0) + 1);
+    }
+
+    for (const [name, lookup] of Object.entries(item.trace?.lookups ?? {})) {
+      const entry = lookupMap.get(name) ?? {
+        name,
+        seenCases: 0,
+        matchedCases: 0,
+        includedCases: 0,
+        filteredCases: 0,
+        matchedRows: 0,
+        includedRows: 0,
+      };
+      entry.seenCases += 1;
+      const matchedRows = countTraceRows(lookup);
+      const includedRows = ensureArray(lookup?.includedRows).length;
+      if (matchedRows > 0) {
+        entry.matchedCases += 1;
+        entry.matchedRows += matchedRows;
+      }
+      if (includedRows > 0) {
+        entry.includedCases += 1;
+        entry.includedRows += includedRows;
+      }
+      if (ensureArray(lookup?.filtered).length > 0) {
+        entry.filteredCases += 1;
+      }
+      lookupMap.set(name, entry);
+    }
+  }
+
+  const lookupHitRates = [...lookupMap.values()]
+    .map((entry) => ({
+      ...entry,
+      matchedRate: entry.seenCases > 0 ? entry.matchedCases / entry.seenCases : 0,
+      includedRate: entry.seenCases > 0 ? entry.includedCases / entry.seenCases : 0,
+    }))
+    .sort((left, right) => {
+      if (right.includedRate !== left.includedRate) {
+        return right.includedRate - left.includedRate;
+      }
+      if (right.matchedRate !== left.matchedRate) {
+        return right.matchedRate - left.matchedRate;
+      }
+      return left.name.localeCompare(right.name);
+    });
+
+  const sectionUsage = [...sectionMap.entries()]
+    .map(([title, count]) => ({
+      title,
+      count,
+      rate: totalCases > 0 ? count / totalCases : 0,
+    }))
+    .sort((left, right) => right.count - left.count || left.title.localeCompare(right.title));
+
+  const repeatedWins = lookupHitRates
+    .filter((entry) => entry.includedCases >= 2)
+    .map((entry) => ({
+      label: entry.name,
+      count: entry.includedCases,
+    }))
+    .sort((left, right) => right.count - left.count || left.label.localeCompare(right.label));
+
+  const repeatedMisses = [...omissionMap.entries()]
+    .filter(([, count]) => count >= 2)
+    .map(([label, count]) => ({ label, count }))
+    .sort((left, right) => right.count - left.count || left.label.localeCompare(right.label));
+
+  return {
+    totalCases,
+    lookupHitRates,
+    sectionUsage,
+    repeatedWins,
+    repeatedMisses,
+  };
 }
 
 function matchesEvidenceItem(traceRow, definition) {
@@ -272,6 +426,15 @@ function evaluateCase(definition, explanation) {
     record(`${path} >= ${minimum}`, count >= minimum, `actual=${count}`);
   }
 
+  for (const [path, expected] of Object.entries(expect.traceEquals ?? {})) {
+    const value = getByPath(explanation.trace, path);
+    record(
+      `trace ${path} === ${JSON.stringify(expected)}`,
+      value === expected,
+      `actual=${JSON.stringify(value)}`,
+    );
+  }
+
   for (const title of ensureArray(expect.mustIncludeSections)) {
     record(
       `section includes "${title}"`,
@@ -306,6 +469,14 @@ function evaluateCase(definition, explanation) {
     );
   }
 
+  for (const snippet of ensureArray(expect.textMustIncludeAll)) {
+    record(
+      `text includes "${snippet}"`,
+      text.includes(snippet),
+      text,
+    );
+  }
+
   for (const snippet of ensureArray(expect.textMustNotInclude)) {
     record(
       `text excludes "${snippet}"`,
@@ -321,6 +492,217 @@ function evaluateCase(definition, explanation) {
   };
 }
 
+function summarizeFailedAssertions(assertions = []) {
+  const failed = ensureArray(assertions).filter((assertion) => assertion?.passed === false);
+  if (failed.length === 0) {
+    return "Case failed without assertion details.";
+  }
+  return failed
+    .slice(0, 3)
+    .map((assertion) => assertion.details
+      ? `${assertion.label} (${assertion.details})`
+      : assertion.label)
+    .join(" | ");
+}
+
+function createImprovementLinkedMemory({
+  runtime,
+  sourceKind,
+  caseId,
+  title,
+  missCategory,
+}) {
+  if (runtime.config?.rollout?.autoWriteImprovementGoals !== true) {
+    return null;
+  }
+  const now = new Date().toISOString();
+  if (sourceKind === "validation") {
+    return runtime.db.insertSemanticMemory({
+      type: "assistant_goal",
+      content: `Improvement goal: fix diagnostics validation case "${caseId}" (${title}).`,
+      scope: "global",
+      confidence: 0.95,
+      tags: ["diagnostics-improvement", "assistant-goal", "validation"],
+      metadata: {
+        source: "diagnostics_improvement",
+        sourceKind,
+        sourceCaseId: caseId,
+        capturedAt: now,
+      },
+    });
+  }
+  return runtime.db.insertSemanticMemory({
+    type: "recurring_mistake",
+    content: `Recurring mistake to avoid: replay case "${caseId}" missed expected evidence${missCategory ? ` (${missCategory})` : ""}.`,
+    scope: "global",
+    confidence: 0.95,
+    tags: ["diagnostics-improvement", "recurring-mistake", "replay"],
+    metadata: {
+      source: "diagnostics_improvement",
+      sourceKind,
+      sourceCaseId: caseId,
+      missCategory: missCategory ?? null,
+      capturedAt: now,
+    },
+  });
+}
+
+function persistValidationFailureArtifact({ runtime, definition, evaluation, explanation }) {
+  const linkedMemoryId = createImprovementLinkedMemory({
+    runtime,
+    sourceKind: "validation",
+    caseId: definition.id,
+    title: definition.title,
+  });
+  const summary = summarizeFailedAssertions(evaluation.assertions);
+  const id = runtime.db.upsertImprovementArtifact({
+    sourceCaseId: definition.id,
+    sourceKind: "validation",
+    title: definition.title,
+    summary,
+    linkedMemoryId,
+    evidence: {
+      mode: definition.mode,
+      prompt: definition.prompt,
+      failedAssertions: ensureArray(evaluation.assertions).filter((assertion) => assertion?.passed === false),
+      sectionTitles: evaluation.sectionTitles,
+      estimatedTokens: explanation.estimatedTokens ?? 0,
+    },
+    trace: explanation.trace ?? {},
+  });
+  return id;
+}
+
+function persistReplayFailureArtifact({
+  runtime,
+  definition,
+  evaluation,
+  explanation,
+  evidence,
+  rankingOutcome,
+  missCategory,
+}) {
+  const linkedMemoryId = createImprovementLinkedMemory({
+    runtime,
+    sourceKind: "replay",
+    caseId: definition.id,
+    title: definition.title,
+    missCategory,
+  });
+  const summaryParts = [];
+  if (definition.caseType === "must_pass") {
+    summaryParts.push(summarizeFailedAssertions(evaluation.assertions));
+  } else {
+    summaryParts.push(`Ranking outcome: ${rankingOutcome ?? "missing"}`);
+    if (missCategory) {
+      summaryParts.push(`Miss category: ${missCategory}`);
+    }
+  }
+  const id = runtime.db.upsertImprovementArtifact({
+    sourceCaseId: definition.id,
+    sourceKind: "replay",
+    title: definition.title,
+    summary: summaryParts.join(" | "),
+    linkedMemoryId,
+    evidence: {
+      mode: definition.mode,
+      prompt: definition.prompt,
+      caseType: definition.caseType ?? "must_pass",
+      rankingOutcome: rankingOutcome ?? null,
+      missCategory: missCategory ?? null,
+      failedAssertions: ensureArray(evaluation.assertions).filter((assertion) => assertion?.passed === false),
+      expectedEvidence: evidence,
+      estimatedTokens: explanation.estimatedTokens ?? 0,
+    },
+    trace: explanation.trace ?? {},
+  });
+  return id;
+}
+
+const DIAGNOSTIC_SEED_NAME = "Taylor";
+const DIAGNOSTIC_STYLE_PREFERENCE = "Prefer a conversational, teammate-like tone and use the user's preferred name where appropriate.";
+const DIAGNOSTIC_INTERACTION_STYLE_MEMORY = Object.freeze({
+  type: "interaction_style",
+  content: "Interaction style preference: be like a warm colleague, use light humor when it fits, and use the user's preferred name naturally.",
+  scope: "global",
+  confidence: 1,
+  tags: ["diagnostics-seed", "interaction-style"],
+  metadata: {
+    source: "diagnostics_seed",
+    profile: {
+      voice: "colleague",
+      warmth: "warm",
+      humor: "light",
+      humorFrequency: "occasional",
+      collaborative: true,
+      useNameNaturally: true,
+    },
+  },
+});
+
+const DIAGNOSTIC_ASSISTANT_GOAL_MEMORY = Object.freeze({
+  type: "assistant_goal",
+  content: "Current assistant goal: Ship the smallest coherent scoped change first.",
+  scope: "global",
+  confidence: 1,
+  tags: ["diagnostics-seed", "assistant-goal"],
+  metadata: {
+    source: "diagnostics_seed",
+    goal: "Ship the smallest coherent scoped change first.",
+  },
+});
+
+const DIAGNOSTIC_RECURRING_MISTAKE_MEMORY = Object.freeze({
+  type: "recurring_mistake",
+  content: "Recurring mistake to avoid: continuing investigation after user asks to implement now.",
+  scope: "global",
+  confidence: 1,
+  tags: ["diagnostics-seed", "recurring-mistake"],
+  metadata: {
+    source: "diagnostics_seed",
+    mistake: "continuing investigation after user asks to implement now",
+  },
+});
+
+function seedDiagnosticsMemories(runtime) {
+  return [
+    runtime.db.insertSemanticMemory({
+      type: "user_identity",
+      content: `The user's preferred name is ${DIAGNOSTIC_SEED_NAME}.`,
+      scope: "global",
+      confidence: 1,
+      tags: ["diagnostics-seed", "user-identity", "preferred-name"],
+      metadata: {
+        source: "diagnostics_seed",
+        preferredName: DIAGNOSTIC_SEED_NAME,
+      },
+    }),
+    runtime.db.insertSemanticMemory({
+      type: "user_preference",
+      content: DIAGNOSTIC_STYLE_PREFERENCE,
+      scope: "global",
+      confidence: 1,
+      tags: ["diagnostics-seed", "user-preference", "style"],
+      metadata: {
+        source: "diagnostics_seed",
+      },
+    }),
+    runtime.db.insertSemanticMemory(DIAGNOSTIC_ASSISTANT_GOAL_MEMORY),
+    runtime.db.insertSemanticMemory(DIAGNOSTIC_RECURRING_MISTAKE_MEMORY),
+  ];
+}
+
+function seedExtraDiagnosticsMemories(runtime, extraMemories = []) {
+  return extraMemories.map((memory) => runtime.db.insertSemanticMemory(memory));
+}
+
+function cleanupSeedDiagnosticsMemories(runtime, ids) {
+  const supersededBy = `diagnostics-seed:${new Date().toISOString()}`;
+  for (const id of [...new Set(ids)]) {
+    runtime.db.forgetMemory({ id, supersededBy });
+  }
+}
+
 export const VALIDATION_CASES = Object.freeze([
   {
     id: "identity-greeting",
@@ -332,13 +714,34 @@ export const VALIDATION_CASES = Object.freeze([
       promptNeed: {
         requiresLookup: true,
         directAddressed: true,
-        wantsContinuity: true,
+        wantsContinuity: false,
         wantsCrossRepoExamples: false,
         identityOnly: true,
       },
       mustIncludeSections: ["Relevant Commitments, Preferences, And Identity"],
-      mustNotIncludeSections: ["Relevant Prior Work", "Cross-Repo Examples", "Cross-Repo Hints", "Transferable Cross-Repo Preferences"],
+      mustNotIncludeSections: ["Relevant Prior Work", "Cross-Repo Examples", "Cross-Repo Hints", "Transferable Cross-Repo Preferences", "Response Style And Addressing"],
       textMustIncludeAny: ["Coda", "assistant_identity/global"],
+      traceMinCounts: {
+        "lookups.identityMemories.includedRows": 1,
+      },
+    },
+  },
+  {
+    id: "identity-greeting-with-user-name",
+    caseType: "must_pass",
+    title: "Greeting can surface user-name addressing guidance",
+    mode: "prompt",
+    prompt: "Hi Coda, how are you?",
+    expect: {
+      promptNeed: {
+        requiresLookup: true,
+        directAddressed: true,
+        wantsContinuity: false,
+        wantsStyleContext: false,
+        identityOnly: true,
+      },
+      mustIncludeSections: ["Relevant Commitments, Preferences, And Identity"],
+      mustNotIncludeSections: ["Relevant Prior Work", "Cross-Repo Examples", "Cross-Repo Hints", "Transferable Cross-Repo Preferences", "Response Style And Addressing"],
       traceMinCounts: {
         "lookups.identityMemories.includedRows": 1,
       },
@@ -350,12 +753,32 @@ export const VALIDATION_CASES = Object.freeze([
     title: "Temporal prompts surface prior work",
     mode: "prompt",
     prompt: "What did we do last Thursday?",
+    extraSeedMemories: [DIAGNOSTIC_INTERACTION_STYLE_MEMORY],
     expect: {
       promptNeed: {
         requiresLookup: true,
+        allowCrossRepoFallback: true,
       },
       traceTruthyPaths: ["temporalDate"],
       mustIncludeOneOfSections: ["Relevant Day Summary", "Relevant Prior Work"],
+      mustNotIncludeSections: ["Response Style And Addressing", "Cross-Repo Examples", "Cross-Repo Hints"],
+    },
+  },
+  {
+    id: "temporal-last-thursday-this-repo",
+    caseType: "must_pass",
+    title: "Explicit repo-scoped temporal prompts stay local",
+    mode: "prompt",
+    prompt: "In this repo can you remember what we did last Thursday?",
+    extraSeedMemories: [DIAGNOSTIC_INTERACTION_STYLE_MEMORY],
+    expect: {
+      promptNeed: {
+        requiresLookup: true,
+        allowCrossRepoFallback: false,
+      },
+      traceTruthyPaths: ["temporalDate"],
+      mustIncludeOneOfSections: ["Relevant Day Summary", "Relevant Prior Work"],
+      mustNotIncludeSections: ["Response Style And Addressing", "Cross-Repo Examples", "Cross-Repo Hints"],
     },
   },
   {
@@ -371,6 +794,91 @@ export const VALIDATION_CASES = Object.freeze([
       },
       mustIncludeOneOfSections: ["Relevant Prior Work", "Relevant Commitments, Preferences, And Identity"],
       mustNotIncludeSections: ["Cross-Repo Examples", "Cross-Repo Hints"],
+    },
+  },
+  {
+    id: "style-colleague-humor-request",
+    caseType: "must_pass",
+    title: "Explicit style requests still surface prompt-local guidance",
+    mode: "prompt",
+    prompt: "Talk to me more like a colleague and feel free to use a little humor.",
+    extraSeedMemories: [DIAGNOSTIC_INTERACTION_STYLE_MEMORY],
+    expect: {
+      promptNeed: {
+        requiresLookup: true,
+        wantsStyleContext: true,
+        explicitStyleRequest: true,
+      },
+      mustIncludeSections: ["Response Style And Addressing"],
+      textMustIncludeAny: ["Prompt-local overrides", "Follow the prompt-local style request for this prompt."],
+    },
+  },
+  {
+    id: "style-and-name-request",
+    caseType: "must_pass",
+    title: "Explicit style and naming requests render dedicated guidance",
+    mode: "prompt",
+    prompt: `Please be more conversational and call me ${DIAGNOSTIC_SEED_NAME} where appropriate.`,
+    expect: {
+      promptNeed: {
+        requiresLookup: true,
+        wantsContinuity: false,
+        wantsStyleContext: true,
+        wantsRepoLocalTaskContext: false,
+      },
+      mustIncludeSections: ["Response Style And Addressing"],
+      mustNotIncludeSections: ["Relevant Prior Work", "Cross-Repo Examples", "Cross-Repo Hints", "Transferable Cross-Repo Preferences"],
+      textMustIncludeAll: [
+        `Address the user as "${DIAGNOSTIC_SEED_NAME}" for this prompt.`,
+      ],
+      textMustNotInclude: ["Matt naturally"],
+      traceEquals: {
+        "lookups.styleAddressing.includeAmbient": false,
+      },
+      traceTruthyPaths: ["lookups.styleAddressing.promptLocal.userNameOverride"],
+    },
+  },
+  {
+    id: "technical-prompt-ambient-style",
+    caseType: "must_pass",
+    title: "Ordinary technical prompts do not inherit ambient interaction style by default",
+    mode: "prompt",
+    prompt: "How does searchSemantic work in coherence?",
+    extraSeedMemories: [DIAGNOSTIC_INTERACTION_STYLE_MEMORY],
+    expect: {
+      promptNeed: {
+        requiresLookup: false,
+      },
+      mustNotIncludeSections: ["Response Style And Addressing"],
+      textMustNotInclude: [DIAGNOSTIC_SEED_NAME],
+    },
+  },
+  {
+    id: "technical-prompt-no-style-profile",
+    caseType: "must_pass",
+    title: "Ordinary technical prompts stay style-free without an interaction-style profile",
+    mode: "prompt",
+    prompt: "How does searchSemantic work in coherence?",
+    expect: {
+      promptNeed: {
+        requiresLookup: false,
+      },
+      mustNotIncludeSections: ["Response Style And Addressing"],
+      textMustNotInclude: [DIAGNOSTIC_SEED_NAME],
+    },
+  },
+  {
+    id: "serious-prompt-suppresses-ambient-style",
+    caseType: "must_pass",
+    title: "Serious prompts suppress ambient style and humor",
+    mode: "prompt",
+    prompt: "This is a serious production issue; help me debug it.",
+    extraSeedMemories: [DIAGNOSTIC_INTERACTION_STYLE_MEMORY],
+    expect: {
+      promptNeed: {
+        seriousPrompt: true,
+      },
+      mustNotIncludeSections: ["Response Style And Addressing"],
     },
   },
   {
@@ -401,6 +909,36 @@ export const VALIDATION_CASES = Object.freeze([
       mustIncludeSections: ["Commitments, Preferences, And Identity"],
       mustNotIncludeSections: ["Relevant Knowledge", "Recent Related Work", "Relevant History Hints", "Long-Range Related Hints", "Cross-Repo Examples", "Cross-Repo Hints"],
       textMustIncludeAny: ["Coda", "assistant_identity"],
+    },
+  },
+  {
+    id: "session-start-style-addressing",
+    caseType: "must_pass",
+    title: "Session start capsule keeps style guidance disabled by default",
+    mode: "session_start",
+    prompt: "Hi Coda, can you help me today?",
+    expect: {
+      promptNeed: {
+        identityOnly: true,
+        wantsCrossRepoExamples: false,
+      },
+      mustIncludeSections: ["Commitments, Preferences, And Identity"],
+      mustNotIncludeSections: ["Relevant Knowledge", "Recent Related Work", "Relevant History Hints", "Long-Range Related Hints", "Cross-Repo Examples", "Cross-Repo Hints", "Response Style And Addressing"],
+      textMustNotInclude: [DIAGNOSTIC_SEED_NAME],
+    },
+  },
+  {
+    id: "session-start-ambient-style",
+    caseType: "must_pass",
+    title: "Session start capsule keeps ambient interaction style disabled by default",
+    mode: "session_start",
+    prompt: "How should we refactor this retrieval path?",
+    extraSeedMemories: [DIAGNOSTIC_INTERACTION_STYLE_MEMORY],
+    expect: {
+      promptNeed: {
+        requiresLookup: false,
+      },
+      mustNotIncludeSections: ["Response Style And Addressing"],
     },
   },
 ]);
@@ -490,7 +1028,8 @@ export async function explainMemoryRetrieval({ runtime, prompt, mode = "prompt" 
 
     const promptNeed = detectPromptContextNeed(prompt);
     const includeOtherRepositories = promptNeed.allowCrossRepoFallback === true;
-    const result = runtime.db.explainPromptContext({
+    const result = recallMemory({
+      db: runtime.db,
       prompt,
       repository: runtime.repository,
       includeOtherRepositories,
@@ -511,12 +1050,15 @@ export async function explainMemoryRetrieval({ runtime, prompt, mode = "prompt" 
 
 export function renderExplanationReport(explanation) {
   const sectionTitles = explanation.trace?.output?.sectionTitles ?? extractSectionTitles(explanation.text);
+  const sectionDetails = ensureArray(explanation.trace?.output?.sectionDetails);
+  const routerDecision = explanation.trace?.routerDecision;
   const lines = [
     `mode: ${explanation.mode}`,
     `repository: ${explanation.repository ?? "global-only"}`,
     `prompt: ${explanation.prompt}`,
     `requiresLookup: ${explanation.promptNeed?.requiresLookup === true}`,
     `wantsContinuity: ${explanation.promptNeed?.wantsContinuity === true}`,
+    `wantsStyleContext: ${explanation.promptNeed?.wantsStyleContext === true}`,
     `wantsCrossRepoExamples: ${explanation.promptNeed?.wantsCrossRepoExamples === true}`,
     `wantsRepoLocalTaskContext: ${explanation.promptNeed?.wantsRepoLocalTaskContext === true}`,
     `identityOnly: ${explanation.promptNeed?.identityOnly === true}`,
@@ -530,6 +1072,15 @@ export function renderExplanationReport(explanation) {
       : "- none",
   ];
 
+  if (sectionDetails.length > 0) {
+    lines.push("", "## Source Accounting", "");
+    for (const detail of sectionDetails) {
+      lines.push(
+        `- ${detail.title}: source=${detail.source ?? "context"} tokens=${detail.usedTokens ?? 0}${detail.budget != null ? ` budget=${detail.budget}` : ""}${detail.entryCount != null ? ` entries=${detail.entryCount}` : ""}`,
+      );
+    }
+  }
+
   if (explanation.trace?.eligibility) {
     lines.push(
       "",
@@ -538,6 +1089,21 @@ export function renderExplanationReport(explanation) {
       ...Object.entries(explanation.trace.eligibility).map(
         ([key, values]) => `- ${formatLookupLabel(key)}: ${ensureArray(values).join(", ") || "none"}`,
       ),
+    );
+  }
+
+  if (routerDecision) {
+    lines.push(
+      "",
+      "## Decision Trace",
+      "",
+      `- route: ${routerDecision.route ?? "unknown"}`,
+      `- reason: ${routerDecision.reason ?? "none"}`,
+      `- includeOtherRepositories: ${routerDecision.includeOtherRepositories === true}`,
+      `- usedWorkstreamOverlays: ${routerDecision.usedWorkstreamOverlays === true}`,
+      `- usedLegacyPath: ${routerDecision.usedLegacyPath === true}`,
+      `- additionalContext: ${routerDecision.additionalContext === true}`,
+      `- sectionCount: ${routerDecision.sectionCount ?? 0}`,
     );
   }
 
@@ -571,43 +1137,65 @@ export async function runValidationSet({ runtime, caseIds = [] }) {
     ? VALIDATION_CASES.filter((testCase) => caseIds.includes(testCase.id))
     : VALIDATION_CASES;
 
-  const cases = [];
-  for (const definition of selected) {
-    const explanation = await explainMemoryRetrieval({
-      runtime,
-      prompt: definition.prompt,
-      mode: definition.mode,
-    });
-    const evaluation = evaluateCase(definition, explanation);
-    cases.push({
-      id: definition.id,
-      title: definition.title,
-      mode: definition.mode,
-      prompt: definition.prompt,
-      passed: evaluation.passed,
-      sectionTitles: evaluation.sectionTitles,
-      assertions: evaluation.assertions,
-      estimatedTokens: explanation.estimatedTokens ?? 0,
-      trace: explanation.trace,
-      text: explanation.text,
-      promptNeed: explanation.promptNeed,
-    });
-  }
+  const seededIds = seedDiagnosticsMemories(runtime);
+  try {
+    const cases = [];
+    const improvementArtifacts = [];
+    for (const definition of selected) {
+      const extraSeedIds = seedExtraDiagnosticsMemories(runtime, definition.extraSeedMemories ?? []);
+      try {
+        const explanation = await explainMemoryRetrieval({
+          runtime,
+          prompt: definition.prompt,
+          mode: definition.mode,
+        });
+        const evaluation = evaluateCase(definition, explanation);
+        cases.push({
+          id: definition.id,
+          title: definition.title,
+          mode: definition.mode,
+          prompt: definition.prompt,
+          passed: evaluation.passed,
+          sectionTitles: evaluation.sectionTitles,
+          assertions: evaluation.assertions,
+          estimatedTokens: explanation.estimatedTokens ?? 0,
+          trace: explanation.trace,
+          text: explanation.text,
+          promptNeed: explanation.promptNeed,
+        });
+        if (!evaluation.passed) {
+          const artifactId = persistValidationFailureArtifact({
+            runtime,
+            definition,
+            evaluation,
+            explanation,
+          });
+          improvementArtifacts.push({
+            id: artifactId,
+            sourceKind: "validation",
+            sourceCaseId: definition.id,
+            title: definition.title,
+          });
+        }
+      } finally {
+        cleanupSeedDiagnosticsMemories(runtime, extraSeedIds);
+      }
+    }
 
-  return {
-    generatedAt: new Date().toISOString(),
-    repository: runtime.repository,
-    latency: {
-      sessionStartP95Ms: Math.round(runtime.metrics?.sessionStartP95 ?? 0),
-      userPromptSubmittedP95Ms: Math.round(runtime.metrics?.userPromptSubmittedP95 ?? 0),
-      sessionStartSamples: runtime.metrics?.sampleSize?.sessionStart ?? 0,
-      userPromptSubmittedSamples: runtime.metrics?.sampleSize?.userPromptSubmitted ?? 0,
-    },
-    total: cases.length,
-    passed: cases.filter((item) => item.passed).length,
-    failed: cases.filter((item) => !item.passed).length,
-    cases,
-  };
+    return {
+      generatedAt: new Date().toISOString(),
+      repository: runtime.repository,
+      latency: latencySnapshot(runtime.metrics),
+      total: cases.length,
+      passed: cases.filter((item) => item.passed).length,
+      failed: cases.filter((item) => !item.passed).length,
+      improvementArtifacts,
+      insights: buildDiagnosticInsights(cases),
+      cases,
+    };
+  } finally {
+    cleanupSeedDiagnosticsMemories(runtime, seededIds);
+  }
 }
 
 export async function runReplayCorpus({ runtime, caseIds = [] }) {
@@ -615,77 +1203,147 @@ export async function runReplayCorpus({ runtime, caseIds = [] }) {
     ? REPLAY_CASES.filter((testCase) => caseIds.includes(testCase.id))
     : REPLAY_CASES;
 
-  const cases = [];
-  for (const definition of selected) {
-    const explanation = await explainMemoryRetrieval({
-      runtime,
-      prompt: definition.prompt,
-      mode: definition.mode,
-    });
-    const evaluation = evaluateCase(definition, explanation);
-    const evidence = evaluateExpectedEvidence(definition, explanation);
-    const missCategory = classifyReplayMiss(definition, explanation, evidence);
-    const rankingOutcome = definition.caseType === "ranking_target"
-      ? evidence.missingCount === 0 && evidence.expectedCount > 0
-        ? "included"
-        : evidence.includedCount > 0 || evidence.rankedOnlyCount > 0
-          ? "partial"
-          : "missing"
-      : null;
+  const seededIds = seedDiagnosticsMemories(runtime);
+  try {
+    const cases = [];
+    const improvementArtifacts = [];
+    for (const definition of selected) {
+      const extraSeedIds = seedExtraDiagnosticsMemories(runtime, definition.extraSeedMemories ?? []);
+      try {
+        const explanation = await explainMemoryRetrieval({
+          runtime,
+          prompt: definition.prompt,
+          mode: definition.mode,
+        });
+        const evaluation = evaluateCase(definition, explanation);
+        const evidence = evaluateExpectedEvidence(definition, explanation);
+        const missCategory = classifyReplayMiss(definition, explanation, evidence);
+        const rankingOutcome = definition.caseType === "ranking_target"
+          ? evidence.missingCount === 0 && evidence.expectedCount > 0
+            ? "included"
+            : evidence.includedCount > 0 || evidence.rankedOnlyCount > 0
+              ? "partial"
+              : "missing"
+          : null;
 
-    cases.push({
-      id: definition.id,
-      caseType: definition.caseType ?? "must_pass",
-      title: definition.title,
-      mode: definition.mode,
-      prompt: definition.prompt,
-      passed: evaluation.passed,
-      rankingOutcome,
-      missCategory,
-      sectionTitles: evaluation.sectionTitles,
-      assertions: evaluation.assertions,
-      evidence,
-      estimatedTokens: explanation.estimatedTokens ?? 0,
-      trace: explanation.trace,
-      text: explanation.text,
-      promptNeed: explanation.promptNeed,
-    });
+        cases.push({
+          id: definition.id,
+          caseType: definition.caseType ?? "must_pass",
+          title: definition.title,
+          mode: definition.mode,
+          prompt: definition.prompt,
+          passed: evaluation.passed,
+          rankingOutcome,
+          missCategory,
+          sectionTitles: evaluation.sectionTitles,
+          assertions: evaluation.assertions,
+          evidence,
+          estimatedTokens: explanation.estimatedTokens ?? 0,
+          trace: explanation.trace,
+          text: explanation.text,
+          promptNeed: explanation.promptNeed,
+        });
+        const replayFailed = definition.caseType === "must_pass"
+          ? !evaluation.passed
+          : rankingOutcome !== "included";
+        if (replayFailed) {
+          const artifactId = persistReplayFailureArtifact({
+            runtime,
+            definition,
+            evaluation,
+            explanation,
+            evidence,
+            rankingOutcome,
+            missCategory,
+          });
+          improvementArtifacts.push({
+            id: artifactId,
+            sourceKind: "replay",
+            sourceCaseId: definition.id,
+            title: definition.title,
+            missCategory,
+          });
+        }
+      } finally {
+        cleanupSeedDiagnosticsMemories(runtime, extraSeedIds);
+      }
+    }
+
+    const mustPassCases = cases.filter((item) => item.caseType === "must_pass");
+    const rankingTargetCases = cases.filter((item) => item.caseType === "ranking_target");
+
+    return {
+      generatedAt: new Date().toISOString(),
+      repository: runtime.repository,
+      latency: latencySnapshot(runtime.metrics),
+      total: cases.length,
+      mustPassTotal: mustPassCases.length,
+      mustPassPassed: mustPassCases.filter((item) => item.passed).length,
+      mustPassFailed: mustPassCases.filter((item) => !item.passed).length,
+      rankingTargetTotal: rankingTargetCases.length,
+      rankingTargetIncluded: rankingTargetCases.filter((item) => item.rankingOutcome === "included").length,
+      rankingTargetPartial: rankingTargetCases.filter((item) => item.rankingOutcome === "partial").length,
+      rankingTargetMissing: rankingTargetCases.filter((item) => item.rankingOutcome === "missing").length,
+      improvementArtifacts,
+      insights: buildDiagnosticInsights(cases),
+      cases,
+    };
+  } finally {
+    cleanupSeedDiagnosticsMemories(runtime, seededIds);
   }
-
-  const mustPassCases = cases.filter((item) => item.caseType === "must_pass");
-  const rankingTargetCases = cases.filter((item) => item.caseType === "ranking_target");
-
-  return {
-    generatedAt: new Date().toISOString(),
-    repository: runtime.repository,
-    latency: {
-      sessionStartP95Ms: Math.round(runtime.metrics?.sessionStartP95 ?? 0),
-      userPromptSubmittedP95Ms: Math.round(runtime.metrics?.userPromptSubmittedP95 ?? 0),
-      sessionStartSamples: runtime.metrics?.sampleSize?.sessionStart ?? 0,
-      userPromptSubmittedSamples: runtime.metrics?.sampleSize?.userPromptSubmitted ?? 0,
-    },
-    total: cases.length,
-    mustPassTotal: mustPassCases.length,
-    mustPassPassed: mustPassCases.filter((item) => item.passed).length,
-    mustPassFailed: mustPassCases.filter((item) => !item.passed).length,
-    rankingTargetTotal: rankingTargetCases.length,
-    rankingTargetIncluded: rankingTargetCases.filter((item) => item.rankingOutcome === "included").length,
-    rankingTargetPartial: rankingTargetCases.filter((item) => item.rankingOutcome === "partial").length,
-    rankingTargetMissing: rankingTargetCases.filter((item) => item.rankingOutcome === "missing").length,
-    cases,
-  };
 }
 
 export function renderValidationReport(result, { verbose = false } = {}) {
+  const insights = result.insights ?? buildDiagnosticInsights(result.cases);
   const lines = [
     `validationCases: ${result.total}`,
     `passed: ${result.passed}`,
     `failed: ${result.failed}`,
+    `improvementArtifacts: ${ensureArray(result.improvementArtifacts).length}`,
     `repository: ${result.repository ?? "global-only"}`,
     `sessionStartP95Ms: ${result.latency.sessionStartP95Ms}`,
     `userPromptSubmittedP95Ms: ${result.latency.userPromptSubmittedP95Ms}`,
     `sessionStartSamples: ${result.latency.sessionStartSamples}`,
     `userPromptSubmittedSamples: ${result.latency.userPromptSubmittedSamples}`,
+    `sessionStartP95Readiness: ${result.latency.sessionStartP95Readiness ?? "unknown"}`,
+    `userPromptSubmittedP95Readiness: ${result.latency.userPromptSubmittedP95Readiness ?? "unknown"}`,
+    `sessionStartMinSamplesForP95: ${result.latency.sessionStartMinSamplesForP95 ?? 0}`,
+    `userPromptSubmittedMinSamplesForP95: ${result.latency.userPromptSubmittedMinSamplesForP95 ?? 0}`,
+    "",
+    "## Latency Observability",
+    "",
+    renderLatencyMetric("sessionStart", result.latency.sessionStart),
+    renderLatencyMetric("userPromptSubmitted", result.latency.userPromptSubmitted),
+    "",
+    "## Lookup Hit Rates",
+    "",
+    insights.lookupHitRates.length > 0
+      ? insights.lookupHitRates
+        .slice(0, 8)
+        .map((entry) => `- ${entry.name}: included=${entry.includedCases}/${entry.seenCases} matched=${entry.matchedCases}/${entry.seenCases} filtered=${entry.filteredCases}`)
+        .join("\n")
+      : "- none",
+    "",
+    "## Source Sections",
+    "",
+    insights.sectionUsage.length > 0
+      ? insights.sectionUsage
+        .slice(0, 8)
+        .map((entry) => `- ${entry.title}: ${entry.count}/${insights.totalCases} cases`)
+        .join("\n")
+      : "- none",
+    "",
+    "## Repeated Wins",
+    "",
+    insights.repeatedWins.length > 0
+      ? insights.repeatedWins.map((entry) => `- ${entry.label}: ${entry.count} cases`).join("\n")
+      : "- none",
+    "",
+    "## Repeated Misses",
+    "",
+    insights.repeatedMisses.length > 0
+      ? insights.repeatedMisses.map((entry) => `- ${entry.label}: ${entry.count} cases`).join("\n")
+      : "- none",
     "",
     "## Cases",
     "",
@@ -697,6 +1355,12 @@ export function renderValidationReport(result, { verbose = false } = {}) {
 
   if (visibleCases.length === 0) {
     lines.push("- All cases passed.");
+    if (ensureArray(result.improvementArtifacts).length > 0) {
+      lines.push("", "## Improvement Artifacts", "");
+      for (const artifact of ensureArray(result.improvementArtifacts)) {
+        lines.push(`- ${artifact.id} [${artifact.sourceKind}] ${artifact.sourceCaseId} — ${artifact.title}`);
+      }
+    }
     return lines.join("\n");
   }
 
@@ -714,10 +1378,18 @@ export function renderValidationReport(result, { verbose = false } = {}) {
     }
   }
 
+  if (ensureArray(result.improvementArtifacts).length > 0) {
+    lines.push("", "## Improvement Artifacts", "");
+    for (const artifact of ensureArray(result.improvementArtifacts)) {
+      lines.push(`- ${artifact.id} [${artifact.sourceKind}] ${artifact.sourceCaseId} — ${artifact.title}`);
+    }
+  }
+
   return lines.join("\n");
 }
 
 export function renderReplayReport(result, { verbose = false } = {}) {
+  const insights = result.insights ?? buildDiagnosticInsights(result.cases);
   const lines = [
     `replayCases: ${result.total}`,
     `mustPassTotal: ${result.mustPassTotal}`,
@@ -727,11 +1399,51 @@ export function renderReplayReport(result, { verbose = false } = {}) {
     `rankingTargetIncluded: ${result.rankingTargetIncluded}`,
     `rankingTargetPartial: ${result.rankingTargetPartial}`,
     `rankingTargetMissing: ${result.rankingTargetMissing}`,
+    `improvementArtifacts: ${ensureArray(result.improvementArtifacts).length}`,
     `repository: ${result.repository ?? "global-only"}`,
     `sessionStartP95Ms: ${result.latency.sessionStartP95Ms}`,
     `userPromptSubmittedP95Ms: ${result.latency.userPromptSubmittedP95Ms}`,
     `sessionStartSamples: ${result.latency.sessionStartSamples}`,
     `userPromptSubmittedSamples: ${result.latency.userPromptSubmittedSamples}`,
+    `sessionStartP95Readiness: ${result.latency.sessionStartP95Readiness ?? "unknown"}`,
+    `userPromptSubmittedP95Readiness: ${result.latency.userPromptSubmittedP95Readiness ?? "unknown"}`,
+    `sessionStartMinSamplesForP95: ${result.latency.sessionStartMinSamplesForP95 ?? 0}`,
+    `userPromptSubmittedMinSamplesForP95: ${result.latency.userPromptSubmittedMinSamplesForP95 ?? 0}`,
+    "",
+    "## Latency Observability",
+    "",
+    renderLatencyMetric("sessionStart", result.latency.sessionStart),
+    renderLatencyMetric("userPromptSubmitted", result.latency.userPromptSubmitted),
+    "",
+    "## Lookup Hit Rates",
+    "",
+    insights.lookupHitRates.length > 0
+      ? insights.lookupHitRates
+        .slice(0, 8)
+        .map((entry) => `- ${entry.name}: included=${entry.includedCases}/${entry.seenCases} matched=${entry.matchedCases}/${entry.seenCases} filtered=${entry.filteredCases}`)
+        .join("\n")
+      : "- none",
+    "",
+    "## Source Sections",
+    "",
+    insights.sectionUsage.length > 0
+      ? insights.sectionUsage
+        .slice(0, 8)
+        .map((entry) => `- ${entry.title}: ${entry.count}/${insights.totalCases} cases`)
+        .join("\n")
+      : "- none",
+    "",
+    "## Repeated Wins",
+    "",
+    insights.repeatedWins.length > 0
+      ? insights.repeatedWins.map((entry) => `- ${entry.label}: ${entry.count} cases`).join("\n")
+      : "- none",
+    "",
+    "## Repeated Misses",
+    "",
+    insights.repeatedMisses.length > 0
+      ? insights.repeatedMisses.map((entry) => `- ${entry.label}: ${entry.count} cases`).join("\n")
+      : "- none",
     "",
     "## Cases",
     "",
@@ -743,6 +1455,15 @@ export function renderReplayReport(result, { verbose = false } = {}) {
 
   if (visibleCases.length === 0) {
     lines.push("- All must-pass cases passed and no ranking targets are defined.");
+    if (ensureArray(result.improvementArtifacts).length > 0) {
+      lines.push("", "## Improvement Artifacts", "");
+      for (const artifact of ensureArray(result.improvementArtifacts)) {
+        lines.push(
+          `- ${artifact.id} [${artifact.sourceKind}] ${artifact.sourceCaseId} — ${artifact.title}`
+          + (artifact.missCategory ? ` (missCategory=${artifact.missCategory})` : ""),
+        );
+      }
+    }
     return lines.join("\n");
   }
 
@@ -779,6 +1500,16 @@ export function renderReplayReport(result, { verbose = false } = {}) {
       if (verbose && evidence.matchedLookups.length > 0) {
         lines.push(`    lookups: ${evidence.matchedLookups.join(", ")}`);
       }
+    }
+  }
+
+  if (ensureArray(result.improvementArtifacts).length > 0) {
+    lines.push("", "## Improvement Artifacts", "");
+    for (const artifact of ensureArray(result.improvementArtifacts)) {
+      lines.push(
+        `- ${artifact.id} [${artifact.sourceKind}] ${artifact.sourceCaseId} — ${artifact.title}`
+        + (artifact.missCategory ? ` (missCategory=${artifact.missCategory})` : ""),
+      );
     }
   }
 

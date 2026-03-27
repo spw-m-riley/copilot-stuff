@@ -1,4 +1,8 @@
 import { detectAssistantIdentityName, MEMORY_SCOPE } from "./memory-scope.mjs";
+import {
+  buildStyleAddressingSection,
+  isStyleAddressingMemory,
+} from "./style-addressing.mjs";
 
 const STOP_WORDS = new Set([
   "about", "after", "also", "been", "before", "between", "both",
@@ -45,6 +49,83 @@ const PHATIC_QUERY_TERMS = new Set([
   "thanks",
   "thank",
 ]);
+
+const STYLE_SIGNAL_PATTERNS = [
+  /\b(?:be|sound|feel|write|respond|talk)(?:\s+to me)?\s+(?:a bit\s+)?(?:more\s+)?(?:conversational|conversationally|friendly|friendlier|warm|warmer|warmly|casual|casually|informal|informally)\b/i,
+  /\b(?:use|keep|adopt|have)\s+(?:a\s+)?(?:more\s+)?(?:conversational|friendly|friendlier|warm|warmer|casual|informal)\s+tone\b/i,
+  /\b(?:more\s+)?(?:conversational|friendly|friendlier|warm|warmer|casual|informal)\s+tone\b/i,
+  /\bless\s+formal\b/i,
+  /\b(?:like|as)\s+(?:a\s+)?(?:colleague|coworker|co-worker|teammate|peer)\b/i,
+  /\bfriendly\s+(?:colleague|coworker|co-worker|teammate|peer)\b/i,
+  /\bteammate[-\s]?like\b/i,
+  /\bcollaborative\b/i,
+  /\bwork\s+together\b/i,
+  /\bsolve\s+(?:this|it|problems?)\s+together\b/i,
+  /\bpair\s+(?:with|on)\s+me\b/i,
+  /\bwe\s+(?:can|should|need to)?\s*solve\s+(?:this|it|problems?)\s+together\b/i,
+  /\blight\s+(?:humou?r|jokes?)\b/i,
+  /\blittle\s+(?:humou?r|jokes?)\b/i,
+  /\b(?:bit|touch)\s+of\s+(?:humou?r|jokes?)\b/i,
+  /\b(?:feel free|okay)\s+to\s+(?:use|add)\s+(?:a\s+)?(?:little\s+)?humou?r\b/i,
+  /\bplayful\b/i,
+  /\bno\s+jokes?\b/i,
+  /\bwithout\s+jokes?\b/i,
+  /\bskip\s+the\s+jokes?\b/i,
+  /\b(?:don['’]?t|do not)\s+(?:joke|be funny|add humor)\b/i,
+  /\bno\s+humou?r\b/i,
+  /\bkeep\s+it\s+serious\b/i,
+];
+
+const ADDRESSING_SIGNAL_PATTERNS = [
+  /\bcall me\s+[a-z][a-z0-9'_-]*(?:\s+[a-z][a-z0-9'_-]*){0,3}\b/i,
+  /\buse my(?:\s+first)?\s+name\b/i,
+  /\baddress me as\s+[a-z][a-z0-9'_-]*(?:\s+[a-z][a-z0-9'_-]*){0,3}\b/i,
+  /\brefer to me as\s+[a-z][a-z0-9'_-]*(?:\s+[a-z][a-z0-9'_-]*){0,3}\b/i,
+];
+
+const COLLEAGUE_STYLE_PATTERNS = [
+  /\b(?:like|as)\s+(?:a\s+)?(?:colleague|coworker|co-worker|teammate|peer)\b/i,
+  /\bfriendly\s+(?:colleague|coworker|co-worker|teammate|peer)\b/i,
+  /\bteammate[-\s]?like\b/i,
+];
+
+const COLLABORATIVE_STYLE_PATTERNS = [
+  /\bcollaborative\b/i,
+  /\bwork\s+together\b/i,
+  /\bsolve\s+(?:this|it|problems?)\s+together\b/i,
+  /\bpair\s+(?:with|on)\s+me\b/i,
+  /\bwe\s+(?:can|should|need to)?\s*solve\s+(?:this|it|problems?)\s+together\b/i,
+];
+
+const LIGHT_HUMOR_STYLE_PATTERNS = [
+  /\blight\s+(?:humou?r|jokes?)\b/i,
+  /\blittle\s+(?:humou?r|jokes?)\b/i,
+  /\b(?:bit|touch)\s+of\s+(?:humou?r|jokes?)\b/i,
+  /\b(?:feel free|okay)\s+to\s+(?:use|add)\s+(?:a\s+)?(?:little\s+)?humou?r\b/i,
+  /\bplayful\b/i,
+];
+
+const JOKE_SUPPRESSION_PATTERNS = [
+  /\bno\s+jokes?\b/i,
+  /\bwithout\s+jokes?\b/i,
+  /\bskip\s+the\s+jokes?\b/i,
+  /\b(?:don['’]?t|do not)\s+(?:joke|be funny|add humor)\b/i,
+  /\bno\s+humou?r\b/i,
+  /\bkeep\s+it\s+serious\b/i,
+];
+
+const SERIOUS_PROMPT_PATTERNS = [
+  /\bblocker\b/i,
+  /\bincident\b/i,
+  /\bsev(?:erity)?[-\s]?(?:0|1|2)\b/i,
+  /\bproduction\s+(?:issue|incident|outage|bug)\b/i,
+  /\boutage\b/i,
+  /\bon[-\s]?call\b/i,
+  /\bsecurity\s+(?:issue|incident|alert|review)\b/i,
+  /\bvulnerabilit(?:y|ies)\b/i,
+  /\bbreach\b/i,
+  /\broot cause\b/i,
+];
 
 export function estimateTokens(text) {
   return Math.ceil(String(text || "").length / 4);
@@ -93,6 +174,38 @@ function extractQueryTerms(prompt) {
 
 function extractMeaningfulTaskTerms(prompt) {
   return extractQueryTerms(prompt).filter((term) => !PHATIC_QUERY_TERMS.has(term));
+}
+
+function matchesPatternBucket(text, patterns) {
+  return patterns.some((pattern) => pattern.test(text));
+}
+
+function stripPromptFraming(prompt) {
+  return normalizeText(prompt)
+    .replace(/^([a-z][a-z0-9_-]{2,20})[,:]\s+/i, "")
+    .replace(/^(?:hi|hello|hey)\s+[a-z][a-z0-9_-]{2,20}(?:[!?,.]\s*|\s+)/i, "")
+    .replace(/^(?:hi|hello|hey)[!?,.\s]+/i, "");
+}
+
+function stripPatternBucket(text, patterns) {
+  return patterns.reduce((value, pattern) => value.replace(pattern, " "), text);
+}
+
+function extractContextualTaskTerms(prompt) {
+  const withoutFraming = stripPromptFraming(prompt);
+  const withoutStyleSignals = stripPatternBucket(withoutFraming, STYLE_SIGNAL_PATTERNS);
+  const withoutAddressingSignals = stripPatternBucket(withoutStyleSignals, ADDRESSING_SIGNAL_PATTERNS);
+  return extractMeaningfulTaskTerms(withoutAddressingSignals);
+}
+
+function hasExplicitLocalTemporalScope(prompt) {
+  const text = normalizeText(prompt).toLowerCase();
+  return /\b(?:in|for|within)\s+this\s+(?:repo|repository|workspace|project|config|configuration)\b/.test(text)
+    || /\bwith\s+this\s+(?:repo|repository|workspace|project|config|configuration)\b/.test(text)
+    || /\bhere\s+in\s+this\s+(?:repo|repository|workspace|project|config|configuration)\b/.test(text)
+    || /\bthis\s+(?:repo|repository|workspace|project|config|configuration)\s+only\b/.test(text)
+    || /\bcurrent\s+(?:repo|repository|workspace|project|config|configuration)\s+only\b/.test(text)
+    || /\brepo[-\s]local\b/.test(text);
 }
 
 function takeWithinBudget(items, budget, render) {
@@ -301,11 +414,44 @@ function describeRawSession(session, currentRepository = null) {
   };
 }
 
+function describeImprovementArtifactRow(artifact) {
+  return {
+    id: artifact.id ?? null,
+    sourceCaseId: artifact.source_case_id ?? null,
+    sourceKind: artifact.source_kind ?? null,
+    proposalPath: artifact.proposal_path ?? null,
+    reviewState: artifact.review_state ?? null,
+    updatedAt: artifact.updated_at ?? null,
+    title: normalizeText(artifact.title),
+    summary: normalizeText(artifact.summary),
+  };
+}
+
 function buildSection(title, entries) {
   if (entries.length === 0) {
     return "";
   }
   return `## ${title}\n\n${entries.join("\n")}`;
+}
+
+function recordOutputSection(trace, {
+  title,
+  text,
+  source,
+  budget = null,
+  entryCount = null,
+}) {
+  if (!trace) {
+    return;
+  }
+  trace.output.sectionTitles.push(title);
+  trace.output.sectionDetails.push({
+    title,
+    source,
+    budget,
+    usedTokens: estimateTokens(text),
+    entryCount,
+  });
 }
 
 function dedupeSemanticEntries(entries) {
@@ -368,9 +514,20 @@ export function detectPromptContextNeed(prompt) {
     "workflow migration",
   ];
   const trimmedPrompt = String(prompt || "").trim();
+  const styleSignalMatches = {
+    colleagueLike: matchesPatternBucket(trimmedPrompt, COLLEAGUE_STYLE_PATTERNS),
+    collaborative: matchesPatternBucket(trimmedPrompt, COLLABORATIVE_STYLE_PATTERNS),
+    lightHumor: matchesPatternBucket(trimmedPrompt, LIGHT_HUMOR_STYLE_PATTERNS),
+    jokeSuppression: matchesPatternBucket(trimmedPrompt, JOKE_SUPPRESSION_PATTERNS),
+  };
+  const hasStyleSignal = matchesPatternBucket(trimmedPrompt, STYLE_SIGNAL_PATTERNS);
+  const hasAddressingSignal = matchesPatternBucket(trimmedPrompt, ADDRESSING_SIGNAL_PATTERNS);
+  const wantsStyleContext = hasStyleSignal
+    || hasAddressingSignal
+    || Object.values(styleSignalMatches).some(Boolean);
+  const explicitStyleRequest = Object.values(styleSignalMatches).some(Boolean);
   const hasConsistencySignal = consistencySignals.some((signal) => text.includes(signal))
-    || text.includes("as usual")
-    || text.includes("respond to me");
+    || text.includes("as usual");
   const hasTransferSignal = transferSignals.some((signal) => text.includes(signal));
   const directAddressMatch = trimmedPrompt.match(/^([a-z][a-z0-9_-]{2,20})[,:]\s/i);
   const greetingAddressMatch = trimmedPrompt.match(/^(?:hi|hello|hey)\s+([a-z][a-z0-9_-]{2,20})(?:[!?,.]|\s|$)/i);
@@ -379,37 +536,50 @@ export function detectPromptContextNeed(prompt) {
       || (greetingAddressMatch && !DIRECT_ADDRESS_EXCLUSIONS.has(greetingAddressMatch[1].toLowerCase()))
       || detectAssistantIdentityName(trimmedPrompt))
   );
-  const meaningfulTaskTerms = extractMeaningfulTaskTerms(trimmedPrompt);
+  const contextualTaskTerms = extractContextualTaskTerms(trimmedPrompt);
   const rawTemporalSignal = temporalSignals.some((signal) => text.includes(signal));
+  const explicitLocalTemporalScope = hasExplicitLocalTemporalScope(trimmedPrompt);
+  const seriousPrompt = matchesPatternBucket(trimmedPrompt, SERIOUS_PROMPT_PATTERNS);
+  const suppressHumor = styleSignalMatches.jokeSuppression
+    || (!styleSignalMatches.lightHumor && seriousPrompt);
   const hasTemporalSignal = rawTemporalSignal
     && (
       !directAddressed
       || hasConsistencySignal
       || hasTransferSignal
-      || meaningfulTaskTerms.length > 0
+      || contextualTaskTerms.length > 0
     );
   const identityOnly = directAddressed
     && !hasTemporalSignal
     && !hasConsistencySignal
     && !hasTransferSignal
-    && meaningfulTaskTerms.length === 0;
-  const wantsContinuity = directAddressed || hasConsistencySignal;
+    && !wantsStyleContext
+    && contextualTaskTerms.length === 0;
+  const wantsContinuity = hasConsistencySignal;
   const wantsCrossRepoExamples = hasTransferSignal;
   const wantsRepoLocalTaskContext = !identityOnly
-    && (hasTemporalSignal || hasConsistencySignal || meaningfulTaskTerms.length > 0);
-  const allowCrossRepoFallback = wantsCrossRepoExamples;
+    && (hasTemporalSignal || hasConsistencySignal || contextualTaskTerms.length > 0);
+  const allowCrossRepoFallback = wantsCrossRepoExamples
+    || (hasTemporalSignal && !explicitLocalTemporalScope);
 
   return {
     requiresLookup: hasTemporalSignal
+      || directAddressed
       || wantsContinuity
+      || wantsStyleContext
       || wantsCrossRepoExamples,
     wantsContinuity,
+    wantsStyleContext,
     wantsCrossRepoExamples,
     wantsRepoLocalTaskContext,
     allowCrossRepoFallback,
     identityOnly,
     hasTemporalSignal,
     directAddressed,
+    explicitStyleRequest,
+    seriousPrompt,
+    suppressHumor,
+    styleSignalMatches,
   };
 }
 
@@ -472,6 +642,48 @@ function findCrossRepoSessionHints({ sessionStore, prompt, repository, limit }) 
     }));
 }
 
+function findStyleAddressingMemories({ db, repository, limit }) {
+  return db.searchSemantic({
+    query: "",
+    repository,
+    includeOtherRepositories: false,
+    types: ["interaction_style", "user_identity", "user_preference", "recurring_mistake"],
+    scopes: [MEMORY_SCOPE.GLOBAL],
+    limit: Math.max(limit * 2, 6),
+  })
+    .filter((memory) => isStyleAddressingMemory(memory))
+    .slice(0, limit)
+    .map((memory) => ({
+      ...memory,
+      currentRepository: repository,
+    }));
+}
+
+function shouldIncludeStyleAddressingContext(promptNeed) {
+  if (promptNeed?.identityOnly === true || promptNeed?.wantsStyleContext === true) {
+    return true;
+  }
+  return promptNeed?.hasTemporalSignal !== true && promptNeed?.seriousPrompt !== true;
+}
+
+function renderProposalArtifact(artifact, index) {
+  const datePrefix = artifact.updated_at ? `${String(artifact.updated_at).slice(0, 10)}: ` : "";
+  const pathSuffix = artifact.proposal_path ? ` (\`${artifact.proposal_path}\`)` : "";
+  if (index < 2 && artifact.summary) {
+    return `- ${datePrefix}${artifact.title} — ${normalizeText(artifact.summary)}${pathSuffix}`;
+  }
+  return `- ${datePrefix}${artifact.title}${pathSuffix}`;
+}
+
+function findRecentDraftProposalArtifacts({ db, limit = 2 }) {
+  return db.listImprovementArtifacts({
+    status: "active",
+    reviewState: "draft",
+    hasProposal: true,
+    limit: Math.max(limit + 1, 3),
+  });
+}
+
 export async function assembleMemoryCapsule({
   prompt,
   repository,
@@ -480,6 +692,7 @@ export async function assembleMemoryCapsule({
   sessionStore,
   config,
   includeTrace = false,
+  includeProposalAwareness = false,
 }) {
   const query = extractQueryTerms(prompt).join(" ");
   const identityName = detectAssistantIdentityName(prompt);
@@ -504,6 +717,7 @@ export async function assembleMemoryCapsule({
         omissions: [],
         output: {
           sectionTitles: [],
+          sectionDetails: [],
           estimatedTokens: 0,
         },
       }
@@ -514,9 +728,12 @@ export async function assembleMemoryCapsule({
     if (tokens <= config.budgets.procedural) {
       sections.push(proceduralProfile);
       totalTokens += tokens;
-      if (trace) {
-        trace.output.sectionTitles.push("Procedural Profile");
-      }
+      recordOutputSection(trace, {
+        title: "Procedural Profile",
+        text: proceduralProfile,
+        source: "procedural_profile",
+        budget: config.budgets.procedural,
+      });
     } else if (trace) {
       trace.omissions.push({ stage: "procedural_profile", reason: "exceeded_budget" });
     }
@@ -548,6 +765,38 @@ export async function assembleMemoryCapsule({
         currentRepository: repository,
       }))
     : [];
+  const assistantPersonaRows = db.searchSemantic({
+    query: identityName || "coda assistant name",
+    repository,
+    includeOtherRepositories: false,
+    types: ["assistant_identity"],
+    scopes: [MEMORY_SCOPE.GLOBAL],
+    limit: 2,
+  }).map((memory) => ({
+    ...memory,
+    currentRepository: repository,
+  }));
+  const relationshipPreferenceRows = !identityOnly
+    ? db.searchSemantic({
+        query: query || prompt,
+        repository,
+        includeOtherRepositories: false,
+        types: ["user_preference", "rejected_approach", "user_identity", "recurring_mistake"],
+        scopes: [MEMORY_SCOPE.GLOBAL, MEMORY_SCOPE.REPO],
+        limit: 3,
+      }).map((memory) => ({
+        ...memory,
+        currentRepository: repository,
+      }))
+    : [];
+  const styleSection = buildStyleAddressingSection({
+    prompt,
+    promptNeed,
+    config,
+    assistantPersonaRows,
+    relationshipPreferenceRows,
+    renderSemantic,
+  });
   const knowledgeEntries = identityOnly
     ? []
     : dedupeSemanticEntries([...identityEntries, ...semanticEntries]);
@@ -568,9 +817,13 @@ export async function assembleMemoryCapsule({
     const section = buildSection("Relevant Knowledge", semanticLines);
     sections.push(section);
     totalTokens += estimateTokens(section);
-    if (trace) {
-      trace.output.sectionTitles.push("Relevant Knowledge");
-    }
+    recordOutputSection(trace, {
+      title: "Relevant Knowledge",
+      text: section,
+      source: "relevant_knowledge",
+      budget: config.budgets.semantic,
+      entryCount: semanticLines.length,
+    });
   }
 
   const commitmentEntries = !identityOnly
@@ -578,20 +831,40 @@ export async function assembleMemoryCapsule({
         query,
         repository,
         includeOtherRepositories: false,
-        types: ["commitment", "open_loop", "rejected_approach", "blocker", "user_preference", "assistant_identity"],
+        types: ["commitment", "open_loop", "rejected_approach", "blocker", "user_preference", "assistant_identity", "user_identity", "assistant_goal", "recurring_mistake"],
         limit: config.limits.promptContextLimit,
       }).map((memory) => ({
         ...memory,
         currentRepository: repository,
       }))
     : [];
-  const allCommitments = dedupeSemanticEntries([...identityEntries, ...commitmentEntries]);
+  const allCommitments = dedupeSemanticEntries([
+    ...identityEntries,
+    ...commitmentEntries,
+  ]).filter((memory) => !isStyleAddressingMemory(memory));
   const commitmentLines = takeWithinBudget(
     allCommitments,
     config.budgets.commitments,
     renderSemantic,
   );
   if (trace) {
+    trace.lookups.styleAddressing = {
+      enabled: styleSection.trace.enabled,
+      ambientEnabled: styleSection.trace.ambientEnabled,
+      includeAmbient: styleSection.trace.includeAmbient,
+      promptLocal: styleSection.trace.promptLocal,
+      reason: styleSection.trace.reason,
+      rows: [
+        ...assistantPersonaRows.map((memory) => describeSemanticRow(memory, repository)),
+        ...relationshipPreferenceRows.map((memory) => describeSemanticRow(memory, repository)),
+      ],
+      includedRows: styleSection.trace.includeAmbient
+        ? [
+            ...assistantPersonaRows.map((memory) => describeSemanticRow(memory, repository)),
+            ...relationshipPreferenceRows.map((memory) => describeSemanticRow(memory, repository)),
+          ]
+        : [],
+    };
     trace.lookups.commitments = {
       query,
       rows: commitmentEntries.map((memory) => describeSemanticRow(memory, repository)),
@@ -599,13 +872,65 @@ export async function assembleMemoryCapsule({
       reason: commitmentLines.length > 0 ? null : "no_matching_commitments",
     };
   }
+  if (styleSection.text) {
+    sections.push(styleSection.text);
+    totalTokens += estimateTokens(styleSection.text);
+    recordOutputSection(trace, {
+      title: styleSection.title,
+      text: styleSection.text,
+      source: "style_addressing",
+    });
+  } else if (trace) {
+    trace.omissions.push({ stage: "style_addressing", reason: styleSection.trace.reason });
+  }
   if (commitmentLines.length > 0) {
     const section = buildSection("Commitments, Preferences, And Identity", commitmentLines);
     sections.push(section);
     totalTokens += estimateTokens(section);
-    if (trace) {
-      trace.output.sectionTitles.push("Commitments, Preferences, And Identity");
-    }
+    recordOutputSection(trace, {
+      title: "Commitments, Preferences, And Identity",
+      text: section,
+      source: "commitments",
+      budget: config.budgets.commitments,
+      entryCount: commitmentLines.length,
+    });
+  }
+
+  const proposalArtifacts = includeProposalAwareness
+    ? findRecentDraftProposalArtifacts({
+        db,
+        limit: 2,
+      })
+    : [];
+  const proposalLines = proposalArtifacts
+    .slice(0, 2)
+    .map((artifact, index) => renderProposalArtifact(artifact, index));
+  if (proposalArtifacts.length > proposalLines.length) {
+    proposalLines.push(`- ${proposalArtifacts.length - proposalLines.length} more draft proposal(s) pending review`);
+  }
+  if (trace) {
+    trace.lookups.pendingProposalReview = {
+      enabled: includeProposalAwareness,
+      rows: proposalArtifacts.map((artifact) => describeImprovementArtifactRow(artifact)),
+      includedRows: proposalLines.length > 0
+        ? proposalArtifacts.slice(0, Math.min(2, proposalArtifacts.length)).map((artifact) => describeImprovementArtifactRow(artifact))
+        : [],
+      reason: includeProposalAwareness
+        ? (proposalLines.length > 0 ? null : "no_draft_proposals")
+        : "session_start_proposal_awareness_disabled",
+    };
+  }
+  if (proposalLines.length > 0) {
+    const section = buildSection("Pending Proposal Review", proposalLines);
+    sections.push(section);
+    totalTokens += estimateTokens(section);
+    recordOutputSection(trace, {
+      title: "Pending Proposal Review",
+      text: section,
+      source: "proposal_awareness",
+      budget: 120,
+      entryCount: proposalLines.length,
+    });
   }
 
   const localEpisodeDetails = allowRepoLocalTaskContext
@@ -706,9 +1031,13 @@ export async function assembleMemoryCapsule({
       const section = buildSection("Long-Range Related Hints", hintLines);
       sections.push(section);
       totalTokens += estimateTokens(section);
-      if (trace) {
-        trace.output.sectionTitles.push("Long-Range Related Hints");
-      }
+      recordOutputSection(trace, {
+        title: "Long-Range Related Hints",
+        text: section,
+        source: "long_range_hints",
+        budget: Math.max(80, Math.floor(config.budgets.episodes / 2)),
+        entryCount: hintLines.length,
+      });
     }
   } else if (trace) {
     trace.lookups.longRangeHints = {
@@ -758,9 +1087,17 @@ export async function assembleMemoryCapsule({
     const section = buildSection(relatedTitle, episodeLines);
     sections.push(section);
     totalTokens += estimateTokens(section);
-    if (trace) {
-      trace.output.sectionTitles.push(relatedTitle);
-    }
+    recordOutputSection(trace, {
+      title: relatedTitle,
+      text: section,
+      source: relatedTitle === "Relevant History Hints"
+        ? "history_hints"
+        : relatedTitle === "Recent Workspace Activity"
+          ? "recent_workspace_activity"
+          : "related_work",
+      budget: config.budgets.episodes,
+      entryCount: episodeLines.length,
+    });
   } else if (trace) {
     trace.omissions.push({
       stage: "related_work",
@@ -797,9 +1134,13 @@ export async function assembleMemoryCapsule({
       const section = buildSection("Transferable Cross-Repo Preferences", preferenceLines);
       sections.push(section);
       totalTokens += estimateTokens(section);
-      if (trace) {
-        trace.output.sectionTitles.push("Transferable Cross-Repo Preferences");
-      }
+      recordOutputSection(trace, {
+        title: "Transferable Cross-Repo Preferences",
+        text: section,
+        source: "cross_repo_preferences",
+        budget: Math.max(80, Math.floor(config.budgets.commitments / 2)),
+        entryCount: preferenceLines.length,
+      });
     }
   } else if (trace) {
     trace.lookups.crossRepoPreferences = {
@@ -838,9 +1179,13 @@ export async function assembleMemoryCapsule({
       const section = buildSection("Cross-Repo Examples", crossRepoLines);
       sections.push(section);
       totalTokens += estimateTokens(section);
-      if (trace) {
-        trace.output.sectionTitles.push("Cross-Repo Examples");
-      }
+      recordOutputSection(trace, {
+        title: "Cross-Repo Examples",
+        text: section,
+        source: "cross_repo_examples",
+        budget: Math.max(80, Math.floor(config.budgets.episodes / 2)),
+        entryCount: crossRepoLines.length,
+      });
     } else if (query) {
       const crossRepoHints = findCrossRepoSessionHints({
         sessionStore,
@@ -867,9 +1212,13 @@ export async function assembleMemoryCapsule({
         const section = buildSection("Cross-Repo Hints", hintLines);
         sections.push(section);
         totalTokens += estimateTokens(section);
-        if (trace) {
-          trace.output.sectionTitles.push("Cross-Repo Hints");
-        }
+        recordOutputSection(trace, {
+          title: "Cross-Repo Hints",
+          text: section,
+          source: "cross_repo_hints",
+          budget: Math.max(80, Math.floor(config.budgets.episodes / 2)),
+          entryCount: hintLines.length,
+        });
       }
     } else if (trace) {
       trace.lookups.crossRepoHints = {
@@ -902,6 +1251,15 @@ export async function assembleMemoryCapsule({
 
   if (trace) {
     trace.output.estimatedTokens = totalTokens;
+    trace.routerDecision = {
+      route: "session_start_capsule",
+      reason: identityOnly ? "identity_only_prompt" : "session_start_context",
+      includeOtherRepositories: allowCrossRepoFallback,
+      usedWorkstreamOverlays: false,
+      usedLegacyPath: false,
+      additionalContext: text.length > 0,
+      sectionCount: trace.output.sectionTitles.length,
+    };
   }
 
   return {

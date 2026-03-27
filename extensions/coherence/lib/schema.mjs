@@ -1,4 +1,4 @@
-export const SCHEMA_VERSION = 6;
+export const SCHEMA_VERSION = 10;
 
 export const SCHEMA_STATEMENTS = [
   `
@@ -20,6 +20,9 @@ export const SCHEMA_STATEMENTS = [
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL,
       superseded_by TEXT,
+      canonical_key TEXT,
+      reinforcement_count INTEGER NOT NULL DEFAULT 1,
+      last_seen_at TEXT,
       expires_at TEXT,
       metadata_json TEXT NOT NULL DEFAULT '{}'
     );
@@ -43,6 +46,14 @@ export const SCHEMA_STATEMENTS = [
   `
     CREATE INDEX IF NOT EXISTS idx_semantic_memory_superseded
       ON semantic_memory(superseded_by);
+  `,
+  `
+    CREATE INDEX IF NOT EXISTS idx_semantic_memory_canonical_key
+      ON semantic_memory(canonical_key);
+  `,
+  `
+    CREATE INDEX IF NOT EXISTS idx_semantic_memory_user_identity_canonical
+      ON semantic_memory(type, canonical_key, superseded_by, updated_at DESC);
   `,
   `
     CREATE VIRTUAL TABLE IF NOT EXISTS semantic_fts USING fts5(
@@ -202,6 +213,47 @@ export const SCHEMA_STATEMENTS = [
       ON scope_override_audit(target_type, target_id, created_at DESC);
   `,
   `
+    CREATE TABLE IF NOT EXISTS improvement_backlog (
+      id TEXT PRIMARY KEY,
+      source_case_id TEXT NOT NULL,
+      source_kind TEXT NOT NULL,
+      title TEXT NOT NULL,
+      summary TEXT NOT NULL,
+      evidence_json TEXT NOT NULL DEFAULT '{}',
+      trace_json TEXT NOT NULL DEFAULT '{}',
+      status TEXT NOT NULL DEFAULT 'active',
+      linked_memory_id TEXT,
+      superseded_by TEXT,
+      proposal_type TEXT,
+      proposal_path TEXT,
+      proposal_hash TEXT,
+      review_state TEXT NOT NULL DEFAULT 'none',
+      review_requested_at TEXT,
+      review_requested_by TEXT,
+      reviewer_decision TEXT,
+      reviewer_notes_json TEXT NOT NULL DEFAULT '{}',
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      resolved_at TEXT
+    );
+  `,
+  `
+    CREATE INDEX IF NOT EXISTS idx_improvement_backlog_status_updated
+      ON improvement_backlog(status, updated_at DESC);
+  `,
+  `
+    CREATE INDEX IF NOT EXISTS idx_improvement_backlog_source
+      ON improvement_backlog(source_kind, source_case_id, status, updated_at DESC);
+  `,
+  `
+    CREATE INDEX IF NOT EXISTS idx_improvement_backlog_review_state_updated
+      ON improvement_backlog(review_state, updated_at DESC);
+  `,
+  `
+    CREATE INDEX IF NOT EXISTS idx_improvement_backlog_proposal_path
+      ON improvement_backlog(proposal_path);
+  `,
+  `
     CREATE TABLE IF NOT EXISTS backfill_run (
       id TEXT PRIMARY KEY,
       strategy TEXT NOT NULL DEFAULT 'session_refresh',
@@ -251,6 +303,45 @@ export const SCHEMA_STATEMENTS = [
   `
     CREATE INDEX IF NOT EXISTS idx_backfill_run_item_status_ordinal
       ON backfill_run_item(run_id, status, ordinal);
+  `,
+  `
+    CREATE TABLE IF NOT EXISTS maintenance_run (
+      id TEXT PRIMARY KEY,
+      trigger TEXT NOT NULL,
+      repository TEXT,
+      dry_run INTEGER NOT NULL DEFAULT 0,
+      status TEXT NOT NULL DEFAULT 'planned',
+      planned_tasks_json TEXT NOT NULL DEFAULT '[]',
+      summary_json TEXT NOT NULL DEFAULT '{}',
+      completed_count INTEGER NOT NULL DEFAULT 0,
+      needs_attention_count INTEGER NOT NULL DEFAULT 0,
+      failed_count INTEGER NOT NULL DEFAULT 0,
+      skipped_count INTEGER NOT NULL DEFAULT 0,
+      started_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      completed_at TEXT
+    );
+  `,
+  `
+    CREATE INDEX IF NOT EXISTS idx_maintenance_run_status_updated
+      ON maintenance_run(status, updated_at DESC);
+  `,
+  `
+    CREATE TABLE IF NOT EXISTS maintenance_task_state (
+      task_name TEXT PRIMARY KEY,
+      last_status TEXT NOT NULL DEFAULT 'idle',
+      last_trigger TEXT,
+      last_repository TEXT,
+      last_started_at TEXT,
+      last_completed_at TEXT,
+      last_duration_ms INTEGER NOT NULL DEFAULT 0,
+      cursor INTEGER NOT NULL DEFAULT 0,
+      total_runs INTEGER NOT NULL DEFAULT 0,
+      total_failures INTEGER NOT NULL DEFAULT 0,
+      total_needs_attention INTEGER NOT NULL DEFAULT 0,
+      last_summary_json TEXT NOT NULL DEFAULT '{}',
+      updated_at TEXT NOT NULL
+    );
   `,
   `
     CREATE TABLE IF NOT EXISTS coherence_schema_version (

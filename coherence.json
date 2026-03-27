@@ -1,3 +1,29 @@
 {
-  "enabled": true
+  "$schema": "./schemas/coherence.schema.json",
+  "enabled": true,
+  "deferredExtraction": {
+    "enabled": true,
+    "autoEnqueueOnSessionEnd": true,
+    "autoProcessOnSessionStart": true
+  },
+  "maintenanceScheduler": {
+    "enabled": true,
+    "maxTasksPerRun": 4,
+    "tasks": {
+      "traceCompaction": true,
+      "indexUpkeep": true
+    }
+  },
+  "rollout": {
+    "autoWriteImprovementGoals": true,
+    "ambientPersonaMode": true,
+    "traceRecorder": true,
+    "evolutionLedger": true,
+    "proposalGeneration": true,
+    "memoryOperations": true,
+    "generatedArtifactIntegrity": true,
+    "temporalQueryNormalization": true,
+    "workstreamOverlays": true,
+    "retentionSanitization": true
+  }
 }
