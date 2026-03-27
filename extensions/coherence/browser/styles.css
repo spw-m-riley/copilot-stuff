@@ -8,6 +8,8 @@
   --border: #2a3040;
   --ok: #26a269;
   --warn: #d29922;
+  --danger: #ff7b72;
+  --panel-elevated: #1d2230;
 }
 
 * {
@@ -30,9 +32,19 @@ body {
   gap: 1rem;
 }
 
-h1 {
+h1,
+h2,
+h3 {
   margin: 0;
+}
+
+h1 {
   font-size: 1.2rem;
+}
+
+h2 {
+  margin: 1.2rem 0 0.65rem;
+  font-size: 1rem;
 }
 
 .subtitle {
@@ -57,6 +69,7 @@ h1 {
   position: sticky;
   top: 0;
   background: color-mix(in oklab, var(--bg), black 8%);
+  z-index: 10;
 }
 
 .tab {
@@ -110,6 +123,10 @@ main {
   font-weight: 700;
 }
 
+.metric-card {
+  min-height: 6.3rem;
+}
+
 .table-wrap {
   overflow: auto;
   border: 1px solid var(--border);
@@ -136,7 +153,8 @@ main {
   font-weight: 600;
 }
 
-.row-muted {
+.row-muted,
+.empty-state {
   color: var(--muted);
 }
 
@@ -149,12 +167,35 @@ main {
 
 .controls input,
 .controls select,
-.controls button {
+.controls button,
+.action-btn,
+.graph-node {
   background: var(--panel);
   color: var(--text);
   border: 1px solid var(--border);
   border-radius: 0.45rem;
   padding: 0.45rem 0.55rem;
+}
+
+.action-btn,
+.graph-node,
+.tab {
+  transition: border-color 120ms ease, color 120ms ease, background 120ms ease;
+}
+
+.action-btn {
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.action-btn:hover,
+.graph-node:hover,
+.tab:hover {
+  border-color: var(--accent);
+}
+
+.secondary-btn {
+  background: color-mix(in oklab, var(--panel), black 6%);
 }
 
 .tag {
@@ -190,4 +231,183 @@ main {
 .small {
   font-size: 0.8rem;
   color: var(--muted);
+}
+
+.item-header-row,
+.section-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.drilldown-shell {
+  display: grid;
+  gap: 1rem;
+}
+
+.drilldown-header h2 {
+  margin: 0;
+}
+
+.drilldown-header p {
+  margin: 0.65rem 0 0.4rem;
+}
+
+.summary-grid {
+  margin: 0;
+}
+
+.detail-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+
+.section-card h2 {
+  margin: 0;
+  font-size: 0.98rem;
+}
+
+.compact-list .list-item {
+  background: color-mix(in oklab, var(--panel), white 2%);
+}
+
+.relation-item strong {
+  display: block;
+  margin-bottom: 0.15rem;
+}
+
+.kv-list {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.kv-row {
+  display: grid;
+  gap: 0.2rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.45rem;
+}
+
+.graph-shell {
+  position: relative;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: 0.7rem;
+  background: color-mix(in oklab, var(--panel), black 3%);
+  padding: 0.9rem;
+  min-height: 18rem;
+}
+
+.graph-columns {
+  position: relative;
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: repeat(4, minmax(200px, 1fr));
+  min-width: 920px;
+}
+
+.graph-column {
+  display: grid;
+  gap: 0.55rem;
+  align-content: start;
+}
+
+.graph-column-title {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.graph-node-stack {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.graph-node {
+  position: relative;
+  display: grid;
+  gap: 0.25rem;
+  width: 100%;
+  min-height: 6.1rem;
+  padding: 0.7rem;
+  background: var(--panel-elevated);
+  text-align: left;
+}
+
+.graph-node-title {
+  font-weight: 700;
+}
+
+.graph-node-subtitle,
+.graph-node-meta {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.node-badge {
+  justify-self: start;
+}
+
+.node-workstream {
+  border-color: color-mix(in oklab, var(--accent), black 35%);
+}
+
+.node-improvement {
+  border-color: color-mix(in oklab, var(--warn), black 35%);
+}
+
+.node-cluster,
+.node-day,
+.node-session {
+  border-style: dashed;
+}
+
+.graph-lines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.graph-edge {
+  fill: none;
+  stroke: color-mix(in oklab, var(--accent), white 8%);
+  stroke-width: 2;
+  opacity: 0.75;
+}
+
+.graph-edge.edge-linked_memory {
+  stroke: color-mix(in oklab, var(--warn), white 8%);
+}
+
+.graph-edge.edge-superseded_by {
+  stroke: color-mix(in oklab, var(--danger), white 8%);
+}
+
+.edge-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.8rem;
+}
+
+.edge-chip {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.2rem 0.55rem;
+  background: color-mix(in oklab, var(--panel), black 3%);
+}
+
+.empty-drilldown {
+  max-width: 52rem;
+}
+
+@media (max-width: 900px) {
+  .tabs {
+    flex-wrap: wrap;
+  }
+
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
 }
