@@ -101,10 +101,12 @@ Optional flags:
 - `--host 127.0.0.1` (default)
 - `--host` accepts loopback values only: `127.0.0.1`, `localhost`, or `::1`
 - `--port 43111` (default)
-- `--repository owner/repo` (focus browser reads)
+- `--repository owner/repo` (optional; focus browser reads to one repository)
 - `--derived-store-path <path>` (override DB location)
 
 Then open `http://127.0.0.1:43111`.
+
+By default, the browser reads from the shared `coherence.db` across repositories. If you do not pass `--repository`, the UI is intentionally cross-repo and now labels itself as `scope: all repositories`.
 
 Views in MVP:
 

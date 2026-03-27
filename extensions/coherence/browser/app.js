@@ -1,5 +1,8 @@
 const state = {
   tab: "overview",
+  scope: {
+    repository: null,
+  },
   memoriesFilters: {
     type: "",
     scope: "",
@@ -80,6 +83,17 @@ function setStatus(text, ok = true) {
   const pill = document.getElementById("status-pill")
   pill.textContent = text
   pill.style.color = ok ? "var(--ok)" : "var(--warn)"
+}
+
+function setScope(repository) {
+  state.scope.repository = repository || null
+  const pill = document.getElementById("scope-pill")
+  if (!pill) {
+    return
+  }
+  pill.textContent = repository
+    ? `scope: ${repository}`
+    : "scope: all repositories"
 }
 
 function renderMetricGrid(entries) {
@@ -913,11 +927,13 @@ function clearDrilldownSelection() {
 async function refreshAll() {
   setStatus("loading…", true)
   try {
-    const [overviewResponse, maintenanceResponse, episodesResponse] = await Promise.all([
+    const [healthResponse, overviewResponse, maintenanceResponse, episodesResponse] = await Promise.all([
+      fetchJson("/api/health"),
       fetchJson("/api/overview"),
       fetchJson("/api/maintenance"),
       fetchJson("/api/episodes"),
     ])
+    setScope(healthResponse.repository ?? null)
     renderOverview(overviewResponse.data)
     renderMaintenance(maintenanceResponse.data)
     renderEpisodes(episodesResponse.data)
