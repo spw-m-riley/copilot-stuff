@@ -43,6 +43,7 @@ const runtime = {
   lastBackupPath: null,
   processingDeferred: false,
   processingMaintenance: false,
+  tracePersistenceWrites: 0,
 };
 
 function recordMetric(values, value, windowSize) {
@@ -297,11 +298,114 @@ function hooksEnabled(config) {
   return config?.enabled === true;
 }
 
+function shouldEmitLatencyWarning(metric) {
+  if (!metric || metric.ready !== true) {
+    return false;
+  }
+  return metric.targetStatus === "above_target";
+}
+
 function buildLatencyWarning(hookName, measuredMs, targetMs) {
   if (measuredMs <= targetMs) {
     return null;
   }
   return `${hookName} exceeded latency target (${Math.round(measuredMs)}ms > ${targetMs}ms)`;
+}
+
+function persistTraceSuccess({ activeRuntime, repository, traceResult, durationMs, hook }) {
+  if (!activeRuntime?.db || !traceResult || typeof traceResult !== "object") {
+    return;
+  }
+  const traceRecord = traceResult.record ?? null;
+  const traceId = traceResult.id ?? traceRecord?.id ?? null;
+  if (!traceRecord) {
+    return;
+  }
+
+  queueMicrotask(() => {
+    try {
+      const recordedAt = traceRecord.recordedAt ?? new Date().toISOString();
+      activeRuntime.db.upsertActivitySuccess({
+        repository,
+        updates: {
+          lastTraceRecordedAt: recordedAt,
+          lastTraceHook: hook,
+          lastTraceId: traceId,
+        },
+      });
+      activeRuntime.db.upsertActivitySuccess({
+        repository: null,
+        updates: {
+          lastTraceRecordedAt: recordedAt,
+          lastTraceHook: hook,
+          lastTraceId: traceId,
+        },
+      });
+
+      const sectionTitles = traceRecord?.output?.sectionTitles ?? [];
+      const contextInjected = traceRecord?.output?.contextInjected === true;
+      if (contextInjected || sectionTitles.length > 0) {
+        activeRuntime.db.upsertActivitySuccess({
+          repository,
+          updates: {
+            lastContextInjectionAt: recordedAt,
+            lastContextInjectionHook: hook,
+            lastContextInjectionSections: sectionTitles,
+            lastContextInjectionTraceId: traceId,
+            lastContextInjectionDurationMs: durationMs,
+          },
+        });
+        activeRuntime.db.upsertActivitySuccess({
+          repository: null,
+          updates: {
+            lastContextInjectionAt: recordedAt,
+            lastContextInjectionHook: hook,
+            lastContextInjectionSections: sectionTitles,
+            lastContextInjectionTraceId: traceId,
+            lastContextInjectionDurationMs: durationMs,
+          },
+        });
+      }
+
+      if (traceResult.durableSelected !== true) {
+        return;
+      }
+
+      activeRuntime.db.insertRetrievalTraceSample({
+        id: traceId,
+        repository,
+        scopeType: repository ? "repo" : "global",
+        hook,
+        route: traceRecord?.routerDecision?.route ?? null,
+        routeReason: traceRecord?.routerDecision?.reason ?? null,
+        contextInjected: traceRecord?.output?.contextInjected === true,
+        latencyMs: traceRecord?.latencyMs ?? null,
+        promptPreview: traceRecord?.promptPreview ?? "",
+        sectionTitles: traceRecord?.output?.sectionTitles ?? [],
+        promptNeed: traceRecord?.promptNeed ?? {},
+        eligibility: traceRecord?.eligibility ?? {},
+        lookups: traceRecord?.lookups ?? {},
+        omissions: traceRecord?.omissions ?? [],
+        output: traceRecord?.output ?? {},
+        trace: {
+          mode: traceRecord?.mode ?? null,
+        },
+        recordedAt,
+      });
+
+      activeRuntime.tracePersistenceWrites = (activeRuntime.tracePersistenceWrites ?? 0) + 1;
+      if (activeRuntime.tracePersistenceWrites % 10 === 0) {
+        activeRuntime.db.pruneRetrievalTraceSamples({
+          repository,
+          maxRowsPerRepository: activeRuntime.config?.traceRecorder?.durableMaxRowsPerRepository ?? 120,
+          maxRowsGlobal: activeRuntime.config?.traceRecorder?.durableMaxRowsGlobal ?? 240,
+          maxAgeMs: activeRuntime.config?.traceRecorder?.durableMaxAgeMs ?? (14 * 24 * 60 * 60 * 1000),
+        });
+      }
+    } catch {
+      // best-effort visibility persistence; never block hook path
+    }
+  });
 }
 
 async function maybeProcessDeferredExtractions(session, activeRuntime, repository) {
@@ -480,7 +584,7 @@ const session = await joinSession({
         : { text: "", sections: [] };
 
       const durationMs = Date.now() - startedAt;
-      activeRuntime.traceRecorder?.record({
+      const sessionStartTrace = activeRuntime.traceRecorder?.record({
         hook: "onSessionStart",
         prompt: input.initialPrompt ?? "",
         repository,
@@ -489,18 +593,28 @@ const session = await joinSession({
         trace: assembled.trace,
         contextText: assembled.text,
       });
+      persistTraceSuccess({
+        activeRuntime,
+        repository,
+        traceResult: sessionStartTrace,
+        durationMs,
+        hook: "onSessionStart",
+      });
       recordMetric(
         metrics.sessionStartMs,
         durationMs,
         activeRuntime.config.limits.metricWindowSize,
       );
-      const warning = buildLatencyWarning(
-        "coherence onSessionStart",
-        durationMs,
-        activeRuntime.config.latencyTargetsMs.sessionStartP95,
-      );
-      if (warning) {
-        await session.log(warning, { ephemeral: true, level: "warning" });
+      const latencySnapshot = buildLatencyMetrics(activeRuntime.config);
+      if (shouldEmitLatencyWarning(latencySnapshot.sessionStart)) {
+        const warning = buildLatencyWarning(
+          "coherence onSessionStart",
+          durationMs,
+          activeRuntime.config.latencyTargetsMs.sessionStartP95,
+        );
+        if (warning) {
+          await session.log(warning, { ephemeral: true, level: "warning" });
+        }
       }
 
       if (!assembled.text) {
@@ -547,7 +661,7 @@ const session = await joinSession({
         : false;
       if (!need.requiresLookup && !hasAmbientInteractionStyle) {
         const durationMs = Date.now() - startedAt;
-        activeRuntime.traceRecorder?.record({
+        const bypassTrace = activeRuntime.traceRecorder?.record({
           hook: "onUserPromptSubmitted",
           prompt: input.prompt,
           repository,
@@ -559,6 +673,13 @@ const session = await joinSession({
             reason: "lookup_not_required_and_no_ambient_style",
           }),
           contextText: "",
+        });
+        persistTraceSuccess({
+          activeRuntime,
+          repository,
+          traceResult: bypassTrace,
+          durationMs,
+          hook: "onUserPromptSubmitted",
         });
         recordMetric(
           metrics.userPromptSubmittedMs,
@@ -580,7 +701,7 @@ const session = await joinSession({
       const additionalContext = recall.text;
 
       const durationMs = Date.now() - startedAt;
-      activeRuntime.traceRecorder?.record({
+      const promptTrace = activeRuntime.traceRecorder?.record({
         hook: "onUserPromptSubmitted",
         prompt: input.prompt,
         repository,
@@ -589,18 +710,28 @@ const session = await joinSession({
         trace: recall.trace,
         contextText: additionalContext,
       });
+      persistTraceSuccess({
+        activeRuntime,
+        repository,
+        traceResult: promptTrace,
+        durationMs,
+        hook: "onUserPromptSubmitted",
+      });
       recordMetric(
         metrics.userPromptSubmittedMs,
         durationMs,
         activeRuntime.config.limits.metricWindowSize,
       );
-      const warning = buildLatencyWarning(
-        "coherence onUserPromptSubmitted",
-        durationMs,
-        activeRuntime.config.latencyTargetsMs.userPromptSubmittedP95,
-      );
-      if (warning) {
-        await session.log(warning, { ephemeral: true, level: "warning" });
+      const latencySnapshot = buildLatencyMetrics(activeRuntime.config);
+      if (shouldEmitLatencyWarning(latencySnapshot.userPromptSubmitted)) {
+        const warning = buildLatencyWarning(
+          "coherence onUserPromptSubmitted",
+          durationMs,
+          activeRuntime.config.latencyTargetsMs.userPromptSubmittedP95,
+        );
+        if (warning) {
+          await session.log(warning, { ephemeral: true, level: "warning" });
+        }
       }
 
       if (!additionalContext) {

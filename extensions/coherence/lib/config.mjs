@@ -84,6 +84,11 @@ export const USER_CONFIG_DEFAULTS = Object.freeze({
     maxPromptChars: 160,
     maxRowChars: 160,
     maxContextChars: 600,
+    persistDurableSample: true,
+    durableSampleRate: 0.25,
+    durableMaxRowsPerRepository: 120,
+    durableMaxRowsGlobal: 240,
+    durableMaxAgeMs: 14 * 24 * 60 * 60 * 1000,
   },
   rollout: {
     ambientPersonaMode: false,

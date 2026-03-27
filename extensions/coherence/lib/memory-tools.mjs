@@ -586,6 +586,42 @@ function formatTraceRecorderPatterns(patterns) {
     : "none";
 }
 
+function formatActivityStates(states) {
+  if (ensureArray(states).length === 0) {
+    return ["- none"]; 
+  }
+  return ensureArray(states).map((state) => {
+    const sections = ensureArray(state.lastContextInjectionSections).join(", ") || "none";
+    return [
+      `- [${state.scopeKey}] scope=${state.scopeType}`,
+      state.repository ? `repository=${state.repository}` : null,
+      `lastContextInjectionAt=${state.lastContextInjectionAt ?? "none"}`,
+      `lastContextHook=${state.lastContextInjectionHook ?? "none"}`,
+      `lastContextSections=${sections}`,
+      `lastExtractionCompletionAt=${state.lastExtractionCompletionAt ?? "none"}`,
+      `lastMaintenanceCompletionAt=${state.lastMaintenanceCompletionAt ?? "none"}`,
+      `lastMaintenanceStatus=${state.lastMaintenanceStatus ?? "none"}`,
+      `lastTraceRecordedAt=${state.lastTraceRecordedAt ?? "none"}`,
+      `lastTraceHook=${state.lastTraceHook ?? "none"}`,
+      `updatedAt=${state.updatedAt ?? "none"}`,
+    ].filter(Boolean).join(" ");
+  });
+}
+
+function formatRetrievalTraceSampleRows(rows) {
+  return formatRows(rows, (row) => [
+    `- [${row.id}] hook=${row.hook}`,
+    row.repository ? `repository=${row.repository}` : "repository=global",
+    row.route ? `route=${row.route}` : null,
+    row.routeReason ? `reason=${row.routeReason}` : null,
+    `contextInjected=${row.contextInjected === true}`,
+    row.latencyMs != null ? `latency=${row.latencyMs}ms` : null,
+    `sections=${ensureArray(row.sectionTitles).join(",") || "none"}`,
+    `recordedAt=${row.recordedAt}`,
+    row.promptPreview ? `prompt=${row.promptPreview}` : null,
+  ].filter(Boolean).join(" "));
+}
+
 function formatTrajectoryArtifactRows(rows) {
   return formatRows(rows, (row) => {
     const contextKeys = Object.keys(row.context ?? {});
@@ -910,6 +946,15 @@ export function createMemoryTools({ getRuntime }) {
 
         const stats = runtime.db.getStats();
         const traceStats = runtime.traceRecorder?.getStats?.() ?? null;
+        const activityStates = runtime.db.getActivityState({
+          repository: runtime.repository,
+          includeGlobal: true,
+        });
+        const recentDurableTraceSamples = runtime.db.listRetrievalTraceSamples({
+          repository: runtime.repository,
+          includeGlobal: true,
+          limit: 5,
+        });
         const maintenance = getMaintenanceStatus({
           runtime,
           repository: runtime.repository,
@@ -983,6 +1028,9 @@ export function createMemoryTools({ getRuntime }) {
           `trajectoryValidationMissCount: ${stats.trajectoryValidationMissCount ?? 0}`,
           `trajectoryProposalFailureCount: ${stats.trajectoryProposalFailureCount ?? 0}`,
           `trajectoryLatencyOutlierCount: ${stats.trajectoryLatencyOutlierCount ?? 0}`,
+          `retrievalTraceSampleCount: ${stats.retrievalTraceSampleCount ?? 0}`,
+          `retrievalTraceSampleRepositoryCount: ${stats.retrievalTraceSampleRepositoryCount ?? 0}`,
+          `retrievalTraceSampleGlobalCount: ${stats.retrievalTraceSampleGlobalCount ?? 0}`,
           `intentJournalCount: ${stats.intentJournalCount ?? 0}`,
           `intentRoutingCount: ${stats.intentRoutingCount ?? 0}`,
           `intentRolloutCount: ${stats.intentRolloutCount ?? 0}`,
@@ -1017,6 +1065,9 @@ export function createMemoryTools({ getRuntime }) {
           const recentRecords = runtime.traceRecorder?.getRecent?.(recentTraceLimit) ?? [];
           lines.push("", "## Recent Trace Records", "", ...formatRecentTraceRecords(recentRecords));
         }
+
+        lines.push("", "## Last Success Activity", "", ...formatActivityStates(activityStates));
+        lines.push("", "## Durable Retrieval Trace Samples", "", formatRetrievalTraceSampleRows(recentDurableTraceSamples));
 
         if (args.includeRecentTrajectoryArtifacts === true) {
           const recentTrajectoryLimit = ensureLimit(args.recentTrajectoryLimit, 5);

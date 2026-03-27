@@ -1153,6 +1153,9 @@ export class CoherenceDb {
       if (currentVersion < 12) {
         this.applyIntentJournalMigration();
       }
+      if (currentVersion < 13) {
+        this.applyCoherenceVisibilitySubstrateMigration();
+      }
       this.db.exec(`DELETE FROM coherence_schema_version;`);
       this.db.prepare(`INSERT INTO coherence_schema_version (version) VALUES (?)`).run(SCHEMA_VERSION);
       this.db.exec("COMMIT");
@@ -1534,6 +1537,63 @@ export class CoherenceDb {
     `);
   }
 
+  applyCoherenceVisibilitySubstrateMigration() {
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS coherence_activity_state (
+        scope_key TEXT PRIMARY KEY,
+        scope_type TEXT NOT NULL,
+        repository TEXT,
+        last_context_injection_at TEXT,
+        last_context_injection_hook TEXT,
+        last_context_injection_sections_json TEXT NOT NULL DEFAULT '[]',
+        last_context_injection_trace_id TEXT,
+        last_context_injection_duration_ms INTEGER,
+        last_extraction_completion_at TEXT,
+        last_extraction_repository TEXT,
+        last_maintenance_completion_at TEXT,
+        last_maintenance_status TEXT,
+        last_maintenance_run_id TEXT,
+        last_trace_recorded_at TEXT,
+        last_trace_hook TEXT,
+        last_trace_id TEXT,
+        updated_at TEXT NOT NULL
+      );
+    `);
+    this.db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_coherence_activity_state_scope_type_repository
+        ON coherence_activity_state(scope_type, repository);
+    `);
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS retrieval_trace_sample (
+        id TEXT PRIMARY KEY,
+        repository TEXT,
+        scope_type TEXT NOT NULL DEFAULT 'repo',
+        hook TEXT NOT NULL,
+        route TEXT,
+        route_reason TEXT,
+        context_injected INTEGER NOT NULL DEFAULT 0,
+        latency_ms INTEGER,
+        prompt_preview TEXT,
+        section_titles_json TEXT NOT NULL DEFAULT '[]',
+        prompt_need_json TEXT NOT NULL DEFAULT '{}',
+        eligibility_json TEXT NOT NULL DEFAULT '{}',
+        lookups_json TEXT NOT NULL DEFAULT '{}',
+        omissions_json TEXT NOT NULL DEFAULT '[]',
+        output_json TEXT NOT NULL DEFAULT '{}',
+        trace_json TEXT NOT NULL DEFAULT '{}',
+        recorded_at TEXT NOT NULL
+      );
+    `);
+    this.db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_retrieval_trace_sample_repository_recorded
+        ON retrieval_trace_sample(repository, recorded_at DESC);
+    `);
+    this.db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_retrieval_trace_sample_scope_recorded
+        ON retrieval_trace_sample(scope_type, recorded_at DESC);
+    `);
+  }
+
   ensureOpen() {
     if (!this.db) {
       throw new Error("coherence database is not initialized");
@@ -1643,6 +1703,36 @@ export class CoherenceDb {
         SUM(CASE WHEN intent_kind = 'serendipity' THEN 1 ELSE 0 END) AS serendipity_count
       FROM intent_journal
     `).get();
+    const retrievalTraceSampleCounts = this.db.prepare(`
+      SELECT
+        COUNT(*) AS total_count,
+        SUM(CASE WHEN repository IS NULL OR repository = '' THEN 1 ELSE 0 END) AS global_count,
+        SUM(CASE WHEN repository IS NOT NULL AND repository != '' THEN 1 ELSE 0 END) AS repository_count
+      FROM retrieval_trace_sample
+    `).get();
+    const latestActivity = this.db.prepare(`
+      SELECT
+        scope_key,
+        scope_type,
+        repository,
+        last_context_injection_at,
+        last_context_injection_hook,
+        last_context_injection_sections_json,
+        last_context_injection_trace_id,
+        last_context_injection_duration_ms,
+        last_extraction_completion_at,
+        last_extraction_repository,
+        last_maintenance_completion_at,
+        last_maintenance_status,
+        last_maintenance_run_id,
+        last_trace_recorded_at,
+        last_trace_hook,
+        last_trace_id,
+        updated_at
+      FROM coherence_activity_state
+      WHERE scope_key = ?
+      LIMIT 1
+    `).get('global');
 
     return {
       semanticCount,
@@ -1707,6 +1797,30 @@ export class CoherenceDb {
       intentReviewerCount: intentJournalCounts?.reviewer_count ?? 0,
       intentFallbackCount: intentJournalCounts?.fallback_count ?? 0,
       intentSerendipityCount: intentJournalCounts?.serendipity_count ?? 0,
+      retrievalTraceSampleCount: retrievalTraceSampleCounts?.total_count ?? 0,
+      retrievalTraceSampleGlobalCount: retrievalTraceSampleCounts?.global_count ?? 0,
+      retrievalTraceSampleRepositoryCount: retrievalTraceSampleCounts?.repository_count ?? 0,
+      lastSuccessActivity: latestActivity
+        ? {
+          scopeKey: latestActivity.scope_key,
+          scopeType: latestActivity.scope_type,
+          repository: latestActivity.repository,
+          lastContextInjectionAt: latestActivity.last_context_injection_at,
+          lastContextInjectionHook: latestActivity.last_context_injection_hook,
+          lastContextInjectionSections: parseJsonArray(latestActivity.last_context_injection_sections_json),
+          lastContextInjectionTraceId: latestActivity.last_context_injection_trace_id,
+          lastContextInjectionDurationMs: latestActivity.last_context_injection_duration_ms,
+          lastExtractionCompletionAt: latestActivity.last_extraction_completion_at,
+          lastExtractionRepository: latestActivity.last_extraction_repository,
+          lastMaintenanceCompletionAt: latestActivity.last_maintenance_completion_at,
+          lastMaintenanceStatus: latestActivity.last_maintenance_status,
+          lastMaintenanceRunId: latestActivity.last_maintenance_run_id,
+          lastTraceRecordedAt: latestActivity.last_trace_recorded_at,
+          lastTraceHook: latestActivity.last_trace_hook,
+          lastTraceId: latestActivity.last_trace_id,
+          updatedAt: latestActivity.updated_at,
+        }
+        : null,
     };
   }
 
@@ -1914,6 +2028,388 @@ export class CoherenceDb {
       ...row,
       context: parseJsonObject(row.context_json),
       trace: parseJsonObject(row.trace_json),
+    }));
+  }
+
+
+  upsertActivitySuccess({
+    repository = null,
+    updates = {},
+  } = {}) {
+    this.ensureOpen();
+    const repo = normalizeRepository(repository);
+    const scopeKey = repo ? `repo:${repo}` : "global";
+    const scopeType = repo ? "repo" : "global";
+    const timestamp = nowIso();
+    const normalizedUpdates = updates && typeof updates === "object" ? updates : {};
+
+    const existing = this.db.prepare(`
+      SELECT *
+      FROM coherence_activity_state
+      WHERE scope_key = ?
+      LIMIT 1
+    `).get(scopeKey);
+
+    const next = {
+      last_context_injection_at: normalizedUpdates.lastContextInjectionAt ?? existing?.last_context_injection_at ?? null,
+      last_context_injection_hook: normalizedUpdates.lastContextInjectionHook ?? existing?.last_context_injection_hook ?? null,
+      last_context_injection_sections_json: JSON.stringify(
+        Array.isArray(normalizedUpdates.lastContextInjectionSections)
+          ? normalizedUpdates.lastContextInjectionSections.slice(0, 8)
+          : parseJsonArray(existing?.last_context_injection_sections_json),
+      ),
+      last_context_injection_trace_id: normalizedUpdates.lastContextInjectionTraceId ?? existing?.last_context_injection_trace_id ?? null,
+      last_context_injection_duration_ms: Number.isFinite(normalizedUpdates.lastContextInjectionDurationMs)
+        ? Math.round(normalizedUpdates.lastContextInjectionDurationMs)
+        : (existing?.last_context_injection_duration_ms ?? null),
+      last_extraction_completion_at: normalizedUpdates.lastExtractionCompletionAt ?? existing?.last_extraction_completion_at ?? null,
+      last_extraction_repository: normalizeRepository(normalizedUpdates.lastExtractionRepository)
+        ?? existing?.last_extraction_repository
+        ?? repo,
+      last_maintenance_completion_at: normalizedUpdates.lastMaintenanceCompletionAt ?? existing?.last_maintenance_completion_at ?? null,
+      last_maintenance_status: normalizedUpdates.lastMaintenanceStatus ?? existing?.last_maintenance_status ?? null,
+      last_maintenance_run_id: normalizedUpdates.lastMaintenanceRunId ?? existing?.last_maintenance_run_id ?? null,
+      last_trace_recorded_at: normalizedUpdates.lastTraceRecordedAt ?? existing?.last_trace_recorded_at ?? null,
+      last_trace_hook: normalizedUpdates.lastTraceHook ?? existing?.last_trace_hook ?? null,
+      last_trace_id: normalizedUpdates.lastTraceId ?? existing?.last_trace_id ?? null,
+    };
+
+    this.db.prepare(`
+      INSERT INTO coherence_activity_state (
+        scope_key,
+        scope_type,
+        repository,
+        last_context_injection_at,
+        last_context_injection_hook,
+        last_context_injection_sections_json,
+        last_context_injection_trace_id,
+        last_context_injection_duration_ms,
+        last_extraction_completion_at,
+        last_extraction_repository,
+        last_maintenance_completion_at,
+        last_maintenance_status,
+        last_maintenance_run_id,
+        last_trace_recorded_at,
+        last_trace_hook,
+        last_trace_id,
+        updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(scope_key) DO UPDATE SET
+        scope_type = excluded.scope_type,
+        repository = excluded.repository,
+        last_context_injection_at = excluded.last_context_injection_at,
+        last_context_injection_hook = excluded.last_context_injection_hook,
+        last_context_injection_sections_json = excluded.last_context_injection_sections_json,
+        last_context_injection_trace_id = excluded.last_context_injection_trace_id,
+        last_context_injection_duration_ms = excluded.last_context_injection_duration_ms,
+        last_extraction_completion_at = excluded.last_extraction_completion_at,
+        last_extraction_repository = excluded.last_extraction_repository,
+        last_maintenance_completion_at = excluded.last_maintenance_completion_at,
+        last_maintenance_status = excluded.last_maintenance_status,
+        last_maintenance_run_id = excluded.last_maintenance_run_id,
+        last_trace_recorded_at = excluded.last_trace_recorded_at,
+        last_trace_hook = excluded.last_trace_hook,
+        last_trace_id = excluded.last_trace_id,
+        updated_at = excluded.updated_at
+    `).run(
+      scopeKey,
+      scopeType,
+      repo,
+      next.last_context_injection_at,
+      next.last_context_injection_hook,
+      next.last_context_injection_sections_json,
+      next.last_context_injection_trace_id,
+      next.last_context_injection_duration_ms,
+      next.last_extraction_completion_at,
+      next.last_extraction_repository,
+      next.last_maintenance_completion_at,
+      next.last_maintenance_status,
+      next.last_maintenance_run_id,
+      next.last_trace_recorded_at,
+      next.last_trace_hook,
+      next.last_trace_id,
+      timestamp,
+    );
+
+    return this.getActivityState({ repository: repo, includeGlobal: false });
+  }
+
+  getActivityState({ repository = null, includeGlobal = true } = {}) {
+    this.ensureOpen();
+    const rows = [];
+    const repo = normalizeRepository(repository);
+    if (repo) {
+      const repoRow = this.db.prepare(`
+        SELECT
+          scope_key,
+          scope_type,
+          repository,
+          last_context_injection_at,
+          last_context_injection_hook,
+          last_context_injection_sections_json,
+          last_context_injection_trace_id,
+          last_context_injection_duration_ms,
+          last_extraction_completion_at,
+          last_extraction_repository,
+          last_maintenance_completion_at,
+          last_maintenance_status,
+          last_maintenance_run_id,
+          last_trace_recorded_at,
+          last_trace_hook,
+          last_trace_id,
+          updated_at
+        FROM coherence_activity_state
+        WHERE scope_key = ?
+      `).get(`repo:${repo}`);
+      if (repoRow) {
+        rows.push(repoRow);
+      }
+    }
+    if (includeGlobal) {
+      const globalRow = this.db.prepare(`
+        SELECT
+          scope_key,
+          scope_type,
+          repository,
+          last_context_injection_at,
+          last_context_injection_hook,
+          last_context_injection_sections_json,
+          last_context_injection_trace_id,
+          last_context_injection_duration_ms,
+          last_extraction_completion_at,
+          last_extraction_repository,
+          last_maintenance_completion_at,
+          last_maintenance_status,
+          last_maintenance_run_id,
+          last_trace_recorded_at,
+          last_trace_hook,
+          last_trace_id,
+          updated_at
+        FROM coherence_activity_state
+        WHERE scope_key = 'global'
+      `).get();
+      if (globalRow) {
+        rows.push(globalRow);
+      }
+    }
+
+    return rows.map((row) => ({
+      scopeKey: row.scope_key,
+      scopeType: row.scope_type,
+      repository: row.repository,
+      lastContextInjectionAt: row.last_context_injection_at,
+      lastContextInjectionHook: row.last_context_injection_hook,
+      lastContextInjectionSections: parseJsonArray(row.last_context_injection_sections_json),
+      lastContextInjectionTraceId: row.last_context_injection_trace_id,
+      lastContextInjectionDurationMs: row.last_context_injection_duration_ms,
+      lastExtractionCompletionAt: row.last_extraction_completion_at,
+      lastExtractionRepository: row.last_extraction_repository,
+      lastMaintenanceCompletionAt: row.last_maintenance_completion_at,
+      lastMaintenanceStatus: row.last_maintenance_status,
+      lastMaintenanceRunId: row.last_maintenance_run_id,
+      lastTraceRecordedAt: row.last_trace_recorded_at,
+      lastTraceHook: row.last_trace_hook,
+      lastTraceId: row.last_trace_id,
+      updatedAt: row.updated_at,
+    }));
+  }
+
+  insertRetrievalTraceSample({
+    id = null,
+    repository = null,
+    scopeType = "repo",
+    hook,
+    route = null,
+    routeReason = null,
+    contextInjected = false,
+    latencyMs = null,
+    promptPreview = "",
+    sectionTitles = [],
+    promptNeed = {},
+    eligibility = {},
+    lookups = {},
+    omissions = [],
+    output = {},
+    trace = {},
+    recordedAt = nowIso(),
+  }) {
+    this.ensureOpen();
+    const normalizedHook = String(hook || "").trim();
+    if (!normalizedHook) {
+      throw new Error("hook is required");
+    }
+    const sampleId = id || crypto.randomUUID();
+    const repo = normalizeRepository(repository);
+    this.db.prepare(`
+      INSERT INTO retrieval_trace_sample (
+        id,
+        repository,
+        scope_type,
+        hook,
+        route,
+        route_reason,
+        context_injected,
+        latency_ms,
+        prompt_preview,
+        section_titles_json,
+        prompt_need_json,
+        eligibility_json,
+        lookups_json,
+        omissions_json,
+        output_json,
+        trace_json,
+        recorded_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      sampleId,
+      repo,
+      scopeType === "global" ? "global" : "repo",
+      normalizedHook,
+      route ? String(route) : null,
+      routeReason ? String(routeReason) : null,
+      contextInjected ? 1 : 0,
+      Number.isFinite(latencyMs) ? Math.round(latencyMs) : null,
+      String(promptPreview || ""),
+      JSON.stringify(Array.isArray(sectionTitles) ? sectionTitles.slice(0, 8) : []),
+      JSON.stringify(promptNeed ?? {}),
+      JSON.stringify(eligibility ?? {}),
+      JSON.stringify(lookups ?? {}),
+      JSON.stringify(Array.isArray(omissions) ? omissions : []),
+      JSON.stringify(output ?? {}),
+      JSON.stringify(trace ?? {}),
+      recordedAt,
+    );
+    return sampleId;
+  }
+
+  pruneRetrievalTraceSamples({
+    repository = null,
+    maxRowsPerRepository = 120,
+    maxRowsGlobal = 240,
+    maxAgeMs = 14 * 24 * 60 * 60 * 1000,
+  } = {}) {
+    this.ensureOpen();
+    let removed = 0;
+    const cutoffIso = new Date(Date.now() - clampInteger(maxAgeMs, 14 * 24 * 60 * 60 * 1000, {
+      min: 60 * 60 * 1000,
+      max: 365 * 24 * 60 * 60 * 1000,
+    })).toISOString();
+    const ageRemoved = this.db.prepare(`
+      DELETE FROM retrieval_trace_sample
+      WHERE recorded_at < ?
+    `).run(cutoffIso).changes ?? 0;
+    removed += ageRemoved;
+
+    const repo = normalizeRepository(repository);
+    if (repo) {
+      const over = this.db.prepare(`
+        SELECT COUNT(*) AS count
+        FROM retrieval_trace_sample
+        WHERE repository = ?
+      `).get(repo)?.count ?? 0;
+      const limit = clampInteger(maxRowsPerRepository, 120, { min: 10, max: 2000 });
+      if (over > limit) {
+        const extra = over - limit;
+        removed += this.db.prepare(`
+          DELETE FROM retrieval_trace_sample
+          WHERE id IN (
+            SELECT id
+            FROM retrieval_trace_sample
+            WHERE repository = ?
+            ORDER BY recorded_at DESC
+            LIMIT -1 OFFSET ?
+          )
+        `).run(repo, limit).changes ?? 0;
+      }
+    }
+
+    const globalCount = this.db.prepare(`
+      SELECT COUNT(*) AS count
+      FROM retrieval_trace_sample
+      WHERE repository IS NULL OR repository = ''
+    `).get()?.count ?? 0;
+    const globalLimit = clampInteger(maxRowsGlobal, 240, { min: 20, max: 5000 });
+    if (globalCount > globalLimit) {
+      const extra = globalCount - globalLimit;
+      removed += this.db.prepare(`
+        DELETE FROM retrieval_trace_sample
+        WHERE id IN (
+          SELECT id
+          FROM retrieval_trace_sample
+          WHERE repository IS NULL OR repository = ''
+          ORDER BY recorded_at DESC
+          LIMIT -1 OFFSET ?
+        )
+      `).run(globalLimit).changes ?? 0;
+    }
+
+    return { removed };
+  }
+
+  listRetrievalTraceSamples({
+    repository,
+    includeGlobal = true,
+    limit = 10,
+  } = {}) {
+    this.ensureOpen();
+    const where = [];
+    const params = [];
+    const repo = normalizeRepository(repository);
+    if (repo && includeGlobal) {
+      where.push("(repository = ? OR repository IS NULL OR repository = '')");
+      params.push(repo);
+    } else if (repo) {
+      where.push("repository = ?");
+      params.push(repo);
+    } else if (includeGlobal) {
+      // no filter
+    } else {
+      where.push("repository IS NOT NULL AND repository != ''");
+    }
+    params.push(clampInteger(limit, 10, { min: 1, max: 100 }));
+    const rows = this.db.prepare(`
+      SELECT
+        id,
+        repository,
+        scope_type,
+        hook,
+        route,
+        route_reason,
+        context_injected,
+        latency_ms,
+        prompt_preview,
+        section_titles_json,
+        prompt_need_json,
+        eligibility_json,
+        lookups_json,
+        omissions_json,
+        output_json,
+        trace_json,
+        recorded_at
+      FROM retrieval_trace_sample
+      ${where.length > 0 ? `WHERE ${where.join(" AND ")}` : ""}
+      ORDER BY recorded_at DESC
+      LIMIT ?
+    `).all(...params);
+
+    return rows.map((row) => ({
+      id: row.id,
+      repository: row.repository,
+      scopeType: row.scope_type,
+      hook: row.hook,
+      route: row.route,
+      routeReason: row.route_reason,
+      contextInjected: row.context_injected === 1,
+      latencyMs: row.latency_ms,
+      promptPreview: row.prompt_preview,
+      sectionTitles: parseJsonArray(row.section_titles_json),
+      promptNeed: parseJsonObject(row.prompt_need_json),
+      eligibility: parseJsonObject(row.eligibility_json),
+      lookups: parseJsonObject(row.lookups_json),
+      omissions: parseJsonArray(row.omissions_json),
+      output: parseJsonObject(row.output_json),
+      trace: parseJsonObject(row.trace_json),
+      recordedAt: row.recorded_at,
     }));
   }
 
@@ -2677,6 +3173,7 @@ export class CoherenceDb {
   completeMaintenanceRun({
     runId,
     status,
+    repository = null,
     completedAt = null,
     completedCount = 0,
     needsAttentionCount = 0,
@@ -2707,6 +3204,24 @@ export class CoherenceDb {
       nowIso(),
       runId,
     );
+    if (completedAt) {
+      this.upsertActivitySuccess({
+        repository,
+        updates: {
+          lastMaintenanceCompletionAt: completedAt,
+          lastMaintenanceStatus: String(status || "completed"),
+          lastMaintenanceRunId: runId,
+        },
+      });
+      this.upsertActivitySuccess({
+        repository: null,
+        updates: {
+          lastMaintenanceCompletionAt: completedAt,
+          lastMaintenanceStatus: String(status || "completed"),
+          lastMaintenanceRunId: runId,
+        },
+      });
+    }
   }
 
   listMaintenanceRuns({ limit = 10 } = {}) {
@@ -3121,13 +3636,34 @@ export class CoherenceDb {
 
   completeDeferredExtraction(sessionId) {
     this.ensureOpen();
+    const completedAt = nowIso();
+    const row = this.db.prepare(`
+      SELECT repository
+      FROM deferred_extraction
+      WHERE session_id = ?
+      LIMIT 1
+    `).get(sessionId);
     this.db.prepare(`
       UPDATE deferred_extraction
       SET status = 'completed',
           completed_at = ?,
           last_error = NULL
       WHERE session_id = ?
-    `).run(nowIso(), sessionId);
+    `).run(completedAt, sessionId);
+    this.upsertActivitySuccess({
+      repository: row?.repository ?? null,
+      updates: {
+        lastExtractionCompletionAt: completedAt,
+        lastExtractionRepository: row?.repository ?? null,
+      },
+    });
+    this.upsertActivitySuccess({
+      repository: null,
+      updates: {
+        lastExtractionCompletionAt: completedAt,
+        lastExtractionRepository: row?.repository ?? null,
+      },
+    });
   }
 
   failDeferredExtraction(sessionId, { errorMessage, retryDelayMinutes = 15 }) {

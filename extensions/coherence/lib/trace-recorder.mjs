@@ -365,7 +365,25 @@ function normalizeRecorderOptions(config) {
     maxPromptChars: clampInteger(config?.traceRecorder?.maxPromptChars, 160, { min: 32, max: 500 }),
     maxRowChars: clampInteger(config?.traceRecorder?.maxRowChars, 160, { min: 32, max: 500 }),
     maxContextChars: clampInteger(config?.traceRecorder?.maxContextChars, 600, { min: 64, max: 4000 }),
+    persistDurableSample: config?.traceRecorder?.persistDurableSample !== false,
+    durableSampleRate: Math.min(1, Math.max(0, Number(config?.traceRecorder?.durableSampleRate ?? 0.25))),
+    durableMaxRowsPerRepository: clampInteger(config?.traceRecorder?.durableMaxRowsPerRepository, 120, { min: 20, max: 5000 }),
+    durableMaxRowsGlobal: clampInteger(config?.traceRecorder?.durableMaxRowsGlobal, 240, { min: 20, max: 10000 }),
+    durableMaxAgeMs: clampInteger(config?.traceRecorder?.durableMaxAgeMs, 14 * 24 * 60 * 60 * 1000, { min: 60 * 60 * 1000, max: 365 * 24 * 60 * 60 * 1000 }),
   });
+}
+
+function shouldPersistDurableSample(options) {
+  if (!options.persistDurableSample) {
+    return false;
+  }
+  if (options.durableSampleRate >= 1) {
+    return true;
+  }
+  if (options.durableSampleRate <= 0) {
+    return false;
+  }
+  return Math.random() <= options.durableSampleRate;
 }
 
 export function createTraceRecorder(config) {
@@ -413,7 +431,12 @@ export function createTraceRecorder(config) {
         state.records.splice(0, evicted);
         state.totalEvicted += evicted;
       }
-      return record.id;
+      const durableSelected = shouldPersistDurableSample(options);
+      return {
+        id: record.id,
+        record,
+        durableSelected,
+      };
     },
     getRecent(limit = 5) {
       pruneExpired();

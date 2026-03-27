@@ -72,3 +72,8 @@ This improves fleet-mode execution by making policy, routing, and worktree expec
 | [Copilot Documentation](https://docs.github.com/en/copilot)                                                                                | Official Docs from Github, covers every aspect of Copilot (although not the 'experimental' features in the cli) |
 | [Awesome Copilot](https://github.com/github/awesome-copilot)                                                                               | A collection of skills, agents, instructions from Github themselves                                             |
 | [Matteo Collina's Skills](https://github.com/mcollina/skills)                                                                              | Skills from the NodeJS contributor and Fastify creator                                                          |
+
+
+## Coherence visibility substrate
+
+Coherence now persists lightweight positive-path visibility state in `coherence_activity_state` (latest successful context injection/extraction/maintenance/trace) and bounded sampled retrieval history in `retrieval_trace_sample`. `memory_status` surfaces both so healthy behavior is visible without relying on warning-only signals.
