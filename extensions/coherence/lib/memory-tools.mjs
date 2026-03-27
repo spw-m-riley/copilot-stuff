@@ -860,6 +860,10 @@ function formatMaintenanceTaskResult(task) {
     typeof summary.processed === "number" ? `processed=${summary.processed}` : null,
     typeof summary.failed === "number" ? `failed=${summary.failed}` : null,
     typeof summary.staleCount === "number" ? `stale=${summary.staleCount}` : null,
+    typeof summary.incidentCount === "number" ? `incidents=${summary.incidentCount}` : null,
+    typeof summary.warningCount === "number" ? `warnings=${summary.warningCount}` : null,
+    typeof summary.criticalCount === "number" ? `critical=${summary.criticalCount}` : null,
+    summary.recordedArtifactId ? `artifactId=${summary.recordedArtifactId}` : null,
     summary.error ? `error=${summary.error}` : null,
   ].filter(Boolean).join(" ");
 }
@@ -1277,6 +1281,7 @@ export function createMemoryTools({ getRuntime }) {
                 "backlogReview",
                 "traceCompaction",
                 "indexUpkeep",
+                "doctorSnapshot",
               ],
             },
             description: "Optional subset of maintenance tasks to evaluate or run",

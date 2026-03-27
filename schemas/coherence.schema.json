@@ -287,6 +287,11 @@
               "type": "boolean",
               "default": false,
               "description": "Allow optional SQLite index upkeep such as PRAGMA optimize and a passive WAL checkpoint."
+            },
+            "doctorSnapshot": {
+              "type": "boolean",
+              "default": false,
+              "description": "Allow optional scheduled Coherence Doctor snapshots through the existing doctor/reporting surfaces. This only runs when rollout.coherenceDoctor is enabled."
             }
           }
         },
@@ -330,6 +335,12 @@
               "minimum": 0,
               "default": 720,
               "description": "Cadence for optional SQLite index upkeep."
+            },
+            "doctorSnapshot": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 1440,
+              "description": "Cadence for optional Coherence Doctor snapshot runs."
             }
           }
         }

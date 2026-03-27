@@ -44,6 +44,14 @@ This improves fleet-mode execution by making policy, routing, and worktree expec
 
 - `maintenanceScheduler.enabled` still defaults to `false`; when enabled alongside `rollout.proposalGeneration`, backlog review can generate proposals and run proposal-artifact integrity checks during bounded local maintenance sweeps.
 
+- Session-start maintenance remains intentionally cheap and bounded: when scheduler auto-run is enabled, only `deferredExtraction` is eligible at session start. Validation/replay/backlog/trace/index/doctor tasks are for explicit/manual/scripted runs.
+
+- Use `node extensions/coherence/scripts/run-maintenance.mjs --status` for task state parity with `maintenance_schedule_run { action: "status" }`. Use `--recommended-schedule` for supported external scheduling guidance (cron/launchd/system scheduler) and `--tasks ...` for bounded task subsets.
+
+- Recommended periodic tasks: validation corpus, replay corpus, backlog review, trace compaction, and index upkeep via `run-maintenance.mjs`; keep `deferredExtraction` on session-start and/or frequent scripted sweeps as needed.
+
+- Doctor snapshots are optional scheduled maintenance (`doctorSnapshot`) routed through the existing Coherence Doctor/reporting surfaces. Enable `rollout.coherenceDoctor` and `maintenanceScheduler.tasks.doctorSnapshot` before scheduling; snapshots emit additive doctor-report artifacts without trusted-source mutation.
+
 - When draft proposal artifacts exist, the Coherence session-start capsule adds a small `Pending Proposal Review` section so new proposals show up proactively at the start of a session.
 
 ## Prompt Tips
