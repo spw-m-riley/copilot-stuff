@@ -1,6 +1,14 @@
 {
   "$schema": "./schemas/coherence.schema.json",
   "enabled": true,
+  "latencyTargetsMs": {
+    "sessionStartP95": 100,
+    "userPromptSubmittedP95": 150
+  },
+  "latencyReadinessMinSamples": {
+    "sessionStart": 20,
+    "userPromptSubmitted": 50
+  },
   "deferredExtraction": {
     "enabled": true,
     "autoEnqueueOnSessionEnd": true,
@@ -8,22 +16,35 @@
   },
   "maintenanceScheduler": {
     "enabled": true,
+    "autoRunOnSessionStart": false,
     "maxTasksPerRun": 4,
     "tasks": {
       "traceCompaction": true,
       "indexUpkeep": true
     }
   },
+  "traceRecorder": {
+    "maxRecords": 40,
+    "maxAgeMs": 1800000,
+    "maxRowsPerLookup": 3,
+    "maxFilteredRowsPerLookup": 3,
+    "maxPromptChars": 160,
+    "maxRowChars": 160,
+    "maxContextChars": 600
+  },
   "rollout": {
-    "autoWriteImprovementGoals": true,
     "ambientPersonaMode": true,
-    "traceRecorder": true,
+    "autoWriteImprovementGoals": true,
+    "coherenceDoctor": true,
     "evolutionLedger": true,
-    "proposalGeneration": true,
-    "memoryOperations": true,
     "generatedArtifactIntegrity": true,
+    "hybridRetrieval": true,
+    "memoryOperations": true,
+    "proposalGeneration": true,
+    "retentionSanitization": true,
+    "reviewGate": true,
     "temporalQueryNormalization": true,
-    "workstreamOverlays": true,
-    "retentionSanitization": true
+    "traceRecorder": true,
+    "workstreamOverlays": true
   }
 }

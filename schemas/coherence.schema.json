@@ -438,6 +438,26 @@
           "type": "boolean",
           "default": true,
           "description": "Enable explicit verification and repair of generated proposal artifacts and indexes instead of silently tolerating drift."
+        },
+        "overlayAutoHydration": {
+          "type": "boolean",
+          "default": true,
+          "description": "Auto-create and refresh a workstream overlay from plan.md and SQL todos on each session start. Requires workstreamOverlays to be enabled."
+        },
+        "coherenceDoctor": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable the observe-only Coherence Doctor orchestrator, which classifies incidents from maintenance, trajectory, and latency signals and records additive doctor-report trajectory artifacts. Requires evolutionLedger to be enabled."
+        },
+        "reviewGate": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable the observe-only proposal-doc review gate. Exposes a memory_review_gate tool that checks proposal docs for required sections (goal, acceptance, risk) and records additive review_gate_report trajectory artifacts. No enforcement or blocking. Requires evolutionLedger to be enabled."
+        },
+        "hybridRetrieval": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable hybrid episode retrieval that blends FTS/BM25 rank with recency rank via Reciprocal Rank Fusion (RRF), and boosts entity terms (file names, CamelCase identifiers, backtick-quoted terms) as high-priority signals. Requires memoryOperations to be enabled."
         }
       }
     }

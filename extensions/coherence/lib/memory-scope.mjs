@@ -301,6 +301,14 @@ export function classifySemanticMemory(memory) {
     });
   }
 
+  if (type === "directive") {
+    return finalizeScope({
+      scope: MEMORY_SCOPE.GLOBAL,
+      repository,
+      metadata,
+    });
+  }
+
   if (type === "workstream_overlay") {
     return finalizeScope({
       scope: repository ? MEMORY_SCOPE.REPO : MEMORY_SCOPE.GLOBAL,

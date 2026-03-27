@@ -570,6 +570,26 @@ function persistValidationFailureArtifact({ runtime, definition, evaluation, exp
     },
     trace: explanation.trace ?? {},
   });
+  runtime.db.insertTrajectoryArtifact({
+    kind: "validation_miss",
+    repository: runtime.repository,
+    sourceCaseId: definition.id,
+    sourceKind: "validation",
+    improvementArtifactId: id,
+    eventKey: `validation:${definition.id}:${id}`,
+    summary: `Validation miss for ${definition.id}: ${summary}`,
+    severity: "warning",
+    outcome: "failed",
+    context: {
+      title: definition.title,
+      mode: definition.mode,
+      promptNeed: explanation.promptNeed ?? null,
+      failedAssertionCount: ensureArray(evaluation.assertions).filter((assertion) => assertion?.passed === false).length,
+      sectionTitles: evaluation.sectionTitles,
+      estimatedTokens: explanation.estimatedTokens ?? 0,
+    },
+    trace: explanation.trace ?? {},
+  });
   return id;
 }
 
@@ -612,6 +632,30 @@ function persistReplayFailureArtifact({
       missCategory: missCategory ?? null,
       failedAssertions: ensureArray(evaluation.assertions).filter((assertion) => assertion?.passed === false),
       expectedEvidence: evidence,
+      estimatedTokens: explanation.estimatedTokens ?? 0,
+    },
+    trace: explanation.trace ?? {},
+  });
+  runtime.db.insertTrajectoryArtifact({
+    kind: "replay_failure",
+    repository: runtime.repository,
+    sourceCaseId: definition.id,
+    sourceKind: "replay",
+    improvementArtifactId: id,
+    eventKey: `replay:${definition.id}:${id}`,
+    summary: `Replay failure for ${definition.id}: ${summaryParts.join(" | ")}`,
+    severity: "warning",
+    outcome: definition.caseType === "must_pass" ? "must_pass_failed" : "ranking_miss",
+    context: {
+      title: definition.title,
+      caseType: definition.caseType ?? "must_pass",
+      mode: definition.mode,
+      rankingOutcome: rankingOutcome ?? null,
+      missCategory: missCategory ?? null,
+      failedAssertionCount: ensureArray(evaluation.assertions).filter((assertion) => assertion?.passed === false).length,
+      expectedEvidenceCount: evidence?.expectedCount ?? 0,
+      includedEvidenceCount: evidence?.includedCount ?? 0,
+      rankedOnlyEvidenceCount: evidence?.rankedOnlyCount ?? 0,
       estimatedTokens: explanation.estimatedTokens ?? 0,
     },
     trace: explanation.trace ?? {},

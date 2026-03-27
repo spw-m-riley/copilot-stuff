@@ -1,4 +1,4 @@
-export const SCHEMA_VERSION = 10;
+export const SCHEMA_VERSION = 12;
 
 export const SCHEMA_STATEMENTS = [
   `
@@ -252,6 +252,62 @@ export const SCHEMA_STATEMENTS = [
   `
     CREATE INDEX IF NOT EXISTS idx_improvement_backlog_proposal_path
       ON improvement_backlog(proposal_path);
+  `,
+  `
+    CREATE TABLE IF NOT EXISTS trajectory_artifact (
+      id TEXT PRIMARY KEY,
+      kind TEXT NOT NULL,
+      repository TEXT,
+      source_case_id TEXT,
+      source_kind TEXT,
+      improvement_artifact_id TEXT,
+      event_key TEXT,
+      summary TEXT NOT NULL,
+      severity TEXT NOT NULL DEFAULT 'info',
+      outcome TEXT NOT NULL DEFAULT 'captured',
+      latency_ms INTEGER,
+      target_ms INTEGER,
+      context_json TEXT NOT NULL DEFAULT '{}',
+      trace_json TEXT NOT NULL DEFAULT '{}',
+      created_at TEXT NOT NULL
+    );
+  `,
+  `
+    CREATE INDEX IF NOT EXISTS idx_trajectory_artifact_kind_created
+      ON trajectory_artifact(kind, created_at DESC);
+  `,
+  `
+    CREATE INDEX IF NOT EXISTS idx_trajectory_artifact_source_created
+      ON trajectory_artifact(source_kind, source_case_id, created_at DESC);
+  `,
+  `
+    CREATE INDEX IF NOT EXISTS idx_trajectory_artifact_repository_kind_created
+      ON trajectory_artifact(repository, kind, created_at DESC);
+  `,
+  `
+    CREATE TABLE IF NOT EXISTS intent_journal (
+      id TEXT PRIMARY KEY,
+      repository TEXT,
+      session_id TEXT,
+      turn_hint TEXT,
+      intent_kind TEXT NOT NULL DEFAULT 'journal',
+      summary TEXT NOT NULL,
+      rationale TEXT,
+      context_json TEXT NOT NULL DEFAULT '{}',
+      created_at TEXT NOT NULL
+    );
+  `,
+  `
+    CREATE INDEX IF NOT EXISTS idx_intent_journal_repository_created
+      ON intent_journal(repository, created_at DESC);
+  `,
+  `
+    CREATE INDEX IF NOT EXISTS idx_intent_journal_kind_created
+      ON intent_journal(intent_kind, created_at DESC);
+  `,
+  `
+    CREATE INDEX IF NOT EXISTS idx_intent_journal_session_created
+      ON intent_journal(session_id, created_at DESC);
   `,
   `
     CREATE TABLE IF NOT EXISTS backfill_run (

@@ -49,7 +49,19 @@ import {
   readTraceRecorderEnabled,
   readTemporalQueryNormalizationEnabled,
   readWorkstreamOverlaysEnabled,
+  readCoherenceDoctorEnabled,
+  readReviewGateEnabled,
+  readDirectivesEnabled,
 } from "./rollout-flags.mjs";
+import { runDoctorObservation } from "./coherence-doctor.mjs";
+import { runReviewGate } from "./review-gate.mjs";
+
+import { observeSafetyGateActions } from "./external-safety-gates.mjs";
+
+import crypto from "node:crypto";
+import { mkdir, writeFile } from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 function formatRows(rows, render) {
   if (!rows || rows.length === 0) {
@@ -89,6 +101,42 @@ function formatProposalRows(rows) {
   ].filter(Boolean).join(" "));
 }
 
+function deriveImprovementTheme(row) {
+  const evidence = row?.evidence ?? {};
+  if (row?.source_kind === "replay") {
+    const missCategory = String(evidence.missCategory ?? "").trim();
+    if (missCategory) {
+      return `miss:${missCategory.toLowerCase()}`;
+    }
+    const rankingOutcome = String(evidence.rankingOutcome ?? "").trim();
+    if (rankingOutcome) {
+      return `ranking:${rankingOutcome.toLowerCase()}`;
+    }
+  }
+  if (row?.source_kind === "signal") {
+    const signalType = String(evidence.signalType ?? "").trim();
+    if (signalType) {
+      return `signal:${signalType.toLowerCase()}`;
+    }
+  }
+  if (row?.source_kind === "validation") {
+    const failedAssertions = ensureArray(evidence.failedAssertions);
+    const firstAssertion = failedAssertions[0];
+    const assertionId = typeof firstAssertion?.id === "string"
+      ? firstAssertion.id
+      : typeof firstAssertion?.label === "string"
+        ? firstAssertion.label
+        : "";
+    if (assertionId.trim()) {
+      return `assertion:${assertionId.trim().toLowerCase()}`;
+    }
+  }
+  const firstEvidenceKey = Object.keys(evidence)[0];
+  if (firstEvidenceKey) {
+    return `evidence:${String(firstEvidenceKey).toLowerCase()}`;
+  }
+  return "general";
+}
 function formatIntegrityIssues(issues) {
   return formatRows(issues, (issue) => [
     `- [${issue.id}] ${issue.type}`,
@@ -201,6 +249,7 @@ function ensureArray(value) {
   return Array.isArray(value) ? value : [];
 }
 
+const PORTABLE_BUNDLE_VERSION = 1;
 function formatRecallSummary(trace) {
   return Object.entries(trace?.lookups ?? {})
     .map(([name, lookup]) => {
@@ -537,6 +586,120 @@ function formatTraceRecorderPatterns(patterns) {
     : "none";
 }
 
+function formatTrajectoryArtifactRows(rows) {
+  return formatRows(rows, (row) => {
+    const contextKeys = Object.keys(row.context ?? {});
+    return [
+      `- [${row.id}] kind=${row.kind}`,
+      row.source_kind ? `source=${row.source_kind}:${row.source_case_id ?? "n/a"}` : null,
+      `severity=${row.severity}`,
+      `outcome=${row.outcome}`,
+      row.latency_ms != null ? `latency=${row.latency_ms}ms` : null,
+      row.target_ms != null ? `target=${row.target_ms}ms` : null,
+      row.improvement_artifact_id ? `improvementArtifact=${row.improvement_artifact_id}` : null,
+      row.event_key ? `event=${row.event_key}` : null,
+      contextKeys.length > 0 ? `contextKeys=${contextKeys.join(",")}` : null,
+      `summary=${row.summary}`,
+      `created=${row.created_at}`,
+    ].filter(Boolean).join(" ");
+  });
+}
+
+function formatIntentJournalRows(rows) {
+  return formatRows(rows, (row) => {
+    const contextKeys = Object.keys(row.context ?? {});
+    return [
+      `- [${row.id}] kind=${row.intent_kind}`,
+      row.repository ? `repository=${row.repository}` : null,
+      row.session_id ? `session=${row.session_id}` : null,
+      row.turn_hint ? `turnHint=${row.turn_hint}` : null,
+      `summary=${row.summary}`,
+      row.rationale ? `rationale=${row.rationale}` : null,
+      contextKeys.length > 0 ? `contextKeys=${contextKeys.join(",")}` : null,
+      `created=${row.created_at}`,
+    ].filter(Boolean).join(" ");
+  });
+}
+function formatDoctorReport(result) {
+  if (!result.incidentCount) {
+    return [
+      `# Coherence Doctor Report`,
+      `generatedAt: ${result.generatedAt}`,
+      `repository: ${result.repository ?? "global"}`,
+      `incidents: 0 — no incidents classified`,
+      `signals: maintenanceTasks=${result.signals.maintenanceTaskCount} trajectoryScanned=${result.signals.trajectoryRecentCount}`,
+    ].join("\n");
+  }
+  const header = [
+    `# Coherence Doctor Report`,
+    `generatedAt: ${result.generatedAt}`,
+    `repository: ${result.repository ?? "global"}`,
+    `incidents: ${result.incidentCount} (critical=${result.criticalCount} warning=${result.warningCount} info=${result.infoCount})`,
+    `signals: maintenanceTasks=${result.signals.maintenanceTaskCount} trajectoryScanned=${result.signals.trajectoryRecentCount} improvementActive=${result.signals.improvementActiveCount}`,
+    result.recordedArtifactId ? `recordedArtifact: ${result.recordedArtifactId}` : null,
+    ``,
+    `## Incidents`,
+    ``,
+  ].filter((line) => line != null).join("\n");
+  const incidentLines = result.incidents.map((inc) => {
+    const contextPairs = Object.entries(inc.context ?? {})
+      .filter(([, v]) => v != null && v !== "")
+      .map(([k, v]) => `${k}=${Array.isArray(v) ? v.join(",") : v}`)
+      .join(" ");
+    return `- [${inc.severity}] ${inc.kind}: ${inc.summary}${contextPairs ? `\n  context: ${contextPairs}` : ""}`;
+  });
+  return [header, ...incidentLines].join("\n");
+}
+
+function formatDoctorSafetyGateSection(result) {
+  const lines = ["", "## Safety Gate (observe-only)", ""];
+  if (!result || result.actionCount === 0) {
+    lines.push("actions: 0");
+    lines.push("- none");
+    return lines.join("\n");
+  }
+  lines.push(`actions: ${result.actionCount}`);
+  lines.push(`highestRisk: ${result.highestRisk}`);
+  lines.push(
+    `riskCounts: low=${result.riskCounts.low} moderate=${result.riskCounts.moderate} high=${result.riskCounts.high} critical=${result.riskCounts.critical}`,
+  );
+  lines.push("");
+  for (const action of ensureArray(result.actions)) {
+    const reasons = ensureArray(action.riskReasons).join(",");
+    lines.push(
+      [
+        `- [${action.riskTier}] ${action.toolName}.${action.operation}`,
+        `id=${action.id}`,
+        action.target ? `target=${action.target}` : null,
+        `mutability=${action.mutability}`,
+        `reversibility=${action.reversibility}`,
+        `scope=${action.scope}`,
+        `riskScore=${action.riskScore}`,
+        reasons ? `riskReasons=${reasons}` : null,
+      ].filter(Boolean).join(" "),
+    );
+  }
+  return lines.join("\n");
+}
+
+function formatReviewGateReport(result) {
+  const lines = [
+    `# Review Gate — proposal_doc`,
+    `generatedAt: ${result.generatedAt}`,
+    `wordCount: ${result.wordCount}`,
+    result.findingCount === 0
+      ? `findings: 0 — all required sections present`
+      : `findings: ${result.findingCount}`,
+    result.recordedArtifactId ? `recordedArtifact: ${result.recordedArtifactId}` : null,
+  ].filter((l) => l != null);
+  if (result.findingCount > 0) {
+    lines.push(``, `## Findings`, ``);
+    for (const f of result.findings) {
+      lines.push(`- [${f.severity}] ${f.section}: ${f.detail}`);
+    }
+  }
+  return lines.join("\n");
+}
 function formatTraceRecorderHooks(hooks) {
   return ensureArray(hooks).map((entry) => [
     `traceHook:${entry.hook}`,
@@ -729,6 +892,14 @@ export function createMemoryTools({ getRuntime }) {
             type: "number",
             description: "Maximum recent trace entries to render when includeRecentTraces is true",
           },
+          includeRecentTrajectoryArtifacts: {
+            type: "boolean",
+            description: "When true, append recent sampled durable trajectory artifacts",
+          },
+          recentTrajectoryLimit: {
+            type: "number",
+            description: "Maximum recent trajectory artifacts to render when includeRecentTrajectoryArtifacts is true",
+          },
         },
       },
       handler: async (args, invocation) => {
@@ -765,8 +936,10 @@ export function createMemoryTools({ getRuntime }) {
           `recurringMistakeCount: ${stats.recurringMistakeCount ?? 0}`,
           `userIdentityCount: ${stats.userIdentityCount ?? 0}`,
           `workstreamOverlayCount: ${stats.workstreamOverlayCount ?? 0}`,
+          `directiveCount: ${stats.directiveCount ?? 0}`,
           `memoryOperationsEnabled: ${readMemoryOperationsEnabled(runtime.config)}`,
           `workstreamOverlaysEnabled: ${readWorkstreamOverlaysEnabled(runtime.config)}`,
+          `directivesEnabled: ${readDirectivesEnabled(runtime.config)}`,
           `temporalQueryNormalizationEnabled: ${readTemporalQueryNormalizationEnabled(runtime.config)}`,
           `retentionSanitizationEnabled: ${readRetentionSanitizationEnabled(runtime.config)}`,
           `traceRecorderEnabled: ${readTraceRecorderEnabled(runtime.config)}`,
@@ -805,6 +978,17 @@ export function createMemoryTools({ getRuntime }) {
           `lastMaintenanceStatus: ${stats.lastMaintenanceStatus ?? "none"}`,
           `lastMaintenanceStartedAt: ${stats.lastMaintenanceStartedAt ?? "none"}`,
           `lastMaintenanceCompletedAt: ${stats.lastMaintenanceCompletedAt ?? "none"}`,
+          `trajectoryArtifactCount: ${stats.trajectoryArtifactCount ?? 0}`,
+          `trajectoryReplayFailureCount: ${stats.trajectoryReplayFailureCount ?? 0}`,
+          `trajectoryValidationMissCount: ${stats.trajectoryValidationMissCount ?? 0}`,
+          `trajectoryProposalFailureCount: ${stats.trajectoryProposalFailureCount ?? 0}`,
+          `trajectoryLatencyOutlierCount: ${stats.trajectoryLatencyOutlierCount ?? 0}`,
+          `intentJournalCount: ${stats.intentJournalCount ?? 0}`,
+          `intentRoutingCount: ${stats.intentRoutingCount ?? 0}`,
+          `intentRolloutCount: ${stats.intentRolloutCount ?? 0}`,
+          `intentReviewerCount: ${stats.intentReviewerCount ?? 0}`,
+          `intentFallbackCount: ${stats.intentFallbackCount ?? 0}`,
+          `intentSerendipityCount: ${stats.intentSerendipityCount ?? 0}`,
           `lastBackupPath: ${stats.lastBackupPath ?? "none"}`,
           `configPath: ${runtime.config.configPath}`,
           ...formatLatencyMetric("sessionStart", runtime.metrics.sessionStart),
@@ -834,12 +1018,178 @@ export function createMemoryTools({ getRuntime }) {
           lines.push("", "## Recent Trace Records", "", ...formatRecentTraceRecords(recentRecords));
         }
 
+        if (args.includeRecentTrajectoryArtifacts === true) {
+          const recentTrajectoryLimit = ensureLimit(args.recentTrajectoryLimit, 5);
+          const trajectoryRows = runtime.db.listTrajectoryArtifacts({
+            repository: runtime.repository ?? undefined,
+            limit: recentTrajectoryLimit,
+          });
+          lines.push("", "## Recent Trajectory Artifacts", "", formatTrajectoryArtifactRows(trajectoryRows));
+        }
+
         lines.push("", "## Maintenance Tasks", "", maintenance.tasks.map(formatMaintenanceTaskState).join("\n") || "- none");
         if (maintenance.recentRuns.length > 0) {
           lines.push("", "## Recent Maintenance Runs", "", formatMaintenanceRunRows(maintenance.recentRuns));
         }
 
         return lines.join("\n");
+      },
+    },
+    {
+      name: "memory_intent_journal",
+      description: "Write or inspect durable intent-journal entries for routing/rollout/reviewer/fallback choices and lightweight serendipity capture.",
+      parameters: {
+        type: "object",
+        properties: {
+          action: {
+            type: "string",
+            enum: ["list", "record"],
+            description: "List recent entries or record a new entry",
+          },
+          kind: {
+            type: "string",
+            enum: ["journal", "routing", "rollout", "reviewer", "fallback", "serendipity"],
+            description: "Intent kind for record/list filtering",
+          },
+          summary: {
+            type: "string",
+            description: "Short decision/discovery summary for record",
+          },
+          rationale: {
+            type: "string",
+            description: "Optional rationale for the decision or discovery",
+          },
+          turnHint: {
+            type: "string",
+            description: "Optional free-form turn marker such as 'after-memory_replay'",
+          },
+          sessionId: {
+            type: "string",
+            description: "Optional session id override for record/list",
+          },
+          context: {
+            type: "object",
+            description: "Optional structured metadata for record",
+          },
+          repository: {
+            type: "string",
+            description: "Optional repository override for record/list",
+          },
+          limit: {
+            type: "number",
+            description: "Maximum rows to return for list",
+          },
+        },
+      },
+      handler: async (args, invocation) => {
+        const runtime = await getRuntime(invocation.sessionId);
+        if (!runtime.initialized || runtime.lastError) {
+          return `coherence unavailable: ${runtime.lastError?.message ?? "not initialized"}`;
+        }
+        const action = typeof args.action === "string" ? args.action : "list";
+        const repository = typeof args.repository === "string" && args.repository.trim().length > 0
+          ? args.repository.trim()
+          : runtime.repository;
+        const kind = typeof args.kind === "string" && args.kind.trim().length > 0
+          ? args.kind.trim().toLowerCase()
+          : undefined;
+
+        if (action === "record") {
+          const id = runtime.db.insertIntentJournalEntry({
+            repository,
+            sessionId: typeof args.sessionId === "string" && args.sessionId.trim().length > 0
+              ? args.sessionId.trim()
+              : invocation.sessionId,
+            turnHint: typeof args.turnHint === "string" ? args.turnHint : null,
+            intentKind: kind ?? "journal",
+            summary: ensureString(args.summary, "summary"),
+            rationale: typeof args.rationale === "string" ? args.rationale : null,
+            context: ensureObject(args.context, "context"),
+          });
+          return `Recorded intent journal entry ${id} (${kind ?? "journal"}).`;
+        }
+
+        const rows = runtime.db.listIntentJournalEntries({
+          repository,
+          sessionId: typeof args.sessionId === "string" && args.sessionId.trim().length > 0
+            ? args.sessionId.trim()
+            : undefined,
+          intentKind: kind,
+          limit: ensureLimit(args.limit, 10),
+        });
+        return [
+          `repository: ${repository ?? "all"}`,
+          `kindFilter: ${kind ?? "all"}`,
+          "",
+          "## Intent Journal",
+          "",
+          formatIntentJournalRows(rows),
+        ].join("\n");
+      },
+    },
+    {
+      name: "memory_portable_bundle",
+      description: "Export a local, signed, review-gated portability bundle for approved improvement artifacts.",
+      parameters: {
+        type: "object",
+        properties: {
+          action: {
+            type: "string",
+            enum: ["export"],
+            description: "Export a portable bundle",
+          },
+          repository: {
+            type: "string",
+            description: "Optional repository override",
+          },
+          bundlePath: {
+            type: "string",
+            description: "Optional repository-relative or absolute JSON path for reading/writing bundles",
+          },
+          limit: {
+            type: "number",
+            description: "Maximum records to export/import per dataset",
+          },
+        },
+      },
+      handler: async (args, invocation) => {
+        const runtime = await getRuntime(invocation.sessionId);
+        if (!runtime.initialized || runtime.lastError) {
+          return `coherence unavailable: ${runtime.lastError?.message ?? "not initialized"}`;
+        }
+
+        const action = typeof args.action === "string" ? args.action : "export";
+        if (action !== "export") {
+          throw new Error("memory_portable_bundle currently supports action=export only");
+        }
+        const repository = typeof args.repository === "string" && args.repository.trim().length > 0
+          ? args.repository.trim()
+          : runtime.repository;
+        const limit = ensureLimit(args.limit, 20);
+        const improvementArtifacts = runtime.db.listImprovementArtifacts({
+          reviewState: "approved",
+          hasProposal: true,
+          limit,
+        });
+        const portableBundle = createPortableBundle({
+          repository,
+          improvementArtifacts,
+        });
+        const bundlePath = resolveBundlePath(args.bundlePath);
+        if (args.bundlePath && !bundlePath) {
+          throw new Error("bundlePath must be a non-empty path");
+        }
+        if (bundlePath) {
+          await mkdir(path.dirname(bundlePath), { recursive: true });
+          await writeFile(bundlePath, `${JSON.stringify(portableBundle, null, 2)}\n`, "utf8");
+        }
+        return formatPortableBundleReport({
+          bundleId: portableBundle.bundleId,
+          signature: portableBundle.signature.digest,
+          bundlePath: bundlePath ? path.relative(repoRootFromModule(), bundlePath).replaceAll(path.sep, "/") : null,
+          repository,
+          exportedArtifactCount: portableBundle.data.improvementArtifacts.length,
+        });
       },
     },
     {
@@ -1117,6 +1467,14 @@ export function createMemoryTools({ getRuntime }) {
         const artifacts = runtime.db.listImprovementArtifacts({
           limit: ensureLimit(args.limit, 10),
         });
+        const activeArtifacts = runtime.db.listImprovementArtifacts({
+          status: "active",
+          limit: 50,
+        });
+        const clusters = summarizeImprovementClusters(activeArtifacts, {
+          minClusterSize: 2,
+          maxClusters: 5,
+        });
         const proposals = runtime.db.listImprovementArtifacts({
           hasProposal: true,
           limit: ensureLimit(args.limit, 10),
@@ -1138,6 +1496,15 @@ export function createMemoryTools({ getRuntime }) {
           "## Recent Ledger Artifacts",
           "",
           formatImprovementArtifactRows(artifacts),
+          "",
+          "## Active Artifact Clusters",
+          "",
+          formatRows(clusters, (cluster) => [
+            `- ${cluster.sourceKind}:${cluster.theme}`,
+            `count=${cluster.count}`,
+            `latest=${cluster.latestUpdatedAt ?? "unknown"}`,
+            `ids=${cluster.ids.join(",")}`,
+          ].join(" ")),
           "",
           "## Recent Proposals",
           "",
@@ -2013,5 +2380,230 @@ export function createMemoryTools({ getRuntime }) {
           : `Backfilled ${created} session(s).`;
       },
     },
+    {
+      name: "memory_doctor_report",
+      description: "Run the observe-only Coherence Doctor: classify incidents from maintenance task states, trajectory artifacts, latency metrics, and improvement backlog signals. Emits an additive doctor-report trajectory artifact (unless dryRun is set). No trusted-source mutation occurs.",
+      parameters: {
+        type: "object",
+        properties: {
+          dryRun: {
+            type: "boolean",
+            description: "When true, classify incidents but do not record a trajectory artifact",
+          },
+          trajectoryLimit: {
+            type: "number",
+            description: "Maximum recent trajectory artifacts to scan (default 20, max 50)",
+          },
+          plannedActions: {
+            type: "array",
+            description: "Optional hypothetical future tool actions for observe-only safety classification",
+            items: {
+              type: "object",
+              properties: {
+                id: { type: "string" },
+                toolName: { type: "string" },
+                operation: { type: "string" },
+                target: { type: "string" },
+                mutability: { type: "string", enum: ["read_only", "append_only", "metadata_update", "destructive_write"] },
+                reversibility: { type: "string", enum: ["reversible", "operator_reversible", "difficult", "irreversible"] },
+                scope: { type: "string", enum: ["isolated", "repository", "workspace", "multi_workspace", "external_system"] },
+                notes: { type: "string" },
+              },
+            },
+          },
+        },
+      },
+      handler: async (args, invocation) => {
+        const runtime = await getRuntime(invocation.sessionId);
+        if (!runtime.initialized || runtime.lastError) {
+          return `coherence unavailable: ${runtime.lastError?.message ?? "not initialized"}`;
+        }
+        if (!readCoherenceDoctorEnabled(runtime.config)) {
+          return "memory_doctor_report: disabled — set rollout.coherenceDoctor: true in coherence.json to enable";
+        }
+        const dryRun = args.dryRun === true;
+        const trajectoryLimit = typeof args.trajectoryLimit === "number" ? args.trajectoryLimit : 20;
+        const doctorResult = runDoctorObservation({
+          runtime,
+          repository: runtime.repository,
+          dryRun,
+          trajectoryLimit,
+        });
+        const doctorReport = formatDoctorReport(doctorResult);
+        const safetyResult = observeSafetyGateActions({
+          actions: ensureArray(args.plannedActions),
+          repository: runtime.repository,
+          actionSource: "doctor",
+        });
+        return `${doctorReport}${formatDoctorSafetyGateSection(safetyResult)}`;
+      },
+    },
+    {
+      name: "memory_review_gate",
+      description: "Observe-only proposal-doc review gate. Checks the provided text for required sections (goal, acceptance, risk) using deterministic heading analysis and records an additive review_gate_report trajectory artifact. No enforcement, no blocking, no trusted-source mutation.",
+      parameters: {
+        type: "object",
+        required: ["text"],
+        properties: {
+          text: {
+            type: "string",
+            description: "Proposal-doc text to review",
+          },
+          dryRun: {
+            type: "boolean",
+            description: "When true, run checks but skip recording a trajectory artifact",
+          },
+        },
+      },
+      handler: async (args, invocation) => {
+        const runtime = await getRuntime(invocation.sessionId);
+        if (!runtime.initialized || runtime.lastError) {
+          return `coherence unavailable: ${runtime.lastError?.message ?? "not initialized"}`;
+        }
+        if (!readReviewGateEnabled(runtime.config)) {
+          return "memory_review_gate: disabled — set rollout.reviewGate: true in coherence.json to enable";
+        }
+        const text = typeof args.text === "string" ? args.text.trim() : "";
+        if (!text) {
+          return "memory_review_gate: text must be a non-empty string";
+        }
+        const result = runReviewGate({
+          runtime,
+          text,
+          repository: runtime.repository,
+          dryRun: args.dryRun === true,
+        });
+        return formatReviewGateReport(result);
+      },
+    },
   ];
+}
+
+function summarizeImprovementClusters(rows, { minClusterSize = 2, maxClusters = 5 } = {}) {
+  const groups = new Map();
+  for (const row of ensureArray(rows)) {
+    if (row.status !== "active") {
+      continue;
+    }
+    const theme = deriveImprovementTheme(row);
+    const key = `${row.source_kind}:${theme}`;
+    if (!groups.has(key)) {
+      groups.set(key, {
+        sourceKind: row.source_kind,
+        theme,
+        count: 0,
+        latestUpdatedAt: row.updated_at,
+        ids: [],
+      });
+    }
+    const group = groups.get(key);
+    group.count += 1;
+    group.ids.push(row.id);
+    if (String(row.updated_at ?? "") > String(group.latestUpdatedAt ?? "")) {
+      group.latestUpdatedAt = row.updated_at;
+    }
+  }
+
+  return [...groups.values()]
+    .filter((group) => group.count >= minClusterSize)
+    .sort((left, right) => {
+      if (right.count !== left.count) {
+        return right.count - left.count;
+      }
+      return String(right.latestUpdatedAt ?? "").localeCompare(String(left.latestUpdatedAt ?? ""));
+    })
+    .slice(0, maxClusters);
+}
+
+function sha256(value) {
+  return crypto
+    .createHash("sha256")
+    .update(String(value ?? ""), "utf8")
+    .digest("hex");
+}
+
+const PORTABLE_BUNDLE_TYPE = "coherence-portable-improvement";
+
+function formatPortableBundleReport({
+  bundleId,
+  signature,
+  bundlePath,
+  repository,
+  exportedArtifactCount = 0,
+}) {
+  return [
+    "action: export",
+    `bundleId: ${bundleId}`,
+    `signature: ${signature}`,
+    `bundlePath: ${bundlePath ?? "inline"}`,
+    `repository: ${repository ?? "global"}`,
+    `exportedImprovementCount: ${exportedArtifactCount}`,
+    "",
+    "Notes:",
+    "- portable bundles are local-first and review-gated",
+    "- bundle includes approved improvement artifacts only",
+    "- cloud/community sharing is not part of this surface",
+  ].filter(Boolean).join("\n");
+}
+
+function createPortableBundle({
+  repository,
+  improvementArtifacts,
+}) {
+  const selectedArtifacts = improvementArtifacts.map((row) => ({
+    id: row.id,
+    sourceCaseId: row.source_case_id,
+    sourceKind: row.source_kind,
+    title: row.title,
+    summary: row.summary,
+    status: row.status,
+    reviewState: row.review_state ?? "none",
+    proposal: {
+      type: row.proposal_type ?? null,
+      path: row.proposal_path ?? null,
+      hash: row.proposal_hash ?? null,
+    },
+    evidence: row.evidence ?? {},
+    trace: row.trace ?? {},
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  }));
+  const exportedAt = new Date().toISOString();
+  const bundleId = `portable-${exportedAt.replace(/[:.]/g, "-")}`;
+  const payload = {
+    bundleVersion: PORTABLE_BUNDLE_VERSION,
+    bundleType: PORTABLE_BUNDLE_TYPE,
+    bundleId,
+    exportedAt,
+    repository: repository ?? null,
+    constraints: {
+      localFirst: true,
+      reviewGated: true,
+      autoApply: false,
+    },
+    data: {
+      improvementArtifacts: selectedArtifacts,
+    },
+  };
+  return {
+    ...payload,
+    signature: {
+      algorithm: "sha256",
+      digest: sha256(JSON.stringify(payload)),
+    },
+  };
+}
+
+function repoRootFromModule() {
+  return path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
+}
+
+function resolveBundlePath(rawPath) {
+  const trimmed = typeof rawPath === "string" ? rawPath.trim() : "";
+  if (!trimmed) {
+    return null;
+  }
+  return path.isAbsolute(trimmed)
+    ? trimmed
+    : path.join(repoRootFromModule(), trimmed);
 }

@@ -54,3 +54,28 @@ export function readGeneratedArtifactIntegrityEnabled(config) {
   return readEvolutionLedgerEnabled(config)
     && readRolloutBoolean(config, "generatedArtifactIntegrity", true);
 }
+
+export function readOverlayAutoHydrationEnabled(config) {
+  return readWorkstreamOverlaysEnabled(config)
+    && readRolloutBoolean(config, "overlayAutoHydration", true);
+}
+
+export function readCoherenceDoctorEnabled(config) {
+  return readEvolutionLedgerEnabled(config)
+    && readRolloutBoolean(config, "coherenceDoctor", false);
+}
+
+export function readHybridRetrievalEnabled(config) {
+  return readMemoryOperationsEnabled(config)
+    && readRolloutBoolean(config, "hybridRetrieval", true);
+}
+
+export function readDirectivesEnabled(config) {
+  return readMemoryOperationsEnabled(config)
+    && readRolloutBoolean(config, "directives", true);
+}
+
+export function readReviewGateEnabled(config) {
+  return readEvolutionLedgerEnabled(config)
+    && readRolloutBoolean(config, "reviewGate", false);
+}
