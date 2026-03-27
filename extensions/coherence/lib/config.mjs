@@ -66,6 +66,7 @@ export const USER_CONFIG_DEFAULTS = Object.freeze({
       backlogReview: true,
       traceCompaction: false,
       indexUpkeep: false,
+      doctorSnapshot: false,
     },
     taskCadenceMinutes: {
       deferredExtraction: 0,
@@ -74,6 +75,7 @@ export const USER_CONFIG_DEFAULTS = Object.freeze({
       backlogReview: 6 * 60,
       traceCompaction: 60,
       indexUpkeep: 12 * 60,
+      doctorSnapshot: 24 * 60,
     },
   },
   traceRecorder: {

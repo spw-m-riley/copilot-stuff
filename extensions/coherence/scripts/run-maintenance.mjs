@@ -51,6 +51,16 @@ function parseArgs(argv) {
       args.dryRun = true;
       continue;
     }
+    if (part === "--recommended-schedule") {
+      args.action = "recommended-schedule";
+      args.dryRun = true;
+      continue;
+    }
+    if (part === "--help" || part === "-h") {
+      args.action = "help";
+      args.dryRun = true;
+      continue;
+    }
     if (part === "--tasks") {
       args.tasks = String(argv[index + 1] ?? "")
         .split(",")
@@ -86,6 +96,52 @@ function parseArgs(argv) {
     }
   }
   return args;
+}
+
+function renderHelp() {
+  return [
+    "Usage:",
+    "  node extensions/coherence/scripts/run-maintenance.mjs [options]",
+    "",
+    "Options:",
+    "  --status                   Show current scheduler/task status (dry-run).",
+    "  --dry-run                  Plan a maintenance sweep without state mutation.",
+    "  --force                    Ignore cadence and force selected tasks due.",
+    "  --tasks <csv>              Task subset: deferredExtraction,validationCorpus,replayCorpus,backlogReview,traceCompaction,indexUpkeep,doctorSnapshot.",
+    "  --repository <name>        Optional repository scope override.",
+    "  --config <path>            Optional coherence.json path.",
+    "  --derived-store-path <p>   Override derived coherence DB path.",
+    "  --raw-store-path <p>       Override session-store DB path.",
+    "  --backup-dir <path>        Override backup directory.",
+    "  --recommended-schedule     Show recommended external schedule guidance.",
+    "  --help, -h                 Show this help text.",
+  ].join("\n");
+}
+
+function renderRecommendedSchedule(config) {
+  const cadence = config.maintenanceScheduler?.taskCadenceMinutes ?? {};
+  const cadenceFor = (name, fallback) => {
+    const value = Number(cadence[name]);
+    return Number.isFinite(value) ? value : fallback;
+  };
+  return [
+    "Recommended maintenance schedule (external runner):",
+    "- Keep session-start cheap/bounded: only deferredExtraction auto-runs at session start.",
+    "- Use this script for periodic upkeep from cron/launchd/system scheduler.",
+    "",
+    "Suggested cadences:",
+    `- validationCorpus: every ${cadenceFor("validationCorpus", 12 * 60)} minutes`,
+    `- replayCorpus: every ${cadenceFor("replayCorpus", 24 * 60)} minutes`,
+    `- backlogReview: every ${cadenceFor("backlogReview", 6 * 60)} minutes`,
+    `- traceCompaction: every ${cadenceFor("traceCompaction", 60)} minutes`,
+    `- indexUpkeep: every ${cadenceFor("indexUpkeep", 12 * 60)} minutes`,
+    `- doctorSnapshot: every ${cadenceFor("doctorSnapshot", 24 * 60)} minutes (optional; requires rollout.coherenceDoctor=true and maintenanceScheduler.tasks.doctorSnapshot=true)`,
+    "",
+    "Example cron entries (run from ~/.copilot):",
+    "0 */6 * * * cd ~/.copilot && node extensions/coherence/scripts/run-maintenance.mjs --tasks validationCorpus,backlogReview",
+    "15 2 * * * cd ~/.copilot && node extensions/coherence/scripts/run-maintenance.mjs --tasks replayCorpus,indexUpkeep,traceCompaction",
+    "30 3 * * * cd ~/.copilot && node extensions/coherence/scripts/run-maintenance.mjs --tasks doctorSnapshot",
+  ].join("\n");
 }
 
 function loadFileConfig(configPath) {
@@ -153,7 +209,15 @@ function renderResult(result) {
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
+  if (args.action === "help") {
+    console.log(renderHelp());
+    return;
+  }
   const config = buildConfig(args);
+  if (args.action === "recommended-schedule") {
+    console.log(renderRecommendedSchedule(config));
+    return;
+  }
   const db = new CoherenceDb(config);
   db.initialize();
   const sessionStore = new SessionStoreReader(config);

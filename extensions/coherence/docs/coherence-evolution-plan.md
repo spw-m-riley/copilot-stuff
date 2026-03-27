@@ -397,3 +397,21 @@ That sequence gives the biggest product improvement with the least architectural
 - Keep all new layers additive to `coherence`; avoid big-bang replacement.
 - Preserve the current security model, local-first operation, and review-gated trust boundaries.
 - The published repository copy of this plan lives at `extensions/coherence/docs/coherence-evolution-plan.md`.
+
+
+## Phase 3 operational guidance (implemented)
+
+- Source of truth remains unchanged: `runMaintenanceSweep`, `maintenance_schedule_run`, `memory_status`, and persisted `maintenance_task_state` / `maintenance_run`.
+- Supported external scheduler path is `node extensions/coherence/scripts/run-maintenance.mjs` with:
+  - `--status` for parity checks
+  - `--tasks <csv>` for bounded subsets
+  - `--dry-run` / `--force` for rollout and troubleshooting
+  - `--recommended-schedule` for operator cadence guidance
+- Session-start maintenance is bounded to cheap deferred extraction only; heavier maintenance stays on explicit/scripted runs.
+- Recommended periodic tasks:
+  - validation corpus
+  - replay corpus
+  - backlog review
+  - trace compaction
+  - index upkeep
+- Doctor snapshots are now an optional scheduled maintenance task (`doctorSnapshot`) that reuses `memory_doctor_report`/doctor observation surfaces and writes additive doctor-report trajectory artifacts when enabled.
