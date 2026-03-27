@@ -61,6 +61,13 @@ h2 {
   font-size: 0.85rem;
 }
 
+.header-pills {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
 .tabs {
   display: flex;
   gap: 0.5rem;

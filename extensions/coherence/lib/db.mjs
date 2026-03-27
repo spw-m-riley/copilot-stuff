@@ -2193,6 +2193,29 @@ export class CoherenceDb {
       }
     }
 
+    if (rows.length === 0) {
+      if (repo) {
+        const repoFallback = this.deriveActivityStateFallback({
+          repository: repo,
+          scopeKey: `repo:${repo}`,
+          scopeType: "repo",
+        });
+        if (repoFallback) {
+          rows.push(repoFallback);
+        }
+      }
+      if (includeGlobal) {
+        const globalFallback = this.deriveActivityStateFallback({
+          repository: null,
+          scopeKey: "global",
+          scopeType: "global",
+        });
+        if (globalFallback) {
+          rows.push(globalFallback);
+        }
+      }
+    }
+
     return rows.map((row) => ({
       scopeKey: row.scope_key,
       scopeType: row.scope_type,
@@ -2212,6 +2235,105 @@ export class CoherenceDb {
       lastTraceId: row.last_trace_id,
       updatedAt: row.updated_at,
     }));
+  }
+
+  deriveActivityStateFallback({
+    repository = null,
+    scopeKey,
+    scopeType,
+  } = {}) {
+    this.ensureOpen();
+    const repo = normalizeRepository(repository);
+    const scopedWhere = repo ? "WHERE repository = ?" : "";
+    const scopedParams = repo ? [repo] : [];
+
+    const latestContextRow = this.db.prepare(`
+      SELECT
+        id,
+        repository,
+        hook,
+        latency_ms,
+        section_titles_json,
+        recorded_at
+      FROM retrieval_trace_sample
+      WHERE context_injected = 1
+        ${repo ? "AND repository = ?" : ""}
+      ORDER BY recorded_at DESC
+      LIMIT 1
+    `).get(...scopedParams);
+
+    const latestTraceRow = this.db.prepare(`
+      SELECT
+        id,
+        repository,
+        hook,
+        recorded_at
+      FROM retrieval_trace_sample
+      ${scopedWhere}
+      ORDER BY recorded_at DESC
+      LIMIT 1
+    `).get(...scopedParams);
+
+    const latestMaintenanceRow = this.db.prepare(`
+      SELECT
+        id,
+        repository,
+        status,
+        completed_at
+      FROM maintenance_run
+      WHERE completed_at IS NOT NULL
+        ${repo ? "AND repository = ?" : ""}
+      ORDER BY completed_at DESC
+      LIMIT 1
+    `).get(...scopedParams);
+
+    const latestExtractionRow = this.db.prepare(`
+      SELECT repository, updated_at
+      FROM (
+        SELECT repository, updated_at
+        FROM semantic_memory
+        ${scopedWhere}
+        UNION ALL
+        SELECT repository, updated_at
+        FROM episode_digest
+        ${scopedWhere}
+      )
+      ORDER BY updated_at DESC
+      LIMIT 1
+    `).get(...scopedParams, ...scopedParams);
+
+    const timestamps = [
+      latestContextRow?.recorded_at,
+      latestTraceRow?.recorded_at,
+      latestMaintenanceRow?.completed_at,
+      latestExtractionRow?.updated_at,
+    ].filter((value) => typeof value === "string" && value.length > 0);
+
+    if (timestamps.length === 0) {
+      return null;
+    }
+
+    return {
+      scope_key: scopeKey,
+      scope_type: scopeType,
+      repository: repo,
+      last_context_injection_at: latestContextRow?.recorded_at ?? null,
+      last_context_injection_hook: latestContextRow?.hook ?? null,
+      last_context_injection_sections_json: JSON.stringify(
+        parseJsonArray(latestContextRow?.section_titles_json),
+      ),
+      last_context_injection_trace_id: latestContextRow?.id ?? null,
+      last_context_injection_duration_ms: latestContextRow?.latency_ms ?? null,
+      last_extraction_completion_at: latestExtractionRow?.updated_at ?? null,
+      last_extraction_repository: normalizeRepository(latestExtractionRow?.repository) ?? repo,
+      last_maintenance_completion_at: latestMaintenanceRow?.completed_at ?? null,
+      last_maintenance_status: latestMaintenanceRow?.status ?? null,
+      last_maintenance_run_id: latestMaintenanceRow?.id ?? null,
+      last_trace_recorded_at: latestTraceRow?.recorded_at ?? null,
+      last_trace_hook: latestTraceRow?.hook ?? null,
+      last_trace_id: latestTraceRow?.id ?? null,
+      updated_at: timestamps.sort().at(-1) ?? nowIso(),
+    };
   }
 
   insertRetrievalTraceSample({
