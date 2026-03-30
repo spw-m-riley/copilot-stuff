@@ -5,14 +5,10 @@
 
 # Local CLI history and per-session artifacts
 /command-history-state.json
-/session-store.db
-/session-store.db-shm
-/session-store.db-wal
+/*.db
+/*.db-shm
+/*.db-wal
 /session-state/
-
-/coherence.db
-/coherence.db-shm
-/coherence.db-wal
 
 # Local runtime output
 /logs/
