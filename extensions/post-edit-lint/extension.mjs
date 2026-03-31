@@ -30,9 +30,9 @@ const TEXT_EXTENSIONS = new Set([
 const MARKDOWN_EXTENSION = ".md";
 const WORKFLOW_CONTRACT_ASSETS_SEGMENT = `${path.sep}skills${path.sep}workflow-contracts${path.sep}assets${path.sep}`;
 const SESSION_STATE_SEGMENT = `${path.sep}session-state${path.sep}`;
-const COHERENCE_JSON_SEGMENT = `${path.sep}coherence.json`;
-const COHERENCE_SCHEMA_JSON_SEGMENT = `${path.sep}schemas${path.sep}coherence.schema.json`;
-const COHERENCE_CONFIG_MJS_SEGMENT = `${path.sep}extensions${path.sep}coherence${path.sep}lib${path.sep}config.mjs`;
+const LORE_JSON_SEGMENT = `${path.sep}lore.json`;
+const LORE_SCHEMA_JSON_SEGMENT = `${path.sep}schemas${path.sep}lore.schema.json`;
+const LORE_CONFIG_MJS_SEGMENT = `${path.sep}extensions${path.sep}lore${path.sep}lib${path.sep}config.mjs`;
 
 function run(command, args, options = {}) {
   return new Promise((resolve) => {
@@ -346,23 +346,23 @@ async function validateWorkflowContract(filePath) {
   return [formatSummary(`workflow-contract (${path.basename(filePath)})`, result)];
 }
 
-async function findCoherenceSchemaValidator(filePath) {
+async function findLoreSchemaValidator(filePath) {
   return findUp(path.dirname(filePath), (dir) =>
-    path.join(dir, "extensions", "coherence", "scripts", "validate-config-schema.mjs"),
+    path.join(dir, "extensions", "lore", "scripts", "validate-config-schema.mjs"),
   );
 }
 
-function isCoherenceSchemaTrigger(filePath) {
+function isLoreSchemaTrigger(filePath) {
   const normalized = path.resolve(filePath);
   return (
-    normalized.endsWith(COHERENCE_JSON_SEGMENT) ||
-    normalized.endsWith(COHERENCE_SCHEMA_JSON_SEGMENT) ||
-    normalized.endsWith(COHERENCE_CONFIG_MJS_SEGMENT)
+    normalized.endsWith(LORE_JSON_SEGMENT) ||
+    normalized.endsWith(LORE_SCHEMA_JSON_SEGMENT) ||
+    normalized.endsWith(LORE_CONFIG_MJS_SEGMENT)
   );
 }
 
-async function validateCoherenceSchema(filePath) {
-  const validatorPath = await findCoherenceSchemaValidator(filePath);
+async function validateLoreSchema(filePath) {
+  const validatorPath = await findLoreSchemaValidator(filePath);
   if (!validatorPath) {
     return [];
   }
@@ -370,7 +370,7 @@ async function validateCoherenceSchema(filePath) {
   const result = await run(process.execPath, [validatorPath], {
     cwd: path.dirname(validatorPath),
   });
-  return [formatSummary("coherence-schema-parity", result)];
+  return [formatSummary("lore-schema-parity", result)];
 }
 
 async function processFile(filePath) {
@@ -425,9 +425,9 @@ const session = await joinSession({
         summaries.push(...(await processFile(filePath)));
       }
 
-      const coherenceTriggerFile = changedFiles.find(isCoherenceSchemaTrigger);
-      if (coherenceTriggerFile) {
-        summaries.push(...(await validateCoherenceSchema(coherenceTriggerFile)));
+      const loreTriggerFile = changedFiles.find(isLoreSchemaTrigger);
+      if (loreTriggerFile) {
+        summaries.push(...(await validateLoreSchema(loreTriggerFile)));
       }
 
       if (summaries.length === 0) {

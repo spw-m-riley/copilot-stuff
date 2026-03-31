@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Coherence User Configuration",
-  "description": "User-authorable settings for the Coherence extension (~/.copilot/coherence.json). Runtime-only fields such as configPath are excluded. All paths.* values default to paths derived from the user home directory at runtime and should not be set here unless you need to override them.",
+  "title": "Legacy Coherence User Configuration",
+  "description": "Legacy compatibility schema for the older Coherence naming. The active Lore config/schema surfaces are ~/.copilot/lore.json and extensions/lore/schemas/lore.schema.json. Keep this file only as a migration/redirect artifact; runtime-only fields such as configPath are excluded.",
   "type": "object",
   "additionalProperties": false,
   "properties": {

@@ -14,7 +14,7 @@ These live in [`./extensions/`](./extensions/) and are auto-discovered by the Co
 
 | Extension | What it does |
 | --------- | ------------ |
-| `coherence` | Adds local memory tools plus `memory_capability_inventory`, which scans repo-local skills, agents, and extension/coherence tools into an explainable local-first routing manifest, a recommendation-only router core, and a built-in router evaluation corpus. It also now ships an opt-in `maintenanceScheduler` plus `maintenance_schedule_run`, reusing deferred extraction, bounded validation/replay runs, backlog review, and optional trace/index upkeep without auto-invoking anything heavy by default. The latest slices also add `memory_evolution_ledger` (review-gated improvement backlog/proposal/integrity workflows), `memory_intent_journal` (durable intent/serendipity journaling with lightweight status counters), and `memory_portable_bundle` (optional local export/import scaffolding for review-gated portability bundles) as additive local-only surfaces. |
+| `lore` | Adds local memory tools plus `memory_capability_inventory`, which scans repo-local skills, agents, and extension/lore tools into an explainable local-first routing manifest, a recommendation-only router core, and a built-in router evaluation corpus. It also now ships an opt-in `maintenanceScheduler` plus `maintenance_schedule_run`, reusing deferred extraction, bounded validation/replay runs, backlog review, and optional trace/index upkeep without auto-invoking anything heavy by default. The latest slices also add `memory_evolution_ledger` (review-gated improvement backlog/proposal/integrity workflows), `memory_intent_journal` (durable intent/serendipity journaling with lightweight status counters), and `memory_portable_bundle` (optional local export/import scaffolding for review-gated portability bundles) as additive local-only surfaces. |
 | `ci-migration-context` | Detects CI migration-related prompts such as CircleCI to GitHub Actions work and injects extra migration context in the parent turn, then propagates that checklist into relevant delegated child agents. |
 | `copilot-healthcheck` | Adds the `mr_healthcheck_run` tool, which performs a lightweight environment check for the current working directory and reports things like repo state and key local Copilot files/tools. |
 | `fleet-model-policy` | Applies prompt-time steering for fleet mode so implementation-heavy fleet work prefers `GPT-5.3-codex`, and now propagates that policy into delegated implementation-style child agents. |
@@ -34,7 +34,7 @@ Child-agent context propagation is currently enabled in:
 
 This improves fleet-mode execution by making policy, routing, and worktree expectations available inside delegated child runs instead of limiting that context to the parent prompt.
 
-## Coherence rollout notes
+## Lore rollout notes
 
 - `rollout.evolutionLedger` defaults to `true` and enables the additive Phase 5 ledger/report surface.
 
@@ -46,13 +46,13 @@ This improves fleet-mode execution by making policy, routing, and worktree expec
 
 - Session-start maintenance remains intentionally cheap and bounded: when scheduler auto-run is enabled, only `deferredExtraction` is eligible at session start. Validation/replay/backlog/trace/index/doctor tasks are for explicit/manual/scripted runs.
 
-- Use `node extensions/coherence/scripts/run-maintenance.mjs --status` for task state parity with `maintenance_schedule_run { action: "status" }`. Use `--recommended-schedule` for supported external scheduling guidance (cron/launchd/system scheduler) and `--tasks ...` for bounded task subsets.
+- Use `node extensions/lore/scripts/run-maintenance.mjs --status` for task state parity with `maintenance_schedule_run { action: "status" }`. Use `--recommended-schedule` for supported external scheduling guidance (cron/launchd/system scheduler) and `--tasks ...` for bounded task subsets.
 
 - Recommended periodic tasks: validation corpus, replay corpus, backlog review, trace compaction, and index upkeep via `run-maintenance.mjs`; keep `deferredExtraction` on session-start and/or frequent scripted sweeps as needed.
 
-- Doctor snapshots are optional scheduled maintenance (`doctorSnapshot`) routed through the existing Coherence Doctor/reporting surfaces. Enable `rollout.coherenceDoctor` and `maintenanceScheduler.tasks.doctorSnapshot` before scheduling; snapshots emit additive doctor-report artifacts without trusted-source mutation.
+- Doctor snapshots are optional scheduled maintenance (`doctorSnapshot`) routed through the existing Lore Doctor/reporting surfaces. Enable `rollout.loreDoctor` and `maintenanceScheduler.tasks.doctorSnapshot` before scheduling; snapshots emit additive doctor-report artifacts without trusted-source mutation.
 
-- When draft proposal artifacts exist, the Coherence session-start capsule adds a small `Pending Proposal Review` section so new proposals show up proactively at the start of a session.
+- When draft proposal artifacts exist, the Lore session-start capsule adds a small `Pending Proposal Review` section so new proposals show up proactively at the start of a session.
 
 ## Prompt Tips
 
@@ -82,18 +82,18 @@ This improves fleet-mode execution by making policy, routing, and worktree expec
 | [Matteo Collina's Skills](https://github.com/mcollina/skills)                                                                              | Skills from the NodeJS contributor and Fastify creator                                                          |
 
 
-## Coherence visibility substrate
+## Lore visibility substrate
 
-Coherence now persists lightweight positive-path visibility state in `coherence_activity_state` (latest successful context injection/extraction/maintenance/trace) and bounded sampled retrieval history in `retrieval_trace_sample`. `memory_status` surfaces both so healthy behavior is visible without relying on warning-only signals.
+Lore now persists lightweight positive-path visibility state in `lore_activity_state` (latest successful context injection/extraction/maintenance/trace) and bounded sampled retrieval history in `retrieval_trace_sample`. For migration compatibility, the legacy `coherence_activity_state` table name is still recognized where older data exists. `memory_status` surfaces both so healthy behavior is visible without relying on warning-only signals.
 
-## Coherence Browser (local read-only MVP)
+## Lore Browser (local read-only MVP)
 
-Coherence now also includes a lightweight browser UI at `extensions/coherence/browser/` with a localhost-only Node server and static HTML/CSS/vanilla JS assets.
+Lore now also includes a lightweight browser UI at `extensions/lore/browser/` with a loopback-only Node server and static HTML/CSS/vanilla JS assets.
 
 Start it from this repo root:
 
 ```bash
-node extensions/coherence/scripts/run-browser.mjs
+node extensions/lore/scripts/run-browser.mjs
 ```
 
 Optional flags:
@@ -106,7 +106,7 @@ Optional flags:
 
 Then open `http://127.0.0.1:43111`.
 
-By default, the browser reads from the shared `coherence.db` across repositories. If you do not pass `--repository`, the UI is intentionally cross-repo and now labels itself as `scope: all repositories`.
+By default, the browser reads from the shared `lore.db` across repositories. If you do not pass `--repository`, the UI is intentionally cross-repo and now labels itself as `scope: all repositories`.
 
 Views in MVP:
 
@@ -118,22 +118,22 @@ Views in MVP:
 
 The browser API is read-only and local-only by default.
 
-## Coherence maintenance workflow
+## Lore maintenance workflow
 
 The bounded session-start path is now intentionally small: when scheduler support is enabled, session start should stay focused on cheap deferred extraction work rather than broad upkeep. Heavier maintenance is meant to run explicitly or from an external scheduler around the existing script entrypoint:
 
 ```bash
-node extensions/coherence/scripts/run-maintenance.mjs --status
-node extensions/coherence/scripts/run-maintenance.mjs --recommended-schedule
+node extensions/lore/scripts/run-maintenance.mjs --status
+node extensions/lore/scripts/run-maintenance.mjs --recommended-schedule
 ```
 
 Use `--status` to inspect recent runs and due tasks, and `--recommended-schedule` to see the intended cadence for validation, replay, backlog review, doctor snapshots, trace compaction, and index upkeep before wiring the script into `cron`, `launchd`, or another local scheduler.
 
-## How to tell Coherence is healthy
+## How to tell Lore is healthy
 
-Healthy Coherence should now be visible on the success path, not only when latency warnings fire.
+Healthy Lore should now be visible on the success path, not only when latency warnings fire.
 
 - `memory_status` shows durable last-success activity for context injection, extraction, maintenance, and trace recording, plus sampled retrieval history.
 - The browser `Overview` tab shows those same positive-path signals alongside due maintenance work and the recent latency trend.
-- `node extensions/coherence/scripts/run-maintenance.mjs --status` shows maintenance task state and recent run history when the scheduler path is active.
-- If Coherence looks stale or slow, use `memory_doctor_report` for a deeper read-only diagnostic snapshot before changing config.
+- `node extensions/lore/scripts/run-maintenance.mjs --status` shows maintenance task state and recent run history when the scheduler path is active.
+- If Lore looks stale or slow, use `memory_doctor_report` for a deeper read-only diagnostic snapshot before changing config.
