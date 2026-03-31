@@ -1,7 +1,9 @@
 # Shareable Copilot settings should stay trackable:
-# - config.json
 # - ide/
 # - installed-plugins/
+
+# Local Copilot config
+/config.json
 
 # Local CLI history and per-session artifacts
 /command-history-state.json
