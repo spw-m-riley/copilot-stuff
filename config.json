@@ -17,11 +17,11 @@
   "firstLaunchAt": "2026-03-11T00:00:00.000Z",
   "includeCoAuthoredBy": false,
   "effortLevel": "high",
-  "statusLine": {
-    "type": "command",
-    "command": "$HOME/.copilot/bin/statusline",
-    "padding": 1
-  },
   "model": "gpt-5.4",
-  "show_reasoning": false
+  "show_reasoning": true,
+  "extensions": {
+    "disabled_extensions": [
+      "user:coherence"
+    ]
+  }
 }

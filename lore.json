@@ -1,5 +1,5 @@
 {
-  "$schema": "./schemas/coherence.schema.json",
+  "$schema": "./extensions/lore/schemas/lore.schema.json",
   "enabled": true,
   "latencyTargetsMs": {
     "sessionStartP95": 100,
@@ -12,15 +12,30 @@
   "deferredExtraction": {
     "enabled": true,
     "autoEnqueueOnSessionEnd": true,
-    "autoProcessOnSessionStart": true
+    "autoProcessOnSessionStart": true,
+    "processCurrentRepositoryOnly": true
   },
   "maintenanceScheduler": {
     "enabled": true,
-    "autoRunOnSessionStart": false,
+    "autoRunOnSessionStart": true,
     "maxTasksPerRun": 4,
+    "sessionStartBackfill": {
+      "enabled": true,
+      "includeOtherRepositories": true,
+      "refreshExisting": false,
+      "batchSize": 25,
+      "maxCandidates": 250,
+      "maxInspected": 2000,
+      "notifyEveryItems": 25
+    },
     "tasks": {
+      "deferredExtraction": true,
+      "validationCorpus": true,
+      "replayCorpus": true,
+      "backlogReview": true,
       "traceCompaction": true,
-      "indexUpkeep": true
+      "indexUpkeep": true,
+      "doctorSnapshot": true
     }
   },
   "traceRecorder": {
@@ -30,17 +45,22 @@
     "maxFilteredRowsPerLookup": 3,
     "maxPromptChars": 160,
     "maxRowChars": 160,
-    "maxContextChars": 600
+    "maxContextChars": 600,
+    "persistDurableSample": true
   },
   "rollout": {
     "ambientPersonaMode": true,
     "autoWriteImprovementGoals": true,
-    "coherenceDoctor": true,
+    "directives": true,
     "evolutionLedger": true,
     "generatedArtifactIntegrity": true,
     "hybridRetrieval": true,
+    "loreDoctor": true,
+    "memoryDomains": true,
     "memoryOperations": true,
+    "overlayAutoHydration": true,
     "proposalGeneration": true,
+    "refreshableObservations": true,
     "retentionSanitization": true,
     "reviewGate": true,
     "temporalQueryNormalization": true,
