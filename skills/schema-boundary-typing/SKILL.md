@@ -1,6 +1,6 @@
 ---
 name: schema-boundary-typing
-description: Introduce or refine runtime schema validation at untrusted boundaries so static TypeScript types stay truthful.
+description: Validate untrusted inputs at the edge so runtime schemas, guards, and exported TypeScript types stay aligned.
 metadata:
   category: typescript
   audience: general-coding-agent
@@ -69,9 +69,24 @@ metadata:
 
 ## Examples
 
-- "Add runtime validation to this API payload and derive the TypeScript type from it."
-- "This JSON parsing helper returns weakly typed data. Introduce a schema at the boundary."
-- "Use the existing validator library to make this webhook payload type-safe."
+- `Before`
+  ```ts
+  const payload: User = JSON.parse(raw);
+  ```
+  `After`
+  ```ts
+  const payload = UserSchema.parse(JSON.parse(raw));
+  ```
+- `Before`
+  ```ts
+  export function readConfig(value: any) { return value.mode; }
+  ```
+  `After`
+  ```ts
+  export function readConfig(value: unknown) {
+    return ConfigSchema.parse(value).mode;
+  }
+  ```
 
 ## Reference files
 

@@ -1,6 +1,6 @@
 ---
 name: project-references-migration
-description: Migrate multi-package or layered TypeScript codebases to project references safely and incrementally.
+description: Migrate layered TypeScript workspaces to project references incrementally without breaking package boundaries or editor resolution.
 metadata:
   category: typescript
   audience: general-coding-agent
@@ -14,6 +14,7 @@ metadata:
 - The repository has multiple TypeScript packages or layers and needs faster, more reliable builds.
 - The user wants to adopt `tsc -b` project references incrementally.
 - Declaration output, package boundaries, or editor performance are suffering in a growing TypeScript workspace.
+- You need to make the graph coherent enough for `tsc -b`, fresh declarations, and editor go-to-definition to agree.
 
 ## Do not use this skill when
 
@@ -39,9 +40,10 @@ metadata:
 
 ## First move
 
-1. Inventory the package graph and current `tsconfig` chain.
+1. Inventory the package graph, current `tsconfig` chain, and any obvious cycles.
 2. Pick one leaf or low-risk package as the pilot migration surface.
 3. Confirm how declarations, outputs, and package boundaries work today before adding references.
+4. Stop and split the boundary if a proposed reference would create a cycle.
 
 ## Workflow
 
@@ -69,9 +71,26 @@ metadata:
 
 ## Examples
 
-- "Migrate this TypeScript monorepo to project references without breaking package builds."
-- "Set up `tsc -b` incrementally starting with the leaf packages."
-- "Our workspace typecheck is too slow. Move us toward project references safely."
+- `Before`
+  ```jsonc
+  {
+    "compilerOptions": {
+      "composite": false
+    }
+  }
+  ```
+  `After`
+  ```jsonc
+  {
+    "compilerOptions": {
+      "composite": true,
+      "declaration": true,
+      "declarationMap": true
+    },
+    "references": [{ "path": "../core" }]
+  }
+  ```
+- Pilot one leaf package first, then validate that `tsc -b` and editor go-to-definition resolve against the fresh declarations instead of stale outputs.
 
 ## Reference files
 

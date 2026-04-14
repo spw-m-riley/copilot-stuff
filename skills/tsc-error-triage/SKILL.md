@@ -1,6 +1,6 @@
 ---
 name: tsc-error-triage
-description: Diagnose and resolve TypeScript compiler errors by finding the smallest root-cause fix before editing call sites.
+description: Triage TypeScript compiler failures from the first causal error, then fix the source before downstream call sites.
 metadata:
   category: typescript
   audience: general-coding-agent
@@ -69,9 +69,20 @@ metadata:
 
 ## Examples
 
-- "TypeScript exploded after this refactor. Find the root cause instead of patching every call site."
-- "Fix the `tsc --noEmit` errors after upgrading this dependency."
-- "I enabled a stricter TS flag and now there are 80 errors. Triage them in the right order."
+- `tsc --noEmit` reports:
+  ```text
+  src/use.ts(8,12): error TS2345: Argument of type 'string' is not assignable to parameter of type 'number'.
+  src/index.ts(3,1): error TS2305: Module '"./api"' has no exported member 'makeId'.
+  ```
+  Fix the missing export or shared generic first; the argument errors are downstream noise.
+- `Before`
+  ```ts
+  export const toId = (value) => value.toString();
+  ```
+  `After`
+  ```ts
+  export const toId = (value: string | number) => value.toString();
+  ```
 
 ## Reference files
 

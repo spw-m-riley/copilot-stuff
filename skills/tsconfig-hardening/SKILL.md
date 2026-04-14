@@ -1,6 +1,6 @@
 ---
 name: tsconfig-hardening
-description: Tighten and rationalize TypeScript configuration safely, especially when enabling stricter compiler checks incrementally.
+description: Harden TypeScript configuration incrementally, keeping stricter flags, module resolution, and project layout in sync.
 metadata:
   category: typescript
   audience: general-coding-agent
@@ -69,9 +69,39 @@ metadata:
 
 ## Examples
 
-- "Turn on stricter TypeScript settings without breaking the whole repo at once."
-- "Clean up this messy `tsconfig` hierarchy and make module resolution predictable."
-- "Help me enable `noUncheckedIndexedAccess` and `exactOptionalPropertyTypes` safely."
+- `Before`
+  ```jsonc
+  {
+    "compilerOptions": {
+      "strict": false
+    }
+  }
+  ```
+  `After`
+  ```jsonc
+  {
+    "compilerOptions": {
+      "strict": true
+    }
+  }
+  ```
+- `Before`
+  ```jsonc
+  {
+    "compilerOptions": {
+      "baseUrl": "."
+    }
+  }
+  ```
+  `After`
+  ```jsonc
+  {
+    "compilerOptions": {
+      "baseUrl": ".",
+      "paths": { "@/*": ["src/*"] }
+    }
+  }
+  ```
 
 ## Reference files
 
