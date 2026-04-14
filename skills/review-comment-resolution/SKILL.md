@@ -88,6 +88,7 @@ Do not leave an unresolved comment without a reason. If the concern is real but 
 - Confirm the pushed branch matches the branch or PR under review.
 - Wait for workflows or checks on the new head commit to finish.
 - If any workflow fails, inspect whether the failure was introduced by your changes and address it when it is in scope.
+- Keep the routing and disposition examples in [`references/review-resolution-scenarios.md`](references/review-resolution-scenarios.md) aligned with any change to review-comment handling.
 
 ## Examples
 
@@ -100,3 +101,4 @@ Do not leave an unresolved comment without a reason. If the concern is real but 
 
 - [`references/comment-disposition.md`](references/comment-disposition.md) - how to classify review comments before fixing or rejecting them.
 - [`references/push-and-workflow-wait.md`](references/push-and-workflow-wait.md) - how to commit, push, and wait for workflows or checks on the updated branch.
+- [`references/review-resolution-scenarios.md`](references/review-resolution-scenarios.md) - compact routing and handoff scenarios for maintaining the review-resolution workflow.

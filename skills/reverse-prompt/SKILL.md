@@ -82,6 +82,7 @@ metadata:
 - Confirm the dual-mode behavior in this file matches [`references/decision-rules.md`](references/decision-rules.md).
 - Confirm the brief format includes goal, constraints, deliverables, approval rule, exact files when known, assumptions, and validation or checks.
 - Confirm `## Reference files` links every support file.
+- Keep [`references/rewrite-mode-scenarios.md`](references/rewrite-mode-scenarios.md) current when mode-selection or blocker routing changes.
 - Smoke test with prompts such as:
   - `Reverse-prompt this request for this repo: fix the tests in @skills/workflow-contracts/`
   - `Before you start, sharpen my prompt into goal, constraints, deliverables, approval rule, and exact files, then implement it: audit @extensions/`
@@ -99,3 +100,4 @@ metadata:
 - [Brief template](references/brief-template.md) - canonical shape for rewritten execution briefs.
 - [Decision rules](references/decision-rules.md) - rules for mode selection, blockers, and next-phase routing.
 - [Examples matrix](assets/examples.md) - repository-local before/after examples and expected outcomes.
+- [Rewrite mode scenarios](references/rewrite-mode-scenarios.md) - compact mode-selection and escalation cases for maintenance.
