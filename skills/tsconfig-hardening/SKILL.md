@@ -44,6 +44,53 @@ metadata:
 2. Separate configuration cleanup from code fixes so the diff explains itself.
 3. Pick one strictness or resolution problem to address first instead of flipping every flag at once.
 
+## Concrete config diffs
+
+Base config before:
+
+```json
+{
+  "compilerOptions": {
+    "strict": false,
+    "noImplicitAny": false
+  }
+}
+```
+
+Base config after:
+
+```json
+{
+  "compilerOptions": {
+    "strict": false,
+    "noImplicitAny": true
+  }
+}
+```
+
+Use a single-flag step like this before considering `strict: true`; the umbrella switch is only safe when the blast radius is already understood.
+
+Package override before:
+
+```json
+{
+  "extends": "../../tsconfig.base.json"
+}
+```
+
+Package override after:
+
+```json
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noImplicitOverride": false
+  }
+}
+```
+
+Use a per-package override like this only to defer a base flag temporarily when one package is not ready yet.
+
 ## Workflow
 
 1. Capture the current config shape and the commands it affects.
@@ -52,6 +99,7 @@ metadata:
 4. Keep module, path, include, exclude, and emit settings aligned with the actual build setup.
 5. When a config change creates a burst of compiler errors, stop changing config further and switch to `skills/tsc-error-triage/SKILL.md` to work the failures in root-cause order.
 6. Re-run typecheck, build, and targeted tests after each meaningful config change.
+7. Stop widening the config change once the next flag would mix strictness work with emit, module, or package-layout churn.
 
 ## Guardrails
 
@@ -60,6 +108,24 @@ metadata:
 - **Should** preserve existing build outputs unless the user asked for a packaging change.
 - **Should** prefer explicit per-package overrides over hidden config drift.
 - **May** defer especially noisy flags with a clear note when the repository is not ready yet.
+- **Should** stop the config sweep when failures spread beyond one or two localized areas; at that point the work has become compiler triage, not hardening.
+
+## Flag interaction notes
+
+- `strict` is the umbrella switch; do not expect it to be a no-op if package configs were already overriding pieces of it.
+- `noUncheckedIndexedAccess` often exposes index-signature and collection usage at once, so land it separately from optional-property changes.
+- `exactOptionalPropertyTypes` tends to ripple through object defaults and partial-update helpers, so keep the diff small enough to explain the actual API impact.
+- `noImplicitOverride` usually stays local to inheritance hierarchies and is a good follow-up batch after the broader nullability work.
+- If a stricter flag would require `module`, `moduleResolution`, or `outDir` changes to stay buildable, pause and re-evaluate the root cause before widening the config patch.
+
+## When to stop widening
+
+Stop broadening the config work when any of these happen:
+
+- the next change would touch both strictness and package-layout concerns
+- the remaining failures are spread across unrelated packages
+- the config diff no longer fits the current diagnosis in one review pass
+- the only remaining fixes are code changes, not config changes
 
 ## Validation
 
@@ -73,7 +139,8 @@ metadata:
   ```jsonc
   {
     "compilerOptions": {
-      "strict": false
+      "strict": false,
+      "noImplicitAny": false
     }
   }
   ```
@@ -81,7 +148,8 @@ metadata:
   ```jsonc
   {
     "compilerOptions": {
-      "strict": true
+      "strict": false,
+      "noImplicitAny": true
     }
   }
   ```

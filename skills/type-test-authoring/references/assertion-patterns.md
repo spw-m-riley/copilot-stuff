@@ -39,3 +39,14 @@ A good type test usually protects one of these:
 - a regression for a previously broken edge case
 
 Avoid giant kitchen-sink fixtures unless the repository already uses that style.
+
+## Bootstrapping guidance
+
+When you are adding the first maintained type test in a repository:
+
+- start with one positive case that shows the intended inference
+- add one negative case that proves the invalid shape is rejected
+- keep the file layout simple enough that future contributors can extend it without learning a new harness
+- prefer the smallest fixture format that still keeps the contract readable
+
+If the repository later grows a stronger convention, migrate toward that convention rather than freezing the bootstrap shape forever.
