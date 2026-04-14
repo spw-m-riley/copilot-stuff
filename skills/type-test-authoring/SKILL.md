@@ -90,6 +90,7 @@ If the repository has no established type-test convention:
 - Run the existing type-test command or the nearest equivalent fixture-based typecheck.
 - Confirm negative cases fail for the intended reason rather than from unrelated compiler noise.
 - Re-run adjacent runtime tests when the same API surface also changed at runtime.
+- Use [`references/type-test-scenarios.md`](references/type-test-scenarios.md) to choose inline assertions versus fixture/bootstrap patterns, and update it when the local type-test shape changes.
 
 ## Examples
 
@@ -109,3 +110,4 @@ If the repository has no established type-test convention:
 ## Reference files
 
 - [`references/assertion-patterns.md`](references/assertion-patterns.md) - common positive and negative assertion patterns for compile-time type testing.
+- [`references/type-test-scenarios.md`](references/type-test-scenarios.md) - scenario checklist for choosing the lightest durable type-test structure.
