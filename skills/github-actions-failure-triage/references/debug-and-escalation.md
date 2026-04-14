@@ -11,6 +11,7 @@ Rerun when:
 - the repository workflow already depends on rerun-based confirmation
 
 Do not use reruns as a substitute for reading the failure first.
+Do not rerun just to gather "more data" unless you can say what new evidence the rerun is expected to produce.
 
 ## When extra debug logging is justified
 
@@ -25,6 +26,12 @@ Remember:
 - enabling extra GitHub Actions debug logging may require repository access or admin help
 - the relevant surfaces are typically `ACTIONS_RUNNER_DEBUG` and `ACTIONS_STEP_DEBUG`
 - higher verbosity changes the investigation surface, so explain why it is needed before asking for it
+
+Red flags:
+
+- rerunning the same unexplained failure more than once without a new hypothesis
+- asking for debug logging before the failing surface and likely bucket are identified
+- treating "it passed once" as proof when the logs still do not explain the failure
 
 ## When to escalate
 

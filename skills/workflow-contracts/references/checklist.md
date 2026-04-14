@@ -22,6 +22,7 @@ Use this checklist before treating a `v1` artifact as ready to hand off.
 - Commands, evidence, or blockers are concrete enough for the next phase to act on.
 - The artifact is short enough to scan quickly.
 - The next action is explicit.
+- Any example artifact in [`references/examples.md`](references/examples.md) uses the same contract shape and concrete values as the live templates.
 
 ## Migration discipline
 
