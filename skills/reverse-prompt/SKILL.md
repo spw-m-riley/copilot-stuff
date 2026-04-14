@@ -1,6 +1,6 @@
 ---
 name: reverse-prompt
-description: Turn rough user asks into executable task briefs that improve speed, correctness, and completion quality before research, planning, or implementation.
+description: Rewrite rough requests into executable task briefs with clear goal, constraints, deliverables, and next-phase routing.
 metadata:
   category: workflow
   audience: general-coding-agent
@@ -75,13 +75,13 @@ metadata:
 - Confirm the brief format includes goal, constraints, deliverables, approval rule, exact files when known, assumptions, and validation or checks.
 - Confirm `## Reference files` links every support file.
 - Smoke test with prompts such as:
-  - `Reverse-prompt this request for this repo: fix the tests`
+  - `Reverse-prompt this request for this repo: fix the tests in @skills/workflow-contracts/`
   - `Before you start, sharpen my prompt into goal, constraints, deliverables, approval rule, and exact files, then implement it: audit @extensions/`
-  - `Improve this prompt only: update the broken workflow, but do not touch release jobs`
+  - `Improve this prompt only: update the broken workflow in \`.github/workflows/ci.yml\`, but do not touch release jobs or deploy permissions`
 
 ## Examples
 
-- `Reverse-prompt this request for this repo, then execute it: fix the TypeScript issues around @skills/.`
+- `Reverse-prompt this request for this repo: fix the failing tests in @skills/workflow-contracts/, but do not touch unrelated refactors.`
 - `Rewrite this rough ask into the best executable prompt for this repository: add a skill that improves prompts before implementation.`
 - `Before you start, sharpen my prompt and then move into planning mode: add a reverse prompt skill under @skills/.`
 - `Improve this prompt only: audit @extensions/ and tell me the best next prompt to use.`

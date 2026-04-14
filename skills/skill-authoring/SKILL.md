@@ -1,6 +1,6 @@
 ---
 name: skill-authoring
-description: Create or revise reusable agent skills under skills/<name>/SKILL.md with clear structure, progressive disclosure, and guardrails.
+description: Author reusable agent skills under skills/<name>/SKILL.md with clear activation, shallow references, predictable structure, and explicit validation.
 metadata:
   category: authoring
   audience: general-coding-agent
@@ -9,7 +9,15 @@ metadata:
 
 # Skill authoring
 
-Use this skill when creating or revising a reusable agent skill under `skills/<name>/SKILL.md`.
+Use this skill when creating or revising a reusable agent skill under `skills/<name>/SKILL.md`, especially when you need to decide activation, layering, examples, and validation.
+
+## Minimum gate
+
+A skill is ready to hand off when it:
+
+- says exactly when to use it and when not to
+- keeps `SKILL.md` concise by pushing lookup-heavy detail into shallow support files
+- includes at least one concrete example and one validation step
 
 ## Do not use this skill when
 
@@ -79,10 +87,9 @@ Use this skill when creating or revising a reusable agent skill under `skills/<n
 
 ## Examples
 
-- "Create a `terraform-module-upgrade` skill for safe module version bumps."
-- "Turn this conventions-heavy note into a reference skill with clear lookup paths."
-- "Rewrite this skill so it uses references for detailed checklists instead of putting everything in `SKILL.md`."
-- "Make this skill more generic so it works across repositories instead of embedding local project rules."
+- "Turn this conventions-heavy note into a reference skill with a one-paragraph activation block, direct links to support files, and a concrete example."
+- "Rewrite `skills/reverse-prompt/SKILL.md` so the decision logic stays obvious at the top level and the detailed branching moves into references."
+- "Create a `terraform-module-upgrade` skill that stays generic, uses shallow references, and makes the first validation step obvious."
 
 ## Reference files
 
