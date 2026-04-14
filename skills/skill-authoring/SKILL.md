@@ -13,6 +13,11 @@ Use this skill when creating or revising a reusable agent skill under `skills/<n
 
 Treat this as the benchmark shape other skills should copy: concise activation, shallow support files, and an obvious first validation step.
 
+## Use this skill when
+
+- You are creating or revising a reusable agent skill under `skills/<name>/SKILL.md`.
+- You need a reusable authoring standard for a local skill package with shallow support files.
+
 ## Minimum acceptance gate
 
 A skill is ready to hand off when it:
@@ -88,6 +93,7 @@ A skill is ready to hand off when it:
 - Check the layering against `references/layering-guide.md`.
 - Run the checklist in `references/checklist.md`.
 - Use [`references/quality-scenarios.md`](references/quality-scenarios.md) to keep the benchmark shape and handoff rules consistent when the skill changes.
+- Run `scripts/validate-skill-library.mjs` after changing `SKILL.md`, `assets/`, or `references/`.
 - Check that the package shape is predictable enough for future tool-assisted authoring:
   - frontmatter is present and matches the directory name
   - section headings are stable and easy to scan
@@ -109,3 +115,4 @@ A skill is ready to hand off when it:
 - `references/layering-guide.md` - where guidance belongs across instructions, skills, and agents
 - `references/checklist.md` - final authoring and validation checklist
 - `references/quality-scenarios.md` - compact quality and handoff scenarios for reviewing skill packages.
+- `scripts/validate-skill-library.mjs` - local validator for skill library metadata, examples, and support-file references
