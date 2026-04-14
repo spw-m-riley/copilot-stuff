@@ -55,12 +55,73 @@ Consult [`references/assertion-mapping.md`](references/assertion-mapping.md) and
 6. Update test utilities, config, or setup files only where required for parity.
 7. Migrate incrementally and run the relevant tests after each batch.
 
+## Worked migration slice
+
+Use this as the shape for one end-to-end file before scaling out:
+
+```js
+// Mocha + Chai + Sinon
+describe("retries", () => {
+  let clock;
+
+  beforeEach(() => {
+    clock = sinon.useFakeTimers();
+  });
+
+  afterEach(() => {
+    clock.restore();
+    sinon.restore();
+  });
+
+  it("waits and retries once", async () => {
+    const request = sinon.stub(api, "request").rejects(new Error("nope"));
+    const retry = sinon.stub(api, "retry").resolves({ ok: true });
+
+    const run = service.run();
+    await clock.tickAsync(1000);
+    await run;
+
+    expect(request.calledOnce).to.equal(true);
+    expect(retry.calledOnce).to.equal(true);
+    expect(retry.firstCall.args[0]).to.deep.equal({ delay: 1000 });
+  });
+});
+```
+
+```js
+// Jest
+describe("retries", () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.spyOn(api, "request").mockRejectedValue(new Error("nope"));
+    jest.spyOn(api, "retry").mockResolvedValue({ ok: true });
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+    jest.restoreAllMocks();
+  });
+
+  it("waits and retries once", async () => {
+    const run = service.run();
+    await jest.advanceTimersByTimeAsync(1000);
+    await run;
+
+    expect(api.request).toHaveBeenCalledTimes(1);
+    expect(api.retry).toHaveBeenCalledTimes(1);
+    expect(api.retry).toHaveBeenCalledWith({ delay: 1000 });
+  });
+});
+```
+
 ## Guardrails
 
 - **Must** preserve async behavior, timer behavior, and module mocking semantics explicitly.
 - **Must not** do bulk mechanical rewrites without validation — migrate in small batches.
 - **Should** keep test names and intent stable unless the user asks for broader cleanup.
 - **Should** watch for memory or environment differences in CI after migration.
+- **Red flag:** if the first converted file needs new Jest setup, treat that as the migration gate and stop before touching the rest of the suite.
+- **Handoff trigger:** if the migration exposes a broader runner/config problem, route that follow-up into the repository's Jest setup work instead of burying it in the test rewrite.
 
 ## Validation
 
