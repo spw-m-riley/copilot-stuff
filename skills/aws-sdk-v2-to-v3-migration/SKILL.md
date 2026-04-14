@@ -12,6 +12,7 @@ metadata:
 ## Use this skill when
 
 - The codebase still imports `aws-sdk` v2 clients or constructs them with `new AWS.*`.
+- You see v2 patterns like `.promise()`, `AWS.config.update(...)`, `DocumentClient`, or `s3.upload(...)`.
 - You need to move a service surface to the modular v3 packages without changing runtime behavior.
 - The work includes updating tests, mocks, helpers, or wrappers tied to v2 client behavior.
 
@@ -50,12 +51,13 @@ correct v3 package names and API shapes before writing any code.
 
 1. Inventory all `aws-sdk` v2 imports and the services in use.
 2. Group changes by service so imports and call sites stay coherent.
-3. Map each v2 client, helper, and API call to the v3 equivalent using the service mappings reference.
-4. Install the required `@aws-sdk/client-<service>` packages (and any utility packages such as `@aws-sdk/lib-storage`).
-5. Replace `new AWS.Service()` with the corresponding v3 client and explicit configuration.
-6. Replace method calls with `client.send(new Command(...))`, preserving input shapes and response handling.
-7. Update helpers, mocks, and tests to fit the v3 client-and-command model using the testing mocks reference.
-8. Validate pagination, streaming, document marshalling, retries, and error handling where used.
+3. Migrate one service end-to-end, including its tests and mock shape, before widening to the next service.
+4. Map each v2 client, helper, and API call to the v3 equivalent using the service mappings reference.
+5. Install the required `@aws-sdk/client-<service>` packages (and any utility packages such as `@aws-sdk/lib-storage`).
+6. Replace `new AWS.Service()` with the corresponding v3 client and explicit configuration.
+7. Replace method calls with `client.send(new Command(...))`, preserving input shapes and response handling.
+8. Update helpers, mocks, and tests to fit the v3 client-and-command model using the testing mocks reference.
+9. Validate pagination, streaming, document marshalling, retries, and error handling where used.
 
 ## Guardrails
 
@@ -72,9 +74,20 @@ correct v3 package names and API shapes before writing any code.
 
 ## Examples
 
-- "Migrate a Lambda that does `const s3 = new AWS.S3()` and `s3.upload(...)` to `S3Client` plus `PutObjectCommand`, then update the mocks."
+- "Migrate a Lambda that does `const s3 = new AWS.S3()` and `s3.upload(...)` to `S3Client` plus `Upload` from `@aws-sdk/lib-storage`, then update the mocks."
 - "Convert our DynamoDB document helper to AWS SDK v3 and keep the existing pagination and marshalling behavior."
 - "I upgraded `aws-sdk` and now `new AWS.SQS()` is everywhere — help me finish the v3 migration safely."
+- ```ts
+  // v2
+  const s3 = new AWS.S3({ region: 'us-east-1' });
+  await s3.upload({ Bucket, Key, Body }).promise();
+
+  // v3
+  import { S3Client } from '@aws-sdk/client-s3';
+  import { Upload } from '@aws-sdk/lib-storage';
+  const s3 = new S3Client({ region: 'us-east-1' });
+  await new Upload({ client: s3, params: { Bucket, Key, Body } }).done();
+  ```
 
 ## Reference files
 

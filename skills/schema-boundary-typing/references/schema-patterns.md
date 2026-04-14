@@ -65,3 +65,23 @@ Decide up front whether validation should:
 - map to an HTTP or domain-specific error
 
 Match the repository's existing error-handling pattern instead of inventing a new one.
+
+## Shape the failure path explicitly
+
+Prefer making the invalid case obvious at the edge:
+
+- field-level issues for request or payload validation
+- a typed result object when callers already branch on success/failure
+- a thrown error only when the repository already treats boundary failures as exceptional
+
+Example failure shape:
+
+```ts
+{
+  ok: false,
+  errors: [
+    { path: ['body', 'email'], message: 'Invalid email address' },
+    { path: ['body', 'age'], message: 'Must be a positive number' },
+  ],
+}
+```
