@@ -1,6 +1,6 @@
 ---
 name: git-worktrees
-description: Use isolated git worktrees for parallel tasks, agents, and safer multi-branch development.
+description: Create and manage isolated Git worktrees for parallel branches, agent lanes, and safer cleanup.
 metadata:
   category: version-control
   audience: general-coding-agent
@@ -11,7 +11,7 @@ metadata:
 
 ## Use this skill when
 
-- You need isolated workspaces for parallel changes in the same repository.
+- You need a separate checkout for another branch, review lane, or agent task.
 - Multiple agents or contributors may work concurrently without branch-switch churn.
 - You want safer experimentation while keeping your primary checkout stable.
 
@@ -70,9 +70,9 @@ metadata:
 
 ## Examples
 
-- “Set up a separate worktree for this bug fix so it does not collide with release prep.”
-- “Create one worktree per agent for parallel PR work, then clean up safely afterward.”
-- “Recover a worktree that points to the wrong branch without losing local edits.”
+- "Create `.worktrees/feature-auth-refactor` from `origin/main` for a migration lane, then keep the main checkout untouched until the branch is ready."
+- "Set up one worktree per agent for parallel PR work, then remove the clean worktree only after `git status` passes."
+- "Recover a worktree that points at the wrong branch without losing local edits."
 
 ## Reference files
 

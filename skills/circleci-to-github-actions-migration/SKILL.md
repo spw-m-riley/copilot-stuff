@@ -1,6 +1,6 @@
 ---
 name: circleci-to-github-actions-migration
-description: Migrate a repository from CircleCI to GitHub Actions with clear parity and rollout checks.
+description: Migrate CircleCI pipelines to GitHub Actions with explicit parity for jobs, filters, caches, artifacts, and deployment gates.
 metadata:
   category: migrations
   audience: general-coding-agent
@@ -11,8 +11,8 @@ metadata:
 
 ## Use this skill when
 
-- You need to replace or phase out `.circleci/config.yml` with GitHub Actions workflows.
-- The migration must preserve current CI behavior across build, test, deploy, caching, and artifacts.
+- You need to replace or phase out `.circleci/config.yml` with `.github/workflows/*`.
+- The repo still depends on CircleCI jobs, filters, contexts, or artifacts that need a faithful GitHub Actions translation.
 - You need an incremental rollout path with low-risk parity checks.
 
 ## Do not use this skill when
@@ -70,9 +70,9 @@ metadata:
 
 ## Examples
 
-- “Migrate this CircleCI pipeline to GitHub Actions and keep staging and production deploys separate.”
-- “Translate CircleCI test/build/release workflows with equivalent caching and branch filters.”
-- “Plan a low-risk CircleCI retirement with shadow runs and rollback checkpoints.”
+- "Migrate a `build-and-deploy` CircleCI workflow to GitHub Actions, keep `main` deploys gated, and preserve the existing cache keys."
+- "Translate a CircleCI test matrix with contexts and artifacts into GitHub Actions without changing required checks."
+- "Plan a low-risk CircleCI retirement with a shadow run, explicit permissions, and rollback checkpoints."
 
 ## Reference files
 
