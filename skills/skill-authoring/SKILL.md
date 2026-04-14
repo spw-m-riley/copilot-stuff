@@ -92,7 +92,6 @@ A skill is ready to hand off when it:
 - Read the completed skill once as if you were the target agent and confirm the next action is obvious.
 - Check the layering against `references/layering-guide.md`.
 - Run the checklist in `references/checklist.md`.
-- Use [`references/quality-scenarios.md`](references/quality-scenarios.md) to keep the benchmark shape and handoff rules consistent when the skill changes.
 - Run `scripts/validate-skill-library.mjs` after changing `SKILL.md`, `assets/`, or `references/`.
 - Check that the package shape is predictable enough for future tool-assisted authoring:
   - frontmatter is present and matches the directory name
@@ -114,5 +113,4 @@ A skill is ready to hand off when it:
 - `assets/skill-template.md` - starter template for a new `SKILL.md`
 - `references/layering-guide.md` - where guidance belongs across instructions, skills, and agents
 - `references/checklist.md` - final authoring and validation checklist
-- `references/quality-scenarios.md` - compact quality and handoff scenarios for reviewing skill packages.
 - `scripts/validate-skill-library.mjs` - local validator for skill library metadata, examples, and support-file references
