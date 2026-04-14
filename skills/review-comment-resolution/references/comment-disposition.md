@@ -65,3 +65,16 @@ Action:
 
 - avoid speculative implementation
 - record the blocker or follow-up recommendation clearly
+
+## Unresolved-comment summary shape
+
+When a comment is intentionally left unresolved, summarize it with a compact record like this:
+
+```md
+- thread: <short label or comment id>
+  disposition: not valid | superseded | not actionable yet
+  reason: <one sentence backed by code or workflow evidence>
+  follow_up: <what would need to change for this to become actionable>
+```
+
+The summary should make the non-fix obvious without reopening the whole debate.
