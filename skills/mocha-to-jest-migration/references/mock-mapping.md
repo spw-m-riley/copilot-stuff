@@ -85,7 +85,7 @@ module.exports = {
 | `sinon.useFakeTimers()` | `jest.useFakeTimers()` |
 | `sinon.useFakeTimers({ now: Date })` | `jest.useFakeTimers({ now: Date })` |
 | `clock.tick(ms)` | `jest.advanceTimersByTime(ms)` |
-| `clock.tick(ms)` (async) | `await jest.advanceTimersByTimeAsync(ms)` |
+| `await clock.tickAsync(ms)` | `await jest.advanceTimersByTimeAsync(ms)` |
 | `clock.next()` | `jest.runOnlyPendingTimers()` |
 | `clock.runAll()` | `jest.runAllTimers()` |
 | `clock.restore()` | `jest.useRealTimers()` |
