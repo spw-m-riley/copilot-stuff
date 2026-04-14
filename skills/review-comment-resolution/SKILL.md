@@ -1,6 +1,6 @@
 ---
 name: review-comment-resolution
-description: Assess pull request review comments, fix the valid concerns, commit and push the changes, then wait for workflows on the updated branch.
+description: Resolve pull request review comments by checking each concern, applying only valid fixes, and pushing the updated branch through workflow completion.
 metadata:
   category: code-review
   audience: general-coding-agent
@@ -76,9 +76,9 @@ metadata:
 
 ## Examples
 
-- "Address the open review comments on this PR, but only fix the ones that are actually valid."
-- "Go through the reviewer feedback, decide what needs changing, push the fixes, and wait for CI."
-- "Resolve the latest PR review comments on this branch and tell me which ones you intentionally did not fix."
+- "On PR #214, fix the review thread that shows the null-check bug, leave the style-only nit unresolved if it is not merge-blocking, push the branch, and wait for the rerun to finish."
+- "Go through the reviewer feedback on this branch, classify each thread before editing, and report which comments were intentionally not fixed because they were outdated or not actionable."
+- "Resolve the latest PR review comments on this branch and return the updated code plus the pushed commit SHA."
 
 ## Reference files
 
