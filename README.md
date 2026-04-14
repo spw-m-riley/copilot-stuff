@@ -60,4 +60,5 @@ This improves fleet-mode execution by making policy, routing, and worktree expec
 | [Copilot Documentation](https://docs.github.com/en/copilot)                                                                                | Official Docs from Github, covers every aspect of Copilot (although not the 'experimental' features in the cli) |
 | [Awesome Copilot](https://github.com/github/awesome-copilot)                                                                               | A collection of skills, agents, instructions from Github themselves                                             |
 | [Matteo Collina's Skills](https://github.com/mcollina/skills)                                                                              | Skills from the NodeJS contributor and Fastify creator                                                          |
-
+| [Superpowers](https://github.com/obra/superpowers) | An agentic skills framework & software development methodology that works |
+| [UI-UX-Pro-max-skill](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) | An AI skill that provide design intelligence for building professsional UI/UX multiple platforms |
