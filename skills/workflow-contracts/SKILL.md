@@ -101,9 +101,9 @@ Use this skill when a task needs a durable handoff artifact instead of a chat su
 - Confirm the artifact uses the correct template and `contract_version: v1`.
 - Confirm all shared frontmatter keys are present.
 - Confirm the contract-specific headings exist and are populated with concrete content.
-- Confirm any example artifact in this package uses real-looking filled values instead of placeholder ellipses.
 - Confirm any commands, evidence, or blockers are explicit enough that the next phase does not need to reconstruct them from chat history.
 - Confirm the next action is obvious within a few seconds of reading the artifact.
+- Confirm any example artifact in this package uses real-looking filled values instead of placeholder ellipses.
 - Run [`scripts/validate-contracts.mjs`](scripts/validate-contracts.mjs) after changing `assets/`, `references/`, or contract samples so required frontmatter, status values, and headings stay mechanically checked.
 
 ## Examples
