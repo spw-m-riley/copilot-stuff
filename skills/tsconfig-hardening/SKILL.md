@@ -132,6 +132,7 @@ Stop broadening the config work when any of these happen:
 - Run the repository's typecheck command after each config batch.
 - Run the build if `tsconfig` affects emit or declaration generation.
 - Confirm the final config still matches the intended runtime and package layout.
+- Use [`references/hardening-scenarios.md`](references/hardening-scenarios.md) to keep strictness sequencing, stop thresholds, and do-not-widen cases aligned with the maintenance loop.
 
 ## Examples
 
@@ -174,3 +175,4 @@ Stop broadening the config work when any of these happen:
 ## Reference files
 
 - [`references/strictness-path.md`](references/strictness-path.md) - a safe order for tightening common TypeScript compiler settings and related checks.
+- [`references/hardening-scenarios.md`](references/hardening-scenarios.md) - scenario checklist for sequencing strictness work without widening scope.
