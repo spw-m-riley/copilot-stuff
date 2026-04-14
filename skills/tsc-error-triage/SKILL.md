@@ -67,6 +67,7 @@ metadata:
 - Re-run the same typecheck command and confirm the targeted errors are gone.
 - Check that no new class of compiler error was introduced nearby.
 - Run targeted tests for the touched surface when the repository has them.
+- Keep [`references/triage-scenarios.md`](references/triage-scenarios.md) in sync when a new root-cause pattern or noisy downstream failure shape becomes common.
 
 ## Examples
 
@@ -96,3 +97,4 @@ metadata:
 ## Reference files
 
 - [`references/error-patterns.md`](references/error-patterns.md) - common compiler error families, likely root causes, and preferred first checks.
+- [`references/triage-scenarios.md`](references/triage-scenarios.md) - compact scenario matrix for root-cause-first compiler triage.

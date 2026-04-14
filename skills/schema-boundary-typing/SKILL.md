@@ -67,6 +67,7 @@ metadata:
 - Verify invalid payloads produce the expected failure shape: field errors, result-object errors, or thrown boundary errors that match the repository's convention.
 - Re-run typecheck after deriving or re-exporting the validated type.
 - Confirm consumers no longer rely on unvalidated `unknown` or ad hoc casts.
+- Keep [`references/boundary-validation-scenarios.md`](references/boundary-validation-scenarios.md) in sync when the repo's error-handling convention, schema library, or transport-to-domain boundary changes.
 
 ## Examples
 
@@ -101,3 +102,4 @@ metadata:
 ## Reference files
 
 - [`references/schema-patterns.md`](references/schema-patterns.md) - patterns for schema-first validation, derivation, and transport-to-domain boundaries.
+- [`references/boundary-validation-scenarios.md`](references/boundary-validation-scenarios.md) - compact checklist for success, failure, and error-shape validation at the boundary.
