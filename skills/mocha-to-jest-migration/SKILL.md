@@ -1,6 +1,6 @@
 ---
 name: mocha-to-jest-migration
-description: Migrate JavaScript or TypeScript tests from Mocha, Chai, or Sinon to Jest incrementally.
+description: Migrate JavaScript or TypeScript test suites from Mocha, Chai, or Sinon to Jest in small verified batches.
 metadata:
   category: migrations
   audience: general-coding-agent
@@ -11,9 +11,9 @@ metadata:
 
 ## Use this skill when
 
-- The repository is moving from Mocha, Chai, or Sinon to Jest.
-- You find `describe` and `it` tests using Chai assertions or Sinon stubs that need Jest equivalents.
-- The work includes test runner config, setup files, fake timers, spies, or snapshot usage.
+- The suite still uses Mocha, Chai, or Sinon and needs a staged migration to Jest.
+- You find `describe`/`it` tests using Chai assertions or Sinon stubs that need Jest equivalents.
+- The work includes runner config, setup files, fake timers, spies, or snapshots.
 
 ## Do not use this skill when
 
@@ -70,10 +70,9 @@ Consult [`references/assertion-mapping.md`](references/assertion-mapping.md) and
 
 ## Examples
 
-- "Convert this Mocha and Chai test file to Jest without renaming the test cases."
-- "Migrate our Sinon-heavy unit tests to Jest mocks and update the shared setup safely."
-- "Help me finish converting our test suite from Mocha to Jest — some files are already done."
-- "Replace all chai assertions and sinon stubs in this directory with Jest equivalents."
+- "Convert `user.spec.ts` from `sinon.stub(api, 'fetch')` and `expect(value).to.equal(...)` to `jest.spyOn(api, 'fetch')` and `expect(value).toBe(...)`."
+- "Migrate our Sinon-heavy unit tests to Jest mocks and keep the shared setup and fake timers behaving the same."
+- "Help me finish converting our Mocha suite to Jest — some files are already done and need the same runner setup."
 
 ## Reference files
 

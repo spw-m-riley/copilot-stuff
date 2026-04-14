@@ -1,6 +1,6 @@
 ---
 name: aws-sdk-v2-to-v3-migration
-description: Migrate JavaScript or TypeScript code from AWS SDK v2 to AWS SDK v3 safely and incrementally.
+description: Migrate JavaScript or TypeScript services off AWS SDK v2 and onto modular v3 clients, one service at a time.
 metadata:
   category: migrations
   audience: general-coding-agent
@@ -11,9 +11,9 @@ metadata:
 
 ## Use this skill when
 
-- The user asks to migrate `aws-sdk` v2 usage to the modular v3 packages.
-- You find v2 patterns such as `import AWS from 'aws-sdk'`, `require('aws-sdk')`, or `new AWS.S3()`.
-- The work includes updating tests, mocks, or helpers tied to v2 client behavior.
+- The codebase still imports `aws-sdk` v2 clients or constructs them with `new AWS.*`.
+- You need to move a service surface to the modular v3 packages without changing runtime behavior.
+- The work includes updating tests, mocks, helpers, or wrappers tied to v2 client behavior.
 
 ## Do not use this skill when
 
@@ -35,7 +35,7 @@ metadata:
 
 ## First move
 
-Run a quick inventory before editing any files:
+Inventory the v2 imports and service constructors before editing any files:
 
 ```sh
 grep -r "require('aws-sdk')\|from 'aws-sdk'" --include="*.ts" --include="*.js" -l
@@ -72,10 +72,9 @@ correct v3 package names and API shapes before writing any code.
 
 ## Examples
 
-- "Migrate this Lambda from `aws-sdk` v2 S3 calls to SDK v3 without changing behavior."
-- "Convert our DynamoDB document client helper to AWS SDK v3 and update the tests too."
-- "I'm getting type errors after upgrading aws-sdk — help me finish the v3 migration."
-- "Update our shared S3 helper and the mocks in the test suite to SDK v3."
+- "Migrate a Lambda that does `const s3 = new AWS.S3()` and `s3.upload(...)` to `S3Client` plus `PutObjectCommand`, then update the mocks."
+- "Convert our DynamoDB document helper to AWS SDK v3 and keep the existing pagination and marshalling behavior."
+- "I upgraded `aws-sdk` and now `new AWS.SQS()` is everywhere — help me finish the v3 migration safely."
 
 ## Reference files
 
