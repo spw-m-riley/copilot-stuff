@@ -1,6 +1,6 @@
 ---
 name: skill-authoring
-description: Create or revise reusable agent skills under skills/<name>/SKILL.md with clear structure, progressive disclosure, and guardrails.
+description: Author reusable agent skills under skills/<name>/SKILL.md with clear activation, shallow references, predictable structure, and explicit validation.
 metadata:
   category: authoring
   audience: general-coding-agent
@@ -9,12 +9,23 @@ metadata:
 
 # Skill authoring
 
-Use this skill when creating or revising a reusable agent skill under `skills/<name>/SKILL.md`.
+Use this skill when creating or revising a reusable agent skill under `skills/<name>/SKILL.md`, especially when you need to decide activation, layering, examples, and validation.
+
+Treat this as the benchmark shape other skills should copy: concise activation, shallow support files, and an obvious first validation step.
 
 ## Use this skill when
 
 - You are creating or revising a reusable agent skill under `skills/<name>/SKILL.md`.
 - You need a reusable authoring standard for a local skill package with shallow support files.
+
+## Minimum acceptance gate
+
+A skill is ready to hand off when it:
+
+- says exactly when to use it and when not to
+- keeps `SKILL.md` concise by pushing lookup-heavy detail into shallow support files
+- includes at least one concrete example and one validation step
+- makes the next action obvious without asking the reader to infer the workflow
 
 ## Do not use this skill when
 
@@ -67,6 +78,14 @@ Use this skill when creating or revising a reusable agent skill under `skills/<n
 - Keep support files shallow under the skill root and reference them directly from `SKILL.md`.
 - Prefer `references/` before `scripts/` unless automation clearly reduces repeated work.
 - Prefer standard section names when they fit so future authoring or validation tools can reason about the skill without guessing.
+- **Red flag:** if the draft starts embedding repo policy, one-off orchestration, or environment-specific branching, move that content out of the skill.
+- **Handoff trigger:** if the shape needs a dedicated operator persona, split orchestration, or long-lived state, promote it to a specialized agent instead of widening the skill.
+
+## Anti-patterns
+
+- Wrong layering: putting lookup tables, full templates, or repo-specific exceptions directly in `SKILL.md` when a shallow reference file would keep the package clearer.
+- Over-specialized shape: baking in a single repository's path conventions, CI roles, or internal team process so the skill stops being reusable.
+- Hidden workflow: making the skill feel like a note to the author instead of a playbook with activation, workflow, and validation.
 
 ## Validation
 
@@ -85,10 +104,9 @@ Use this skill when creating or revising a reusable agent skill under `skills/<n
 
 ## Examples
 
-- "Create a `terraform-module-upgrade` skill for safe module version bumps."
-- "Turn this conventions-heavy note into a reference skill with clear lookup paths."
-- "Rewrite this skill so it uses references for detailed checklists instead of putting everything in `SKILL.md`."
-- "Make this skill more generic so it works across repositories instead of embedding local project rules."
+- "Turn this conventions-heavy note into a reference skill with a one-paragraph activation block, direct links to support files, and a concrete example."
+- "Rewrite `skills/reverse-prompt/SKILL.md` so the decision logic stays obvious at the top level and the detailed branching moves into references."
+- "Create a `terraform-module-upgrade` skill that stays generic, uses shallow references, and makes the first validation step obvious."
 
 ## Reference files
 
