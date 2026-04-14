@@ -41,8 +41,15 @@ metadata:
 ## First move
 
 1. Read `.circleci/config.yml` end-to-end and create a concept map using `references/concept-mapping.md`.
-2. Draft one representative GitHub Actions workflow from `assets/workflow-skeleton.yml`.
+2. Draft one representative GitHub Actions workflow from the Node.js example in `assets/workflow-skeleton.yml`, or replace that skeleton first if the repo is not Node-based.
 3. Validate trigger, matrix, cache, and secret parity for that workflow before translating the rest.
+
+## Permissions and secrets mapping
+
+- Map each CircleCI `context` to the narrowest GitHub Actions secret scope that fits: repository secret, organization secret, or environment secret.
+- Keep job `permissions` explicit and minimal; add `id-token: write` only when the migration truly uses OIDC.
+- For deployment jobs, pair `environment:` with the secrets and approval gates that protect that environment.
+- Document every secret source and the job or environment that consumes it before removing the CircleCI context.
 
 ## Workflow
 
@@ -57,6 +64,7 @@ metadata:
 
 - **Must** preserve behavior for triggers, required checks, artifacts, and deployment protections.
 - **Must** define secret usage and job `permissions` explicitly.
+- **Must** treat `assets/workflow-skeleton.yml` as a Node.js example, not a repo-generic template.
 - **Should** migrate incrementally (shadow run or staged cutover) for multi-workflow repositories.
 - **Should** keep workflows readable and deterministic rather than embedding heavy shell logic.
 - **May** reuse existing reusable workflows where they preserve parity.

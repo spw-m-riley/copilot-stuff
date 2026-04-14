@@ -11,6 +11,7 @@
 - [ ] Preserve trigger coverage (push, pull request, tags, schedules, manual dispatch).
 - [ ] Preserve stage boundaries (build/test/package/deploy) unless intentionally changed.
 - [ ] Define explicit workflow and job permissions.
+- [ ] Map every CircleCI context to a concrete GitHub Actions secret or environment secret.
 - [ ] Recreate cache keys and artifact publishing behavior.
 - [ ] Keep branch and tag filters equivalent.
 
