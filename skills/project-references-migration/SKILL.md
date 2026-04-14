@@ -45,6 +45,36 @@ metadata:
 3. Confirm how declarations, outputs, and package boundaries work today before adding references.
 4. Stop and split the boundary if a proposed reference would create a cycle.
 
+## Common shapes
+
+Solution config:
+
+```json
+{
+  "files": [],
+  "references": [
+    { "path": "./packages/core" },
+    { "path": "./packages/ui" }
+  ]
+}
+```
+
+Pilot package config:
+
+```json
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "rootDir": "src",
+    "outDir": "dist"
+  },
+  "references": [{ "path": "../core" }]
+}
+```
+
 ## Workflow
 
 1. Create or normalize a shared base config only for settings that truly belong across referenced packages.
@@ -53,6 +83,7 @@ metadata:
 4. Align output directories, package exports, and path aliases with the referenced build layout.
 5. Migrate packages incrementally from leaves upward.
 6. Switch scripts to `tsc -b` or the repository's equivalent only after the referenced graph is coherent.
+7. If a cycle appears, stop widening and split the dependency before adding more references.
 
 ## Guardrails
 
@@ -61,6 +92,13 @@ metadata:
 - **Should** keep runtime resolution, package exports, and declaration output aligned.
 - **Should** prefer real package boundaries over giant shared path-alias surfaces.
 - **May** leave exceptional packages on local configs temporarily when the graph is not ready.
+- **Should** treat a repeated cycle or stale output mismatch as a sign to pause migration, not to add another config layer.
+
+## Troubleshooting
+
+- If the build succeeds but the editor opens stale declarations, restart the TypeScript server or reopen the workspace after confirming the package graph changed.
+- If go-to-definition lands in the wrong emitted folder, verify `rootDir`, `outDir`, `declaration`, and package exports point at the same build layout.
+- If outputs land beside source or in an unexpected subdirectory, inspect the package's `tsconfig` inheritance before widening the reference graph.
 
 ## Validation
 
