@@ -44,6 +44,7 @@ metadata:
 3. Run that command and capture the full compiler output.
 4. Group the errors by root symbol, module, or config boundary instead of treating every error as independent.
 5. Start with the earliest high-fanout error before fixing downstream call sites.
+6. Look for one shared compiler snippet that points at a broken export, generic constraint, or config boundary.
 
 ## Workflow
 
@@ -75,6 +76,14 @@ metadata:
   src/index.ts(3,1): error TS2305: Module '"./api"' has no exported member 'makeId'.
   ```
   Fix the missing export or shared generic first; the argument errors are downstream noise.
+- `High-fanout fix`
+  ```ts
+  export function parseId(value: string | undefined): string {
+    if (!value) throw new Error('missing id');
+    return value;
+  }
+  ```
+  One shared helper like this can collapse dozens of leaf errors once its return type is truthful.
 - `Before`
   ```ts
   export const toId = (value) => value.toString();

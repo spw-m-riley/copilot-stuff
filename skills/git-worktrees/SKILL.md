@@ -33,10 +33,11 @@ metadata:
 
 - Existing branch naming conventions.
 - Local cleanup policy for stale worktrees.
+- Repo shape details such as monorepo package paths, submodules, sparse checkout, or nested worktrees.
 
 **Only investigate if encountered**
 
-- Submodule, sparse checkout, or platform-specific filesystem constraints.
+- Detached HEADs or platform-specific filesystem constraints.
 
 ## First move
 
@@ -58,6 +59,8 @@ metadata:
 - **Must** use one active worktree per independent task to avoid accidental cross-task edits.
 - **Must** verify the current directory and branch before applying changes.
 - **Should** use consistent naming defaults, but adjust to repository conventions when needed.
+- **Should** keep branch names and worktree paths aligned so the branch name still makes sense if the worktree path is copied or recreated later.
+- **Should** verify the repository root before creating the worktree in monorepos or nested checkouts.
 - **Should** inspect for uncommitted changes before removing any worktree.
 - **May** keep long-lived worktrees for release branches if the team workflow benefits.
 
@@ -71,6 +74,7 @@ metadata:
 ## Examples
 
 - "Create `.worktrees/feature-auth-refactor` from `origin/main` for a migration lane, then keep the main checkout untouched until the branch is ready."
+- "Create `.worktrees/issue-812-auth-timeout` from `origin/main` with branch `task/issue-812-auth-timeout`, then keep the edits inside that checkout."
 - "Set up one worktree per agent for parallel PR work, then remove the clean worktree only after `git status` passes."
 - "Recover a worktree that points at the wrong branch without losing local edits."
 

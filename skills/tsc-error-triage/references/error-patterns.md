@@ -56,6 +56,20 @@ Prefer:
 - tightening the generic contract at the source
 - adding the smallest useful constraint
 
+## High-fanout error example
+
+When one compiler error fans out into many leaf failures, the first fix is usually at the shared source:
+
+```ts
+// shared helper
+export function parseId(value: string | undefined): string {
+  if (!value) throw new Error('missing id');
+  return value;
+}
+```
+
+If the helper previously returned `string | undefined`, dozens of call sites can fail with the same assignment error. Fix the helper once, then re-run typecheck before touching callers.
+
 ## Module resolution and declaration mismatches
 
 Typical signals:

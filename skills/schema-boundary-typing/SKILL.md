@@ -64,6 +64,7 @@ metadata:
 ## Validation
 
 - Run targeted tests for valid and invalid boundary inputs.
+- Verify invalid payloads produce the expected failure shape: field errors, result-object errors, or thrown boundary errors that match the repository's convention.
 - Re-run typecheck after deriving or re-exporting the validated type.
 - Confirm consumers no longer rely on unvalidated `unknown` or ad hoc casts.
 
@@ -76,6 +77,15 @@ metadata:
   `After`
   ```ts
   const payload = UserSchema.parse(JSON.parse(raw));
+  ```
+- `Failure shape` (custom result wrapper when callers branch on success or failure)
+  ```ts
+  {
+    ok: false,
+    errors: [
+      { path: ['body', 'email'], message: 'Invalid email address' },
+    ],
+  }
   ```
 - `Before`
   ```ts

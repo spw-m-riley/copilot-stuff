@@ -10,6 +10,12 @@ git status
 git branch --all
 ```
 
+## Repo-shape caveats
+
+- Use the top-level repository root when creating or repairing a worktree; nested package directories are not separate worktree roots.
+- Submodules need their own Git operations inside the submodule checkout, not from the parent worktree.
+- Sparse checkout can hide files that a recovery step expects, so verify visible paths before assuming data loss.
+
 ## Common recovery cases
 
 ### Worktree path was deleted manually
