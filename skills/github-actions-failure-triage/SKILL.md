@@ -1,6 +1,6 @@
 ---
 name: github-actions-failure-triage
-description: Diagnose and minimally fix failing GitHub Actions runs in repositories already using GitHub Actions.
+description: Diagnose failing GitHub Actions runs and apply the smallest evidence-backed fix in repositories already on Actions.
 metadata:
   category: ci
   audience: general-coding-agent
@@ -9,7 +9,7 @@ metadata:
 
 # GitHub Actions failure triage
 
-Use this skill when a repository already uses GitHub Actions and the task is to diagnose or minimally fix a failing workflow run, job, or check.
+Use this skill when a repository already uses GitHub Actions and you need to diagnose a concrete failing run, job, or check before making the smallest safe fix.
 
 ## Use this skill when
 
@@ -111,11 +111,10 @@ Do not collect secret values. Only confirm whether the expected names, scopes, a
 
 ## Examples
 
-- "The deploy job on my PR is failing with a missing artifact. Can you figure out why without rewriting the whole workflow?"
-- "Our workflow started failing after I bumped `actions/checkout`. Diagnose it before making broad CI changes."
-- "One matrix variant keeps failing in GitHub Actions even though the others pass."
-- "This reusable workflow call started failing after an input or ref change. Investigate the contract mismatch."
-- "Post-migration, this GitHub Actions check is red. Triage whether it's the workflow or the application."
+- "The `deploy` job on PR #182 fails on `Upload artifact` with `Artifact not found`; trace that run, fix the upload path, and do not touch the rest of the workflow."
+- "A workflow started failing after `actions/checkout` was bumped; confirm whether the failure is in the action input, the checkout depth, or the repo script before changing anything else."
+- "Only the `ubuntu-latest / node-20` matrix leg fails at the test step; isolate the failing job and keep the fix limited to that branch of the matrix."
+- "A reusable workflow call started failing after an input rename; verify the caller and callee contract before editing unrelated jobs."
 
 ## Reference files
 
