@@ -25,3 +25,11 @@ Use this reference while translating `.circleci/config.yml` into `.github/workfl
 - Confirm every required CircleCI stage has an explicit GitHub Actions equivalent.
 - Ensure required status checks still map to the correct workflow/job names.
 - Verify deploy protections, manual approvals, and secret scopes for each environment.
+
+## Permissions and secrets mapping
+
+- CircleCI `context` values usually map to GitHub Actions repository, organization, or environment secrets.
+- Prefer the narrowest secret scope that satisfies the job; do not promote a secret to a broader scope just to make the migration easier.
+- Declare job `permissions` explicitly in GitHub Actions; CircleCI permissions are implicit, but GitHub Actions defaults are not enough to document intent.
+- Use `environment:` for deploy jobs that need approvals, protected secrets, or environment-specific credentials.
+- If a CircleCI job relied on OIDC or cloud federation, add the matching GitHub Actions identity permission deliberately and keep it isolated to that job.
