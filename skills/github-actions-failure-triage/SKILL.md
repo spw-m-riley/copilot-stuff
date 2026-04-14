@@ -87,6 +87,22 @@ Do not collect secret values. Only confirm whether the expected names, scopes, a
 7. Summarize the result using [`assets/triage-summary-template.md`](assets/triage-summary-template.md), including evidence, change made, validation, and any remaining blocker.
 8. If the failure really belongs to migration design, review-comment handling, or admin-only settings, stop and hand off cleanly instead of stretching the skill.
 
+
+## Quick decision appendix
+
+Use this as the fast path once the failure bucket is known:
+
+| Bucket | First safe move | Tightest fix | Rerun / escalation cue |
+| --- | --- | --- | --- |
+| Workflow syntax, trigger, or expression errors | Read the exact YAML and expression path that failed | Fix the broken key, trigger filter, or expression reference | Rerun only after the workflow parses cleanly |
+| Permissions, token, secret, or variable issues | Confirm the expected names and scopes without reading secret values | Adjust repo-owned permissions or secret wiring | Escalate when the dependency lives in org-admin or environment policy |
+| Runner or environment mismatch | Compare `runs-on`, image, labels, and shell assumptions | Switch to the correct runner or remove the environment-specific assumption | Escalate when the label or fleet health is outside repo control |
+| Matrix or fan-out issues | Identify the single failing axis | Tighten include/exclude logic or branch-specific setup | Rerun the narrow matrix leg after the fix |
+| Cache, artifact, job-output, or cross-job handoff failures | Compare the producer and consumer path or output name | Fix the exact path, name, or `needs` handoff | Rerun the downstream consumer after verifying the producer created the file |
+| Reusable workflow or action interface issues | Inspect both caller and callee contracts together | Align inputs, secrets, outputs, or ref pins | Escalate only if the contract change needs broader coordination |
+| Concurrency, cancellation, or dependency-order issues | Check `needs`, concurrency groups, and skip conditions | Remove the ordering bug or unsafe cancellation rule | Rerun after the dependency graph is corrected |
+| Project, test, deployment, or runtime failures | Confirm the workflow is exposing a real repo bug | Fix the code or config surface that actually failed | Hand off instead of polishing workflow YAML |
+
 ## Guardrails
 
 - **Must not** edit workflow files speculatively before reading the concrete failing evidence.
@@ -94,6 +110,7 @@ Do not collect secret values. Only confirm whether the expected names, scopes, a
 - **Must not** collect, print, or store secret values.
 - **Must not** absorb migration planning, PR review handling, or worktree setup into this skill.
 - **Must not** rely on blind reruns as a substitute for diagnosis.
+- **Must not** rerun a failure just to feel productive; a rerun only counts when it can change the evidence or verify a narrowly targeted fix.
 - **Should** prefer the smallest change that explains the failure and preserves the surrounding workflow shape.
 - **Should** distinguish flaky, pre-existing, and newly introduced failures before claiming a fix.
 - **Should** escalate instead of guessing when the failure depends on org-admin controls, runner-fleet health, or broader CI redesign.
@@ -103,6 +120,8 @@ Do not collect secret values. Only confirm whether the expected names, scopes, a
 - Run the repository's relevant validation commands for the touched surface.
 - If workflow files changed, run workflow linting such as `actionlint` when available.
 - Re-check the exact failing workflow, job, or check when practical instead of relying only on generic local validation.
+- If the change touches artifact, cache, or output wiring, confirm both the producer and consumer paths before calling the fix complete.
+- If the failure stayed ambiguous after reading the logs, prefer escalation or extra debug evidence over repeated reruns.
 - If no change is made, provide a precise evidence-backed explanation of the root cause or blocker.
 - Before considering the skill package complete, confirm that:
   - `SKILL.md` has the required frontmatter and sections
@@ -121,4 +140,5 @@ Do not collect secret values. Only confirm whether the expected names, scopes, a
 - [`references/evidence-checklist.md`](references/evidence-checklist.md) - intake fields and evidence to gather before editing
 - [`references/failure-buckets.md`](references/failure-buckets.md) - common failure categories, symptoms, and first checks
 - [`references/debug-and-escalation.md`](references/debug-and-escalation.md) - when to rerun, enable extra debugging, or hand off
+- [`references/triage-scenarios.md`](references/triage-scenarios.md) - compact scenario matrix for validation and fast bucket recognition
 - [`assets/triage-summary-template.md`](assets/triage-summary-template.md) - concise format for reporting root cause, fix, validation, and blockers
