@@ -104,14 +104,13 @@ Use this skill when a task needs a durable handoff artifact instead of a chat su
 - Confirm any example artifact in this package uses real-looking filled values instead of placeholder ellipses.
 - Confirm any commands, evidence, or blockers are explicit enough that the next phase does not need to reconstruct them from chat history.
 - Confirm the next action is obvious within a few seconds of reading the artifact.
-- Run [`scripts/validate-contracts.mjs`](scripts/validate-contracts.mjs) when available to check required frontmatter, status values, and headings mechanically.
+- Run [`scripts/validate-contracts.mjs`](scripts/validate-contracts.mjs) after changing `assets/`, `references/`, or contract samples so required frontmatter, status values, and headings stay mechanically checked.
 
 ## Examples
 
 - "Turn this approved plan into a `v1` planner handoff with `status: ready`, `task_id`, validation commands, and a next action the executor can start immediately."
 - "Rewrite these review notes into a review-outcome contract with `status: revise`, the comments that were accepted, and the ones intentionally left unresolved."
 - "Record the current implementation wave in an execution record that names the changed files, the checks run, and the remaining blocker."
-- See [`references/examples.md`](references/examples.md) for fully filled contract examples that match the three `v1` templates.
 
 ## Reference files
 
@@ -119,7 +118,7 @@ Use this skill when a task needs a durable handoff artifact instead of a chat su
 - [`references/terminology.md`](references/terminology.md) - shared terms used across planning, review, and execution
 - [`references/rollout-and-compatibility.md`](references/rollout-and-compatibility.md) - migration rules, cutover conditions, and legacy-artifact handling
 - [`references/checklist.md`](references/checklist.md) - final artifact validation checklist
-- [`references/examples.md`](references/examples.md) - filled planner, review, and execution examples
+- [`references/examples.md`](references/examples.md) - filled planner, review, and execution examples with concrete values
 - [`assets/planner-handoff-v1.md`](assets/planner-handoff-v1.md) - template for planner-to-executor handoffs
 - [`assets/review-outcome-v1.md`](assets/review-outcome-v1.md) - template for machine-decidable reviewer responses
 - [`assets/execution-record-v1.md`](assets/execution-record-v1.md) - template for implementation and verification handoffs
