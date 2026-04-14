@@ -1,6 +1,6 @@
 ---
 name: workflow-contracts
-description: Use versioned structured markdown contracts for planning handoffs, review outcomes, and execution records.
+description: Create and revise versioned markdown handoff artifacts for planning, review, and execution in this Copilot workflow.
 metadata:
   category: workflow
   audience: general-coding-agent
@@ -10,7 +10,7 @@ metadata:
 
 # Workflow contracts
 
-Use this skill when a task needs a durable, handoff-friendly artifact for planning, review, or implementation in this Copilot setup.
+Use this skill when a task needs a durable handoff artifact instead of a chat summary, plan note, or loose prose.
 
 ## Use this skill when
 
