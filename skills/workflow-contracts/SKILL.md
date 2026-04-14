@@ -1,6 +1,6 @@
 ---
 name: workflow-contracts
-description: Create and revise versioned markdown handoff artifacts for planning, review, and execution in this Copilot workflow.
+description: Use versioned structured markdown contracts for planning handoffs, review outcomes, and execution records.
 metadata:
   category: workflow
   audience: general-coding-agent
@@ -10,7 +10,7 @@ metadata:
 
 # Workflow contracts
 
-Use this skill when a task needs a durable handoff artifact instead of a chat summary, plan note, or loose prose.
+Use this skill when a task needs a durable, handoff-friendly artifact for planning, review, or implementation in this Copilot setup.
 
 ## Use this skill when
 
@@ -76,7 +76,6 @@ Use this skill when a task needs a durable handoff artifact instead of a chat su
 5. If a legacy artifact must feed the next phase, map it into the `v1` headings before handing it off.
 6. Validate the finished artifact with [`references/checklist.md`](references/checklist.md).
 7. Hand off the artifact with an explicit next action instead of assuming the next agent will infer it from chat history.
-8. If the task would require inventing a new artifact shape or parser, route to [`skill-authoring`](../skill-authoring/SKILL.md) instead of stretching this skill.
 
 ## Outputs
 
@@ -93,7 +92,6 @@ Use this skill when a task needs a durable handoff artifact instead of a chat su
 - **Must** make the status explicit instead of burying approval or blockers in prose.
 - **Must not** invent a third artifact shape during the migration window.
 - **Must not** stretch this skill into a new parser, framework, or orchestration layer.
-- **Must not** fill missing fields with wishful prose; if the evidence is not concrete yet, leave the artifact blocked or draft.
 - **Should** keep artifacts short, phase-specific, and directly usable by the next step in the workflow.
 
 ## Validation
@@ -101,17 +99,15 @@ Use this skill when a task needs a durable handoff artifact instead of a chat su
 - Confirm the artifact uses the correct template and `contract_version: v1`.
 - Confirm all shared frontmatter keys are present.
 - Confirm the contract-specific headings exist and are populated with concrete content.
-- Confirm any example artifact in this package uses real-looking filled values instead of placeholder ellipses.
 - Confirm any commands, evidence, or blockers are explicit enough that the next phase does not need to reconstruct them from chat history.
 - Confirm the next action is obvious within a few seconds of reading the artifact.
-- Run [`scripts/validate-contracts.mjs`](scripts/validate-contracts.mjs) when available to check required frontmatter, status values, and headings mechanically.
+- Run [`scripts/validate-contracts.mjs`](scripts/validate-contracts.mjs) after changing `assets/`, `references/`, or contract samples so required frontmatter, status values, and headings stay mechanically checked.
 
 ## Examples
 
-- "Turn this approved plan into a `v1` planner handoff with `status: ready`, `task_id`, validation commands, and a next action the executor can start immediately."
-- "Rewrite these review notes into a review-outcome contract with `status: revise`, the comments that were accepted, and the ones intentionally left unresolved."
-- "Record the current implementation wave in an execution record that names the changed files, the checks run, and the remaining blocker."
-- See [`references/examples.md`](references/examples.md) for fully filled contract examples that match the three `v1` templates.
+- "Turn this approved plan into a `v1` planner handoff artifact."
+- "Rewrite these review notes as a review-outcome contract with an explicit status."
+- "Record the current implementation wave in an execution record before switching tasks."
 
 ## Reference files
 
@@ -119,7 +115,6 @@ Use this skill when a task needs a durable handoff artifact instead of a chat su
 - [`references/terminology.md`](references/terminology.md) - shared terms used across planning, review, and execution
 - [`references/rollout-and-compatibility.md`](references/rollout-and-compatibility.md) - migration rules, cutover conditions, and legacy-artifact handling
 - [`references/checklist.md`](references/checklist.md) - final artifact validation checklist
-- [`references/examples.md`](references/examples.md) - filled planner, review, and execution examples
 - [`assets/planner-handoff-v1.md`](assets/planner-handoff-v1.md) - template for planner-to-executor handoffs
 - [`assets/review-outcome-v1.md`](assets/review-outcome-v1.md) - template for machine-decidable reviewer responses
 - [`assets/execution-record-v1.md`](assets/execution-record-v1.md) - template for implementation and verification handoffs
