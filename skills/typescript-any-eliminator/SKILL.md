@@ -1,6 +1,6 @@
 ---
 name: typescript-any-eliminator
-description: Replace TypeScript `any` types with the most precise safe types, using existing project types and runtime guards where needed.
+description: Replace unsafe `any` with the narrowest truthful TypeScript type, reusing shared types and boundary guards.
 metadata:
   category: typescript
   audience: general-coding-agent
@@ -52,9 +52,10 @@ metadata:
    - a generic with constraints
    - a discriminated union or other explicit union
    - `unknown` plus narrowing or validation at an untrusted boundary
-4. Update adjacent call sites only when needed to keep the typed surface coherent.
-5. Preserve runtime behavior while tightening the types.
-6. Re-run the typecheck and targeted tests after the change.
+4. If the honest boundary is still permissive, stop at `unknown` plus a guard instead of inventing a fake precise type.
+5. Update adjacent call sites only when needed to keep the typed surface coherent.
+6. Preserve runtime behavior while tightening the types.
+7. Re-run the typecheck and targeted tests after the change.
 
 ## Guardrails
 
@@ -73,10 +74,27 @@ metadata:
 
 ## Examples
 
-- "Replace the `any` types in this request parsing code without changing runtime behavior."
-- "Tighten this helper that returns `any` from parsed JSON and add the right guard."
-- "Remove `Record<string, any>` from this shared utility using existing project types."
-- "Reduce the remaining `any` types in this API module, but keep the boundary honest where the input is untrusted."
+- `Before`
+  ```ts
+  export function read(input: any) {
+    return input.user.id;
+  }
+  ```
+  `After`
+  ```ts
+  export function read(input: unknown) {
+    if (!isUser(input)) throw new Error("invalid user");
+    return input.user.id;
+  }
+  ```
+- `Before`
+  ```ts
+  type Payload = Record<string, any>;
+  ```
+  `After`
+  ```ts
+  type Payload = Record<string, unknown>;
+  ```
 
 ## Reference files
 

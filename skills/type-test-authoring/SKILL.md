@@ -1,6 +1,6 @@
 ---
 name: type-test-authoring
-description: Write compile-time type tests that protect public TypeScript APIs, inference behavior, and negative cases.
+description: Write compile-time TypeScript tests that lock down inference, assignability, and negative cases with the repo's existing pattern.
 metadata:
   category: typescript
   audience: general-coding-agent
@@ -69,9 +69,18 @@ metadata:
 
 ## Examples
 
-- "Add compile-time tests for this generic helper so inference regressions are caught."
-- "Lock down the public API types for this package with `tsd` or the repo's equivalent."
-- "Turn this type bug into a regression test with positive and negative cases."
+- `expectTypeOf`
+  ```ts
+  expectTypeOf(parseUser({ id: 1 })).toEqualTypeOf<User>();
+  // @ts-expect-error wrong shape
+  parseUser({ id: "1" });
+  ```
+- `@ts-expect-error` fixture
+  ```ts
+  acceptsString("ok");
+  // @ts-expect-error numbers are rejected
+  acceptsString(123);
+  ```
 
 ## Reference files
 
