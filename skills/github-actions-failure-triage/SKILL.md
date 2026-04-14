@@ -87,6 +87,7 @@ Do not collect secret values. Only confirm whether the expected names, scopes, a
 7. Summarize the result using [`assets/triage-summary-template.md`](assets/triage-summary-template.md), including evidence, change made, validation, and any remaining blocker.
 8. If the failure really belongs to migration design, review-comment handling, or admin-only settings, stop and hand off cleanly instead of stretching the skill.
 
+
 ## Quick decision appendix
 
 Use this as the fast path once the failure bucket is known:
