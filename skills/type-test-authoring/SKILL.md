@@ -44,6 +44,22 @@ metadata:
 3. Identify the exact inference or assignability contract that needs protection.
 4. Add one positive and one negative case before broadening coverage.
 
+## Bootstrap without an existing pattern
+
+If the repository has no established type-test convention:
+
+1. Prefer a lightweight TypeScript fixture that the existing toolchain already understands.
+2. Use a dedicated `*.test-d.ts` or `*.type-test.ts` file when the contract needs to stay out of runtime code.
+3. Use inline `@ts-expect-error` only when the regression is tiny and close to the API that owns it.
+4. Keep the first pass small enough to validate with the repo's normal `tsc --noEmit` or equivalent.
+
+## Inline vs fixture-file tradeoffs
+
+- Inline assertions keep the example next to the code they protect and are best for one or two local cases.
+- Fixture files scale better when you need multiple positive and negative cases or want to keep runtime sources clean.
+- Fixture files are easier to expand later, but inline assertions are faster when the repo only needs a single regression lock.
+- If the contract is part of a public surface, prefer the style that makes the expected call shape easiest to read at a glance.
+
 ## Workflow
 
 1. Encode the expected inference or assignability behavior using the repository's current type-test tool, or the lightest new pattern justified by the repository's existing tooling.
@@ -60,6 +76,14 @@ metadata:
 - **Should** match the repository's current type-test tool instead of introducing a new one casually.
 - **Should** keep tests focused on exported or intentionally shared types.
 - **May** use compact helper aliases when the repository already has them.
+- **Should** stop at compile-time coverage when the bug is purely static; if the behavior depends on runtime data, use runtime tests instead.
+
+## Red flags
+
+- The contract only fails when the code executes, not when the type system checks it.
+- The first fixture would need a brand-new test harness instead of the existing TypeScript workflow.
+- The type assertion depends on generated data, environment state, or file system layout.
+- The test would be clearer as a small runtime example with a separate typecheck fixture for just the static boundary.
 
 ## Validation
 
