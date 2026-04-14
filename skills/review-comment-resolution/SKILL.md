@@ -20,6 +20,7 @@ metadata:
 
 - The task is only to summarize or classify review comments without making changes.
 - The comments are actually bug reports, issue triage, or general design questions outside a concrete review surface.
+- The real blocker is a failing workflow or check; route that to [`github-actions-failure-triage`](../github-actions-failure-triage/SKILL.md) first.
 - You cannot access the branch, PR, or review comment context needed to judge the concern.
 - The user explicitly instructs you to apply every review comment exactly as written without assessment.
 
@@ -57,12 +58,26 @@ metadata:
 8. Push the branch and monitor workflows or checks on the new head commit until they reach a terminal state.
 9. If workflows fail because of your changes, investigate and fix them before considering the task complete.
 
+## Output for comments intentionally not fixed
+
+When a comment is deliberately left unresolved, report it with a small, explicit summary instead of burying the decision in prose:
+
+```md
+- thread: <short label or comment id>
+  disposition: not valid | superseded | not actionable yet
+  reason: <one sentence rooted in code or workflow evidence>
+  follow_up: <what would need to change for this to become actionable>
+```
+
+Do not leave an unresolved comment without a reason. If the concern is real but out of scope, say that directly.
+
 ## Guardrails
 
 - **Must not** assume every review comment is correct without checking the actual code and context.
 - **Must not** dismiss reviewer concerns casually; keep evidence for any comment you choose not to fix.
 - **Must not** mix unrelated cleanup into the review-comment fix batch.
 - **Must not** force-push, merge, or resolve/dismiss comments unless the surrounding workflow clearly calls for it.
+- **Must not** rationalize away an unresolved comment by omitting it from the summary; every intentional non-fix needs a disposition.
 - **Should** prefer the smallest change that addresses the real concern rather than the literal wording of a comment if the wording is imprecise.
 - **Should** keep accepted and rejected comment reasoning easy to summarize after the push.
 
@@ -79,6 +94,7 @@ metadata:
 - "On PR #214, fix the review thread that shows the null-check bug, leave the style-only nit unresolved if it is not merge-blocking, push the branch, and wait for the rerun to finish."
 - "Go through the reviewer feedback on this branch, classify each thread before editing, and report which comments were intentionally not fixed because they were outdated or not actionable."
 - "Resolve the latest PR review comments on this branch and return the updated code plus the pushed commit SHA."
+- See [`references/comment-disposition.md`](references/comment-disposition.md) for the disposition categories and unresolved-comment summary shape.
 
 ## Reference files
 
