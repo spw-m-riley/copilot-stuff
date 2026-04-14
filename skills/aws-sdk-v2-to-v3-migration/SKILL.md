@@ -51,7 +51,7 @@ correct v3 package names and API shapes before writing any code.
 
 1. Inventory all `aws-sdk` v2 imports and the services in use.
 2. Group changes by service so imports and call sites stay coherent.
-3. Migrate one service end-to-end, including its tests and mock shape, before widening to the next service.
+3. Pick the smallest self-contained service as the pilot and complete steps 4-9 for that service before widening to the next one.
 4. Map each v2 client, helper, and API call to the v3 equivalent using the service mappings reference.
 5. Install the required `@aws-sdk/client-<service>` packages (and any utility packages such as `@aws-sdk/lib-storage`).
 6. Replace `new AWS.Service()` with the corresponding v3 client and explicit configuration.
