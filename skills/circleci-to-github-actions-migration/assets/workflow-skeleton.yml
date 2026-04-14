@@ -1,4 +1,7 @@
-name: ci-template
+name: node-ci-template
+
+# Node.js example skeleton for a CircleCI-to-GitHub Actions migration.
+# Adapt the runtime setup and commands before reusing this for non-Node repositories.
 
 on:
   pull_request:

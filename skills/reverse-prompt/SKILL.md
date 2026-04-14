@@ -44,6 +44,13 @@ metadata:
 - Conflicting goals or constraints.
 - Missing validation expectations for work that clearly needs a completion check.
 
+## Mode selection
+
+- Use `rewrite-and-return` when the user only wants a sharper brief or the next best prompt.
+- Use `rewrite-and-proceed` when the user asks you to sharpen the prompt and then act on it.
+- If both prompt-help wording and action wording appear, prefer `rewrite-and-proceed`.
+- If prompt-help intent is explicit but execution intent is absent, do not start the work; return the rewritten brief instead.
+
 ## First move
 
 1. Identify what structure is missing from the current ask.
@@ -53,7 +60,7 @@ metadata:
 ## Workflow
 
 1. Extract the user's intent, scope, constraints, deliverable, and completion signal.
-2. Decide whether this is `rewrite-and-return` or `rewrite-and-proceed` using [`references/decision-rules.md`](references/decision-rules.md).
+2. Decide whether this is `rewrite-and-return` or `rewrite-and-proceed` using the mode-selection rules above and [`references/decision-rules.md`](references/decision-rules.md) for edge cases.
 3. Fill the brief structure from [`references/brief-template.md`](references/brief-template.md), adding exact `@` file or directory mentions when they are known.
 4. Surface assumptions and blockers explicitly instead of hiding them inside the rewritten brief.
 5. If the request is `rewrite-and-return`, return the improved brief plus assumptions or blockers and the recommended next phase.
@@ -64,6 +71,7 @@ metadata:
 
 - Sharpen the request faithfully; do not invent requirements that are not grounded in the user's ask or repository context.
 - Do not silently start work when prompt-help intent is explicit and execution intent is absent.
+- If the target surface is still unknown after grounding, surface that blocker instead of inventing a destination.
 - Keep the rewritten brief concise and action-oriented.
 - Treat this as a reusable workflow, not a repository-wide prompt policy.
 - Keep detailed rubrics and examples in support files instead of bloating `SKILL.md`.
