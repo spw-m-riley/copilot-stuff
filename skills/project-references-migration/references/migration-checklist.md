@@ -49,3 +49,18 @@ Migrate packages in dependency order. After each batch:
 - run the cross-package typecheck flow that consumers actually use
 - verify editor navigation or go-to-definition resolves to the expected referenced package source or fresh declarations
 - stop if a cycle or config split emerges
+
+## 6. Troubleshoot output and editor cache
+
+When the graph is correct but the experience still looks stale:
+
+- compare the emitted path with the package's `outDir` and declaration expectations
+- check whether the editor is still reading an old `tsconfig` project cache
+- reopen the affected file after restarting the TypeScript server
+- confirm the import resolves to a fresh declaration or source file, not a deleted build artifact
+
+When the build output looks wrong:
+
+- verify `rootDir` is not forcing source files into an unexpected nested folder
+- confirm package exports and path aliases point at the same built surface
+- inspect the referenced package before changing consumer configs

@@ -52,3 +52,13 @@ After every meaningful config change:
 - re-run typecheck
 - record whether the remaining errors are localized or widespread
 - stop broadening the change if the next batch would mix concerns
+
+## 6. Decide when to stop
+
+Treat the work as complete enough for one slice when:
+
+- the active flag is adopted cleanly or has a small, explainable remaining error set
+- the next improvement would require code churn in multiple unrelated packages
+- the remaining issues are better handled as compiler triage than as config tuning
+
+At that point, stop widening the `tsconfig` change and switch to root-cause cleanup.
