@@ -14,7 +14,7 @@ These live in [`./extensions/`](./extensions/) and are auto-discovered by the Co
 
 | Extension | What it does |
 | --------- | ------------ |
-| `lore` | Adds local memory tools plus `memory_capability_inventory`, which scans repo-local skills, agents, and extension/lore tools into an explainable local-first routing manifest, a recommendation-only router core, and a built-in router evaluation corpus. It also now ships an opt-in `maintenanceScheduler` plus `maintenance_schedule_run`, reusing deferred extraction, bounded validation/replay runs, backlog review, and optional trace/index upkeep without auto-invoking anything heavy by default. The latest slices also add `memory_evolution_ledger` (review-gated improvement backlog/proposal/integrity workflows), `memory_intent_journal` (durable intent/serendipity journaling with lightweight status counters), and `memory_portable_bundle` (optional local export/import scaffolding for review-gated portability bundles) as additive local-only surfaces. |
+| `lore` | Local-first memory and continuity extension for Copilot CLI. Keep Lore-specific setup, rollout, maintenance, browser, and health docs in [`extensions/lore/README.md`](./extensions/lore/README.md). |
 | `ci-migration-context` | Detects CI migration-related prompts such as CircleCI to GitHub Actions work and injects extra migration context in the parent turn, then propagates that checklist into relevant delegated child agents. |
 | `copilot-healthcheck` | Adds the `mr_healthcheck_run` tool, which performs a lightweight environment check for the current working directory and reports things like repo state and key local Copilot files/tools. |
 | `fleet-model-policy` | Applies prompt-time steering for fleet mode so implementation-heavy fleet work prefers `GPT-5.3-codex`, and now propagates that policy into delegated implementation-style child agents. |
@@ -33,26 +33,6 @@ Child-agent context propagation is currently enabled in:
 - `worktree-manager` (delegated implementation/edit/task-style subagents in git repos)
 
 This improves fleet-mode execution by making policy, routing, and worktree expectations available inside delegated child runs instead of limiting that context to the parent prompt.
-
-## Lore rollout notes
-
-- `rollout.evolutionLedger` defaults to `true` and enables the additive Phase 5 ledger/report surface.
-
-- `rollout.proposalGeneration` defaults to `false`; turn it on when you want `memory_evolution_ledger` or maintenance backlog review to generate review-only proposal docs.
-
-- `rollout.generatedArtifactIntegrity` defaults to `true` and lets `memory_evolution_ledger` verify or repair generated proposal artifacts instead of silently tolerating drift.
-
-- `maintenanceScheduler.enabled` still defaults to `false`; when enabled alongside `rollout.proposalGeneration`, backlog review can generate proposals and run proposal-artifact integrity checks during bounded local maintenance sweeps.
-
-- Session-start maintenance remains intentionally cheap and bounded: when scheduler auto-run is enabled, only `deferredExtraction` is eligible at session start. Validation/replay/backlog/trace/index/doctor tasks are for explicit/manual/scripted runs.
-
-- Use `node extensions/lore/scripts/run-maintenance.mjs --status` for task state parity with `maintenance_schedule_run { action: "status" }`. Use `--recommended-schedule` for supported external scheduling guidance (cron/launchd/system scheduler) and `--tasks ...` for bounded task subsets.
-
-- Recommended periodic tasks: validation corpus, replay corpus, backlog review, trace compaction, and index upkeep via `run-maintenance.mjs`; keep `deferredExtraction` on session-start and/or frequent scripted sweeps as needed.
-
-- Doctor snapshots are optional scheduled maintenance (`doctorSnapshot`) routed through the existing Lore Doctor/reporting surfaces. Enable `rollout.loreDoctor` and `maintenanceScheduler.tasks.doctorSnapshot` before scheduling; snapshots emit additive doctor-report artifacts without trusted-source mutation.
-
-- When draft proposal artifacts exist, the Lore session-start capsule adds a small `Pending Proposal Review` section so new proposals show up proactively at the start of a session.
 
 ## Prompt Tips
 
@@ -81,59 +61,3 @@ This improves fleet-mode execution by making policy, routing, and worktree expec
 | [Awesome Copilot](https://github.com/github/awesome-copilot)                                                                               | A collection of skills, agents, instructions from Github themselves                                             |
 | [Matteo Collina's Skills](https://github.com/mcollina/skills)                                                                              | Skills from the NodeJS contributor and Fastify creator                                                          |
 
-
-## Lore visibility substrate
-
-Lore now persists lightweight positive-path visibility state in `lore_activity_state` (latest successful context injection/extraction/maintenance/trace) and bounded sampled retrieval history in `retrieval_trace_sample`. For migration compatibility, the legacy `coherence_activity_state` table name is still recognized where older data exists. `memory_status` surfaces both so healthy behavior is visible without relying on warning-only signals.
-
-## Lore Browser (local read-only MVP)
-
-Lore now also includes a lightweight browser UI at `extensions/lore/browser/` with a loopback-only Node server and static HTML/CSS/vanilla JS assets.
-
-Start it from this repo root:
-
-```bash
-node extensions/lore/scripts/run-browser.mjs
-```
-
-Optional flags:
-
-- `--host 127.0.0.1` (default)
-- `--host` accepts loopback values only: `127.0.0.1`, `localhost`, or `::1`
-- `--port 43111` (default)
-- `--repository owner/repo` (optional; focus browser reads to one repository)
-- `--derived-store-path <path>` (override DB location)
-
-Then open `http://127.0.0.1:43111`.
-
-By default, the browser reads from the shared `lore.db` across repositories. If you do not pass `--repository`, the UI is intentionally cross-repo and now labels itself as `scope: all repositories`.
-
-Views in MVP:
-
-- **Overview**: corpus counts, active workstreams, last successful activity, due maintenance tasks, latency trend
-- **Memories**: `semantic_memory` with filters (type, scope, repository, canonical key, active/superseded)
-- **Maintenance**: maintenance runs/task state, deferred queue, doctor reports, trace/plan context
-- **Episodes**: recent `episode_digest` and `day_summary` history
-- **Drill-down**: focused relationship graphs for a selected memory, workstream, or session, including provenance, supersession, canonical clustering, linked improvements, and day grouping
-
-The browser API is read-only and local-only by default.
-
-## Lore maintenance workflow
-
-The bounded session-start path is now intentionally small: when scheduler support is enabled, session start should stay focused on cheap deferred extraction work rather than broad upkeep. Heavier maintenance is meant to run explicitly or from an external scheduler around the existing script entrypoint:
-
-```bash
-node extensions/lore/scripts/run-maintenance.mjs --status
-node extensions/lore/scripts/run-maintenance.mjs --recommended-schedule
-```
-
-Use `--status` to inspect recent runs and due tasks, and `--recommended-schedule` to see the intended cadence for validation, replay, backlog review, doctor snapshots, trace compaction, and index upkeep before wiring the script into `cron`, `launchd`, or another local scheduler.
-
-## How to tell Lore is healthy
-
-Healthy Lore should now be visible on the success path, not only when latency warnings fire.
-
-- `memory_status` shows durable last-success activity for context injection, extraction, maintenance, and trace recording, plus sampled retrieval history.
-- The browser `Overview` tab shows those same positive-path signals alongside due maintenance work and the recent latency trend.
-- `node extensions/lore/scripts/run-maintenance.mjs --status` shows maintenance task state and recent run history when the scheduler path is active.
-- If Lore looks stale or slow, use `memory_doctor_report` for a deeper read-only diagnostic snapshot before changing config.
