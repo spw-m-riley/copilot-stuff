@@ -43,6 +43,15 @@ metadata:
 2. Run the repository's typecheck command if available so you understand the current failure surface.
 3. Start with the smallest self-contained `any` site and consult the reference files before inventing new patterns.
 
+## Stop here if the boundary is honest
+
+Do not force a fake precise type when the right answer is to keep the boundary permissive or move the fix closer to the real source.
+
+- keep `unknown` plus a guard when the value is untrusted
+- leave generated or vendor-owned files alone
+- stop when the change would become a broader TypeScript redesign instead of a truthful `any` replacement
+- report the boundary plainly instead of rationalizing a wider type as "good enough"
+
 ## Workflow
 
 1. Trace inbound and outbound values so the replacement type matches real usage.
@@ -65,6 +74,8 @@ metadata:
 - **Should** prefer `unknown` only at untrusted boundaries, then narrow with guards or validators.
 - **Should** keep edits small and local unless a larger refactor is required to keep types coherent.
 - **May** leave a documented or generated `any` boundary in place when editing it would be unsafe or out of scope.
+- **Red flag:** if the first safe fix is a schema, parser, or shared type already used elsewhere, reuse that instead of inventing a new local shape.
+- **Handoff trigger:** if the change requires runtime validation work outside this file, route that boundary work to the relevant schema or validator owner.
 
 ## Validation
 
@@ -95,6 +106,11 @@ metadata:
   ```ts
   type Payload = Record<string, unknown>;
   ```
+
+## Support-file examples
+
+- Reuse and constrained-generic before/after patterns live in `references/replacement-patterns.md`.
+- Honest stop cases for generated code, vendor declarations, and intentionally unstructured boundaries live in `references/boundary-triage.md`.
 
 ## Reference files
 
