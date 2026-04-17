@@ -24,4 +24,5 @@
 *~
 
 .worktrees/
+# Runtime-installed plugins - not tracked
 installed-plugins/
