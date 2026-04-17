@@ -14,4 +14,4 @@ applyTo: "**/*.json,**/*.jsonc,**/*.code-workspace"
 ## Learned Rules
 
 <!-- New Rules appended below this line. Do not edit above this section -->
-1. [OTHER] When package.json scripts need CI-aware behavior, never key them off a fake `CIRCLECI` variable; prefer the standard `CI` environment variable or an explicit repo-owned variable with a truthful name - the user explicitly said `CIRCLECI` should not be mentioned for this compatibility case
+1. [OTHER] When package.json scripts or JSON-owned CI config need CI-aware behavior, never key them off a fake `CIRCLECI` variable; prefer the standard `CI` environment variable or an explicit repo-owned variable with a truthful name - the user explicitly said `CIRCLECI` should not be mentioned for this compatibility case
