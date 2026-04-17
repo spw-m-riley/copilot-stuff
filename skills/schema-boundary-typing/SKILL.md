@@ -61,6 +61,12 @@ metadata:
 - **Should** prefer a simple local guard when the boundary is small, one-off, and unlikely to be shared.
 - **May** keep a separate domain model when transport shapes and internal models differ materially.
 
+## Routing boundary
+
+- Route here from [`typescript-any-eliminator`](../typescript-any-eliminator/SKILL.md) when replacing `any` requires runtime boundary validation to make types truthful.
+- After boundary types are stable, route compile-time contract locking to [`type-test-authoring`](../type-test-authoring/SKILL.md).
+- For runtime behavior coverage of boundary handlers/controllers, route test implementation to [`typescript-api-test-generator`](../../agents/typescript-api-test-generator.agent.md).
+
 ## Validation
 
 - Run targeted tests for valid and invalid boundary inputs.

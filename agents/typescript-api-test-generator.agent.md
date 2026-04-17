@@ -13,6 +13,7 @@ Use this agent when the user asks for tests around TypeScript modules, request h
 - Read nearby tests first and match their conventions closely.
 - Focus on behavior and regressions, not superficial coverage.
 - Prefer deterministic unit or integration-style tests over brittle end-to-end style tests unless the repository already uses that pattern.
+- Keep this agent focused on runtime tests; route compile-time type contract coverage to [`type-test-authoring`](../skills/type-test-authoring/SKILL.md).
 
 ## Preferred workflow
 

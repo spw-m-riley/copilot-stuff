@@ -1,6 +1,5 @@
 # Shareable Copilot settings should stay trackable:
 # - ide/
-# - installed-plugins/
 
 # Local Copilot config
 /config.json
@@ -25,4 +24,5 @@
 *~
 
 .worktrees/
+# Runtime-installed plugins - not tracked
 installed-plugins/

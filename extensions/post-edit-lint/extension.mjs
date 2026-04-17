@@ -4,6 +4,7 @@ import { execFile } from "node:child_process";
 import { access, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
+import { createValidatorRegistry } from "./lib/validator-registry.mjs";
 
 const EDIT_TOOLS = new Set(["apply_patch", "edit", "create"]);
 const JS_TS_EXTENSIONS = new Set([
@@ -30,9 +31,7 @@ const TEXT_EXTENSIONS = new Set([
 const MARKDOWN_EXTENSION = ".md";
 const WORKFLOW_CONTRACT_ASSETS_SEGMENT = `${path.sep}skills${path.sep}workflow-contracts${path.sep}assets${path.sep}`;
 const SESSION_STATE_SEGMENT = `${path.sep}session-state${path.sep}`;
-const LORE_JSON_SEGMENT = `${path.sep}lore.json`;
-const LORE_SCHEMA_JSON_SEGMENT = `${path.sep}schemas${path.sep}lore.schema.json`;
-const LORE_CONFIG_MJS_SEGMENT = `${path.sep}extensions${path.sep}lore${path.sep}lib${path.sep}config.mjs`;
+const validatorRegistry = createValidatorRegistry();
 
 function run(command, args, options = {}) {
   return new Promise((resolve) => {
@@ -346,33 +345,6 @@ async function validateWorkflowContract(filePath) {
   return [formatSummary(`workflow-contract (${path.basename(filePath)})`, result)];
 }
 
-async function findLoreSchemaValidator(filePath) {
-  return findUp(path.dirname(filePath), (dir) =>
-    path.join(dir, "extensions", "lore", "scripts", "validate-config-schema.mjs"),
-  );
-}
-
-function isLoreSchemaTrigger(filePath) {
-  const normalized = path.resolve(filePath);
-  return (
-    normalized.endsWith(LORE_JSON_SEGMENT) ||
-    normalized.endsWith(LORE_SCHEMA_JSON_SEGMENT) ||
-    normalized.endsWith(LORE_CONFIG_MJS_SEGMENT)
-  );
-}
-
-async function validateLoreSchema(filePath) {
-  const validatorPath = await findLoreSchemaValidator(filePath);
-  if (!validatorPath) {
-    return [];
-  }
-
-  const result = await run(process.execPath, [validatorPath], {
-    cwd: path.dirname(validatorPath),
-  });
-  return [formatSummary("lore-schema-parity", result)];
-}
-
 async function processFile(filePath) {
   if (!(await pathExists(filePath))) {
     return [];
@@ -425,10 +397,7 @@ const session = await joinSession({
         summaries.push(...(await processFile(filePath)));
       }
 
-      const loreTriggerFile = changedFiles.find(isLoreSchemaTrigger);
-      if (loreTriggerFile) {
-        summaries.push(...(await validateLoreSchema(loreTriggerFile)));
-      }
+      summaries.push(...(await validatorRegistry.validate(changedFiles, { findUp, formatSummary, run })));
 
       if (summaries.length === 0) {
         return;

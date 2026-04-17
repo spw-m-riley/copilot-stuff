@@ -1,5 +1,11 @@
 import { approveAll } from "@github/copilot-sdk";
 import { joinSession } from "@github/copilot-sdk/extension";
+import {
+  normalizePrompt,
+  normalizeSessionId,
+  readChildMetadata as readSharedChildMetadata,
+  setBoundedContext,
+} from "../_shared/context-policy.mjs";
 
 const MAX_ACTIVE_SESSION_CONTEXTS = 64;
 const REVIEWER_ALLOW_LIST = ["review", "reviewer"];
@@ -27,38 +33,24 @@ const HELPER_CHILD_CONTEXT = [
 ].join("\n");
 const activeContextBySession = new Map();
 
-function normalizePrompt(prompt) {
-  return typeof prompt === "string" ? prompt.trim() : "";
-}
-
 function readSessionId(input) {
-  if (typeof input?.sessionId !== "string") {
-    return null;
-  }
-  const sessionId = input.sessionId.trim();
-  return sessionId.length > 0 ? sessionId : null;
+  return normalizeSessionId(input?.sessionId);
 }
 
 function isPlanSlashCommand(prompt) {
   return /^\/plan(?:\s|$)/u.test(prompt);
 }
 
-function capCachedSessions() {
-  while (activeContextBySession.size > MAX_ACTIVE_SESSION_CONTEXTS) {
-    const oldestSessionId = activeContextBySession.keys().next().value;
-    if (typeof oldestSessionId !== "string") {
-      return;
-    }
-    activeContextBySession.delete(oldestSessionId);
-  }
-}
-
 function setActiveContext(sessionId, context) {
   if (typeof sessionId !== "string" || sessionId.length === 0) {
     return;
   }
-  activeContextBySession.set(sessionId, context);
-  capCachedSessions();
+  setBoundedContext(
+    activeContextBySession,
+    sessionId,
+    context,
+    MAX_ACTIVE_SESSION_CONTEXTS,
+  );
 }
 
 function clearActiveContext(sessionId) {
@@ -69,11 +61,7 @@ function clearActiveContext(sessionId) {
 }
 
 function readChildMetadata(input) {
-  const parts = [input?.agentName, input?.agentDisplayName, input?.agentDescription]
-    .filter((value) => typeof value === "string")
-    .map((value) => value.trim())
-    .filter((value) => value.length > 0);
-  return parts.join(" ").toLowerCase();
+  return readSharedChildMetadata(input, { trimValues: true });
 }
 
 function includesKeyword(haystack, keywords) {

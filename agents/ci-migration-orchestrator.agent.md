@@ -12,6 +12,7 @@ Use this agent for CI migration work that spans workflow translation, rollout pl
 - Treat reusable migration logic as skills or playbooks, and use this agent as the orchestration layer.
 - Keep migrations structured, reviewable, and safe to roll out incrementally.
 - Prefer existing organization or repository workflow patterns before inventing new job graphs.
+- Route single-repo parity translation work to [`circleci-to-github-actions-migration`](../skills/circleci-to-github-actions-migration/SKILL.md), and keep this agent focused on orchestration concerns around that work.
 
 ## Preferred workflow
 

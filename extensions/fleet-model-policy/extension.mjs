@@ -1,5 +1,11 @@
 import { approveAll } from "@github/copilot-sdk";
 import { joinSession } from "@github/copilot-sdk/extension";
+import {
+  normalizePrompt,
+  normalizeSessionId,
+  readChildMetadata,
+  setBoundedContext,
+} from "../_shared/context-policy.mjs";
 
 const FLEET_MODEL_POLICY = [
   "Fleet model steering (prompt-level only):",
@@ -46,29 +52,14 @@ const IMPLEMENTATION_DENY_KEYWORDS = [
 const MAX_ACTIVE_SESSIONS = 32;
 const activeContextBySession = new Map();
 
-function normalizePrompt(prompt) {
-  return typeof prompt === "string" ? prompt.trim() : "";
-}
-
-function normalizeSessionId(sessionId) {
-  return typeof sessionId === "string" ? sessionId.trim() : "";
-}
-
 function setActiveContext(sessionId, context) {
   if (!sessionId || !context) {
     return;
   }
 
-  if (activeContextBySession.has(sessionId)) {
-    activeContextBySession.delete(sessionId);
-  }
-
-  activeContextBySession.set(sessionId, context);
-
-  while (activeContextBySession.size > MAX_ACTIVE_SESSIONS) {
-    const [oldestSessionId] = activeContextBySession.keys();
-    activeContextBySession.delete(oldestSessionId);
-  }
+  setBoundedContext(activeContextBySession, sessionId, context, MAX_ACTIVE_SESSIONS, {
+    refreshExisting: true,
+  });
 }
 
 function clearActiveContext(sessionId) {
@@ -80,20 +71,14 @@ function clearActiveContext(sessionId) {
 }
 
 function getChildMetadataText(input) {
-  const metadata = [
-    input?.agentName,
-    input?.agentDisplayName,
-    input?.agentDescription,
-    input?.subagent?.agentName,
-    input?.subagent?.agentDisplayName,
-    input?.subagent?.agentDescription,
-  ]
-    .filter((value) => typeof value === "string" && value.trim().length > 0)
-    .join(" ")
-    .trim()
-    .toLowerCase();
-
-  return metadata;
+  return readChildMetadata(input, {
+    extraFields: [
+      input?.subagent?.agentName,
+      input?.subagent?.agentDisplayName,
+      input?.subagent?.agentDescription,
+    ],
+    trimValues: true,
+  }).trim();
 }
 
 function shouldInjectFleetChildContext(input) {
