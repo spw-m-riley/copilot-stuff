@@ -65,7 +65,7 @@ metadata:
 ## Routing boundary
 
 - Use this skill when causal failures are source-type issues and need root-cause-first triage.
-- Route to `tsconfig-hardening` when first causal failures point to compiler configuration, project references, or module-resolution drift rather than source typings.
+- Route to [`tsconfig-hardening`](../tsconfig-hardening/SKILL.md) when first causal failures point to compiler configuration, project references, or module-resolution drift rather than source typings.
 - Route to [`type-test-authoring`](../type-test-authoring/SKILL.md) only after compiler stability is restored and you need compile-time regression locks.
 
 ## Validation
