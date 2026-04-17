@@ -12,6 +12,9 @@
 
 These live in [`./extensions/`](./extensions/) and are auto-discovered by the Copilot CLI. They add either lifecycle hooks, custom tools, or both.
 
+> Lore is the active local-memory system in this workspace.
+> Remaining `coherence` naming in the root repo is legacy compatibility residue, not the primary implementation surface.
+
 | Extension | What it does |
 | --------- | ------------ |
 | `lore` | Local-first memory and continuity extension for Copilot CLI. Keep Lore-specific setup, rollout, maintenance, browser, and health docs in [`./extensions/`](./extensions/). |

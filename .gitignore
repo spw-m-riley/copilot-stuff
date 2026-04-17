@@ -1,6 +1,5 @@
 # Shareable Copilot settings should stay trackable:
 # - ide/
-# - installed-plugins/
 
 # Local Copilot config
 /config.json
