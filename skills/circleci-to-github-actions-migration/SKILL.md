@@ -69,6 +69,11 @@ metadata:
 - **Should** keep workflows readable and deterministic rather than embedding heavy shell logic.
 - **May** reuse existing reusable workflows where they preserve parity.
 
+## Routing boundary
+
+- Use this skill directly for single-repo CircleCI→GitHub Actions migration work where parity mapping and staged cutover are the main tasks.
+- Escalate to [`ci-migration-orchestrator`](../../agents/ci-migration-orchestrator.agent.md) when migration execution needs phased rollout choreography, multi-workflow coordination, or cross-surface sequencing beyond this reusable playbook.
+
 ## Validation
 
 - Run repository build/test/lint commands locally where practical before relying on workflow runs.

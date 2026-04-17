@@ -78,6 +78,11 @@ If the repository has no established type-test convention:
 - **May** use compact helper aliases when the repository already has them.
 - **Should** stop at compile-time coverage when the bug is purely static; if the behavior depends on runtime data, use runtime tests instead.
 
+## Routing boundary
+
+- Use this skill after source typing work (for example via [`typescript-any-eliminator`](../typescript-any-eliminator/SKILL.md) or [`schema-boundary-typing`](../schema-boundary-typing/SKILL.md)) has made the target type surface truthful.
+- Route runtime API behavior tests to [`typescript-api-test-generator`](../../agents/typescript-api-test-generator.agent.md); keep this skill focused on compile-time guarantees only.
+
 ## Red flags
 
 - The contract only fails when the code executes, not when the type system checks it.

@@ -62,6 +62,12 @@ metadata:
 - **Should** prefer fixing exported types, generic constraints, and config boundaries before editing many call sites.
 - **Should** preserve runtime behavior while improving type correctness.
 
+## Routing boundary
+
+- Use this skill when causal failures are source-type issues and need root-cause-first triage.
+- Route to `tsconfig-hardening` when first causal failures point to compiler configuration, project references, or module-resolution drift rather than source typings.
+- Route to [`type-test-authoring`](../type-test-authoring/SKILL.md) only after compiler stability is restored and you need compile-time regression locks.
+
 ## Validation
 
 - Re-run the same typecheck command and confirm the targeted errors are gone.
