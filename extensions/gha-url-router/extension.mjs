@@ -1,5 +1,11 @@
 import { approveAll } from "@github/copilot-sdk";
 import { joinSession } from "@github/copilot-sdk/extension";
+import {
+  normalizePrompt,
+  normalizeSessionId,
+  readChildMetadata,
+  setBoundedContext,
+} from "../_shared/context-policy.mjs";
 
 const ACTIONS_RUN_RE =
   /https:\/\/github\.com\/([^/\s]+)\/([^/\s]+)\/actions\/runs\/(\d+)(?:\/job\/(\d+))?/gi;
@@ -54,30 +60,12 @@ function buildChildContext(targets) {
   );
 }
 
-function getSessionId(input) {
-  return typeof input?.sessionId === "string" && input.sessionId.trim() ? input.sessionId : null;
-}
-
 function setActiveContext(sessionId, targets) {
-  activeContextBySession.set(sessionId, { targets });
-  while (activeContextBySession.size > MAX_ACTIVE_SESSIONS) {
-    const oldestSessionId = activeContextBySession.keys().next().value;
-    if (!oldestSessionId) {
-      break;
-    }
-    activeContextBySession.delete(oldestSessionId);
-  }
+  setBoundedContext(activeContextBySession, sessionId, { targets }, MAX_ACTIVE_SESSIONS);
 }
 
 function isClearlyUnrelatedSubagent(input) {
-  const metadata = [
-    input?.agentName,
-    input?.agentDisplayName,
-    input?.agentDescription,
-  ]
-    .filter((value) => typeof value === "string" && value.trim())
-    .join(" ")
-    .toLowerCase();
+  const metadata = readChildMetadata(input);
   if (!metadata) {
     return false;
   }
@@ -88,8 +76,9 @@ const session = await joinSession({
   onPermissionRequest: approveAll,
   hooks: {
     onUserPromptSubmitted: async (input) => {
-      const sessionId = getSessionId(input);
-      const targets = parseActionsTargets(input.prompt);
+      const sessionId = normalizeSessionId(input?.sessionId);
+      const prompt = normalizePrompt(input?.prompt);
+      const targets = parseActionsTargets(prompt);
       if (!targets) {
         if (sessionId) {
           activeContextBySession.delete(sessionId);
@@ -105,7 +94,7 @@ const session = await joinSession({
       return { additionalContext: buildParentContext(targets) };
     },
     onSubagentStart: async (input) => {
-      const sessionId = getSessionId(input);
+      const sessionId = normalizeSessionId(input?.sessionId);
       if (!sessionId) {
         return;
       }
@@ -122,7 +111,7 @@ const session = await joinSession({
       return { additionalContext: buildChildContext(activeContext.targets) };
     },
     onSessionEnd: async (input) => {
-      const sessionId = getSessionId(input);
+      const sessionId = normalizeSessionId(input?.sessionId);
       if (!sessionId) {
         return;
       }

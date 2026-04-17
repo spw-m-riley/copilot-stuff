@@ -1,5 +1,11 @@
 import { approveAll } from "@github/copilot-sdk";
 import { joinSession } from "@github/copilot-sdk/extension";
+import {
+  normalizePrompt,
+  normalizeSessionId,
+  readChildMetadata,
+  setBoundedContext,
+} from "../_shared/context-policy.mjs";
 
 const MIGRATION_PATTERN =
   /\b(circleci|circle ci|github actions|gha|workflow migration|ci migration)\b/i;
@@ -18,10 +24,6 @@ When the user is working on CI migration or workflow debugging:
 
 const activeContextBySession = new Map();
 
-function normalizeSessionId(sessionId) {
-  return typeof sessionId === "string" && sessionId.length > 0 ? sessionId : null;
-}
-
 function clearSessionContext(sessionId) {
   if (!sessionId) {
     return;
@@ -30,30 +32,13 @@ function clearSessionContext(sessionId) {
 }
 
 function setSessionContext(sessionId, context) {
-  if (!sessionId) {
-    return;
-  }
-  if (activeContextBySession.has(sessionId)) {
-    activeContextBySession.delete(sessionId);
-  }
-  activeContextBySession.set(sessionId, context);
-
-  while (activeContextBySession.size > MAX_ACTIVE_CONTEXTS) {
-    const oldestSessionId = activeContextBySession.keys().next().value;
-    if (!oldestSessionId) {
-      break;
-    }
-    activeContextBySession.delete(oldestSessionId);
-  }
+  setBoundedContext(activeContextBySession, sessionId, context, MAX_ACTIVE_CONTEXTS, {
+    refreshExisting: true,
+  });
 }
 
 function getChildMetadataText(input) {
-  const pieces = [
-    input?.agentName,
-    input?.agentDisplayName,
-    input?.agentDescription,
-  ].filter((value) => typeof value === "string" && value.trim().length > 0);
-  return pieces.join(" ").toLowerCase();
+  return readChildMetadata(input);
 }
 
 function isClearlyUnrelatedChild(input) {
@@ -66,7 +51,7 @@ const session = await joinSession({
   hooks: {
     onUserPromptSubmitted: async (input) => {
       const sessionId = normalizeSessionId(input.sessionId);
-      const prompt = typeof input.prompt === "string" ? input.prompt : "";
+      const prompt = normalizePrompt(input.prompt);
       if (!MIGRATION_PATTERN.test(prompt)) {
         clearSessionContext(sessionId);
         return;
