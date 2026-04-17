@@ -8,9 +8,25 @@
 | [User Skills](./skills/)                               | A set of instructions that help with tasks/workflows |
 | [User Extensions](./extensions/)                       | Think git hooks but for the agent lifecycle          |
 
+
+## Capabilities index
+
+| Kind | Name | Use when |
+| --- | --- | --- |
+| Skill | [`circleci-to-github-actions-migration`](./skills/circleci-to-github-actions-migration/SKILL.md) | You need single-repo CircleCI→GitHub Actions parity migration work. |
+| Agent | [`ci-migration-orchestrator`](./agents/ci-migration-orchestrator.agent.md) | Migration needs phased rollout or multi-workflow coordination beyond the reusable skill. |
+| Skill | [`typescript-any-eliminator`](./skills/typescript-any-eliminator/SKILL.md) | Remove unsafe `any` and replace with the narrowest truthful types. |
+| Skill | [`schema-boundary-typing`](./skills/schema-boundary-typing/SKILL.md) | Validate untrusted inputs at runtime boundaries and align exported types. |
+| Skill | [`type-test-authoring`](./skills/type-test-authoring/SKILL.md) | Lock compile-time inference/assignability contracts after type surfaces are truthful. |
+| Skill | [`tsc-error-triage`](./skills/tsc-error-triage/SKILL.md) | Fix TypeScript compiler failures in root-cause order before patching leaves. |
+| Agent | [`typescript-api-test-generator`](./agents/typescript-api-test-generator.agent.md) | Add or expand runtime tests for TypeScript APIs, handlers, and Lambda flows. |
+
 ## Extensions
 
 These live in [`./extensions/`](./extensions/) and are auto-discovered by the Copilot CLI. They add either lifecycle hooks, custom tools, or both.
+
+> Lore is the active local-memory system in this workspace.
+> Remaining `coherence` naming in the root repo is legacy compatibility residue, not the primary implementation surface.
 
 | Extension | What it does |
 | --------- | ------------ |

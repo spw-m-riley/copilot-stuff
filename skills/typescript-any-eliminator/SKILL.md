@@ -77,6 +77,12 @@ Do not force a fake precise type when the right answer is to keep the boundary p
 - **Red flag:** if the first safe fix is a schema, parser, or shared type already used elsewhere, reuse that instead of inventing a new local shape.
 - **Handoff trigger:** if the change requires runtime validation work outside this file, route that boundary work to the relevant schema or validator owner.
 
+## Routing boundary
+
+- Route to [`schema-boundary-typing`](../schema-boundary-typing/SKILL.md) when truthful `any` removal depends on runtime validation at an untrusted input boundary.
+- Route to [`type-test-authoring`](../type-test-authoring/SKILL.md) after the type surface is truthful and you need compile-time regression coverage for inference or assignability.
+- If compiler failures remain after `any` cleanup, route causal error triage to [`tsc-error-triage`](../tsc-error-triage/SKILL.md).
+
 ## Validation
 
 - Re-run the repository's typecheck command after the edit.
