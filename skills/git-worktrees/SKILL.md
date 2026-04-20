@@ -41,11 +41,25 @@ metadata:
 
 ## First move
 
+0. Check if Worktrunk is installed: `wt --version`. If available (exit code 0), prefer `wt` commands throughout this workflow — see [Worktrunk command equivalents](references/worktrunk-commands.md).
 1. Check current worktrees and branch state (`git worktree list` and `git branch --all`).
 2. Pick names using defaults from `assets/naming-examples.md`.
 3. Create a fresh worktree from the target base ref before editing files.
 
 ## Workflow
+
+### With Worktrunk installed (`wt --version` succeeds)
+
+1. Fetch and verify the intended base ref.
+2. Create worktree: `wt switch --create <branch> --base <ref>` — fires `post-start` hooks automatically (deps install, dev server, etc).
+3. Perform all edits, tests, and commits inside that worktree.
+4. Commit with LLM message (if configured): `wt step commit`.
+5. Merge when ready: `wt merge [target]` — squashes, rebases, validates via pre-merge hooks, fast-forwards, and cleans up. Add `--no-squash` if `[commit.generation]` is not configured.
+6. Or: push and open PR, then `wt remove` after the PR is merged.
+
+See [Worktrunk command equivalents](references/worktrunk-commands.md) and the `worktrunk` skill for hooks, LLM commits, and parallel agent recipes.
+
+### Without Worktrunk (raw git fallback)
 
 1. Fetch and verify the intended base ref.
 2. Create a dedicated branch and worktree for the task.
@@ -63,6 +77,7 @@ metadata:
 - **Should** verify the repository root before creating the worktree in monorepos or nested checkouts.
 - **Should** inspect for uncommitted changes before removing any worktree.
 - **May** keep long-lived worktrees for release branches if the team workflow benefits.
+- **Should** use `wt switch --create` / `wt remove` instead of `git worktree add` / `git worktree remove` when Worktrunk is installed, so project hooks fire and worktree lifecycle is tracked.
 
 ## Validation
 
@@ -82,3 +97,4 @@ metadata:
 
 - [Naming defaults and examples](assets/naming-examples.md)
 - [Recovery and cleanup guide](references/recovery-and-cleanup.md)
+- [Worktrunk command equivalents](references/worktrunk-commands.md)
