@@ -118,6 +118,51 @@ The 16 production skills are reviewed quarterly for new additions, removals, or 
 - Reasoning doesn't always work best at the highest setting.
   - When using `/model` you can select the reasoning level for the model, the default is often the one the copilot team believes is the most optimal but you may find different. Example: GPT-5.4 default is set at `medium`, I prefer the output of `high` and find `xhigh` to make more mistakes.
 
+## Worktree Management
+
+Git worktrees enable parallel development lanes with isolated checkouts. All active worktrees live in `.worktrees/` and follow a structured naming convention.
+
+**Naming Convention:** See [WORKTREE_NAMING.md](./WORKTREE_NAMING.md) for the formal three-category scheme:
+- `.worktrees/agent/<AGENT_ID>` — Long-running agent lanes (days to weeks)
+- `.worktrees/task/<TASK_ID>` — Bounded feature/fix tasks (hours to 1–2 days)
+- `.worktrees/temp/<PURPOSE>` — Temporary exploration (minutes to hours)
+
+**Migration status:** The 54 existing worktrees are being transitioned to the new naming scheme. A proof-of-concept batch of 8 high-visibility worktrees has been renamed to demonstrate the pattern:
+- **Agent lanes:** `coherence-browser`, `wave1-doctor-observe-only`, `phase-3-router-core`, `phase-4-maintenance-scheduler`
+- **Task worktrees:** `add-style-retrieval`, `audit-root-docs`, `fix-research-effort-fallback`, `pin-context7-version`
+
+The remaining ~46 flat-pattern worktrees will be migrated incrementally as their work completes or at each monthly audit cycle.
+
+## Worktree Cleanup
+
+Active worktrees are managed using the naming convention in [WORKTREE_NAMING.md](./WORKTREE_NAMING.md).
+
+**Cleanup procedure:**
+1. Verify the worktree is clean (no uncommitted changes): `git -C .worktrees/<CATEGORY>/<ID> status`
+2. Merge or abandon the branch (move work to main if needed)
+3. Remove the worktree: `mr_worktree_remove <ID>` or `git worktree remove .worktrees/<CATEGORY>/<ID>`
+4. Clean up the branch: `git branch -d agent/<ID>` or `git branch -d task/<ID>`
+
+**Monthly audit:**
+- Run `git worktree list` to see all active worktrees
+- Check for branches with no activity in 30+ days
+- Use `git log --oneline -1 <branch>` to verify last commit date
+- Archive orphaned worktrees with `mr_worktree_remove`
+
+**Example cleanup:**
+```bash
+# Check worktree status
+mr_worktree_status task/fix-lore-backfill-ordering
+
+# Remove after promotion
+mr_worktree_remove task/fix-lore-backfill-ordering
+
+# Verify cleanup
+git worktree list
+```
+
+---
+
 ## Resources
 
 | Name                                                                                                                                       | Description                                                                                                     |
