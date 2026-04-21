@@ -16,6 +16,7 @@ Use this checklist before considering a skill complete.
 
 - The skill clearly says when to use it.
 - The skill clearly says when not to use it, if overlap is likely.
+- The description includes specific trigger phrases (not just a domain label) and leans toward over-triggering. It includes at least one disambiguator to avoid crowding adjacent skills.
 - Inputs are clear enough for an agent to gather what it needs.
 - The first move is obvious.
 - The workflow is sequential and actionable.
@@ -38,3 +39,4 @@ Use this checklist before considering a skill complete.
 - Reference skills make the lookup value, examples, and support-file navigation obvious.
 - Examples look like realistic user requests rather than abstract labels.
 - The skill uses the smallest stable structure that still leaves room for future tool-assisted authoring.
+- A two-prompt smoke-test (one request that should trigger the skill, one near-miss that should not) confirms the description alone distinguishes between them without needing to read the SKILL.md body.

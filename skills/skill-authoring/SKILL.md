@@ -1,6 +1,6 @@
 ---
 name: skill-authoring
-description: Author reusable agent skills under skills/<name>/SKILL.md with clear activation, shallow references, predictable structure, and explicit validation.
+description: "Author reusable agent skills under skills/<name>/SKILL.md. Use this skill when creating a new skill from scratch, rewriting or improving an existing SKILL.md, deciding whether guidance belongs in a skill vs. global instructions vs. a specialized agent, or reviewing a skill package for structure and activation quality."
 metadata:
   category: authoring
   audience: general-coding-agent
@@ -23,6 +23,7 @@ Treat this as the benchmark shape other skills should copy: concise activation, 
 A skill is ready to hand off when it:
 
 - says exactly when to use it and when not to
+- description includes specific trigger phrases (not just a domain label)
 - keeps `SKILL.md` concise by pushing lookup-heavy detail into shallow support files
 - includes at least one concrete example and one validation step
 - makes the next action obvious without asking the reader to infer the workflow
@@ -52,7 +53,11 @@ A skill is ready to hand off when it:
 
 ## Workflow
 
-1. Define what should activate the skill and what should not.
+1. Define what should activate the skill and what should not. As you define activation,
+   draft a description that enumerates the same trigger situations as explicit phrases.
+   Lean toward over-triggering rather than under — but pair it with at least one
+   disambiguator (a scope boundary or a route-away condition) so adjacent skills are
+   not crowded out.
 2. Decide whether the package is primarily a `reference skill` or a `task skill`:
    - `reference skill` = lookup-heavy guidance, conventions, and examples
    - `task skill` = multi-step workflow with explicit inputs, outputs, and validation
@@ -78,6 +83,7 @@ A skill is ready to hand off when it:
 - Keep support files shallow under the skill root and reference them directly from `SKILL.md`.
 - Prefer `references/` before `scripts/` unless automation clearly reduces repeated work.
 - Prefer standard section names when they fit so future authoring or validation tools can reason about the skill without guessing.
+- A description that only names the skill's domain without listing concrete trigger phrases is likely to undertrigger — the skill will be skipped when it would help.
 - **Red flag:** if the draft starts embedding repo policy, one-off orchestration, or environment-specific branching, move that content out of the skill.
 - **Handoff trigger:** if the shape needs a dedicated operator persona, split orchestration, or long-lived state, promote it to a specialized agent instead of widening the skill.
 
@@ -100,6 +106,10 @@ A skill is ready to hand off when it:
 - Check that the skill's structure matches its kind:
   - task skills declare outputs or handoff artifacts plus validation
   - reference skills make the lookup value and support-file paths obvious
+- Smoke-test the description: in a fresh session with only the skill loaded, send one
+  realistic request that should trigger it and one near-miss that should not. The
+  description alone (not the SKILL.md body) should be sufficient to distinguish them.
+  If neither triggers reliably, the description needs more explicit trigger phrases.
 - If the target client supports skill reload or listing, verify the skill remains discoverable there.
 
 ## Examples

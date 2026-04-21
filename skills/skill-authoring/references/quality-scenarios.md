@@ -10,6 +10,7 @@ Use these scenarios to keep the authoring benchmark concrete, shallow, and easy 
 | The skill has no concrete example or no validation step. | needs revision | Add one example and one obvious validation action. |
 | The skill has explicit outputs for a task workflow or obvious lookup paths for a reference workflow. | good | Keep the shape aligned with the skill kind. |
 | The package starts embedding repo policy or environment-specific branching. | red flag | Pull that material back out of the reusable skill. |
+| The description names the skill's domain but lists no concrete trigger phrases or situations. | needs revision | Rewrite to include specific trigger phrases so the skill activates reliably — lean toward over-triggering, but pair with at least one disambiguator (a scope boundary or route-away condition) to keep routing clean. |
 
 ## Maintenance loop
 

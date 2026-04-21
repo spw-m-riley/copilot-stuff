@@ -7,7 +7,7 @@ Keep the package shape predictable when it fits the workflow so future authoring
 ```md
 ---
 name: my-skill-name
-description: Describe what the skill does and when an agent should use it.
+description: "What this skill does. Use it when [trigger phrase 1], [trigger phrase 2], or [trigger phrase 3]. Prefer over-triggering to under — include a scope boundary if similar skills exist (e.g. but not when X is more appropriate)."
 metadata:
   category: workflow
   audience: general-coding-agent
