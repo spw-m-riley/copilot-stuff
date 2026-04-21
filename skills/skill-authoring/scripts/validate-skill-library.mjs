@@ -311,6 +311,29 @@ async function validateSkillContent(filePath, frontmatter, body) {
 
   if (!frontmatter.description || !String(frontmatter.description).trim()) {
     errors.push("missing frontmatter key description");
+  } else {
+    const desc = String(frontmatter.description).trim();
+    // Floor guard: catch truly empty or near-empty placeholders for all maturity levels.
+    if (desc.length < 20) {
+      errors.push("description is too short; provide a meaningful description");
+    }
+    // Trigger-phrase check: descriptions should name concrete trigger situations, not just
+    // label the skill's domain. Enforced only for draft skills so the existing stable
+    // library is not broken. New skills must comply before promotion to stable.
+    // Note: "use when" always contains "when " — it is listed for clarity only.
+    const maturity = frontmatter.metadata?.maturity;
+    if (maturity === "draft") {
+      const descLower = desc.toLowerCase();
+      const hasTriggerPhrase =
+        descLower.includes("when ") ||
+        descLower.includes("use this") ||
+        descLower.includes("use when");
+      if (!hasTriggerPhrase) {
+        errors.push(
+          'description does not include a trigger phrase ("when", "use this", or "use when"); describe when an agent should activate this skill',
+        );
+      }
+    }
   }
 
   const metadata = frontmatter.metadata;
