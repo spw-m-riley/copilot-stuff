@@ -87,7 +87,7 @@ Rules specific to file types are documented in dedicated instruction files. This
 | Pattern | File | Category |
 |---------|------|----------|
 | `**/*.ts,**/*.tsx` | typescript.instructions.md | [TYPESCRIPT] |
-| `**/*.go` | (not yet created) | [GO] |
+| `**/*.go` | go.instructions.md | [GO] |
 | `**/*.lua` | lua.instructions.md | [LUA] |
 | `**/*.tf,**/*.tfvars,**/*.hcl` | terraform.instructions.md | [TERRAFORM] |
 | `**/*.yml,**/*.yaml` | yaml.instructions.md | [YAML] |
@@ -102,9 +102,17 @@ Rules specific to file types are documented in dedicated instruction files. This
 - `[OTHER]` — Cross-cutting patterns not specific to a file type
 - `[GIT]` — Git workflow and signing
 
+## Worktree Audit Cadence
+
+Worktrees in `.worktrees/` are audited **monthly** for orphaned directories (no branch activity in 30 days). Use `mr_worktree_remove <ID>` to clean up inactive or merged worktrees. See [WORKTREE_NAMING.md](WORKTREE_NAMING.md) for naming scheme, lifecycle guidelines, and detailed cleanup procedures.
+
 ## Learned Rules
 
 <!-- New Rules appended below this line. Do not edit above this section -->
+
+## Learned Rules Review Cadence
+
+Learned Rules are reviewed quarterly during checkpoint planning phases. Superseded rules are archived to `.instructions-deprecated-archive.md` in their source file. See the rules consolidation tracking artifact (Phase 2 baseline) for history: `session-state/<sessionId>/rules-consolidation-tracking.json`
 
 ## Deprecated Rules
 
@@ -136,6 +144,7 @@ Some rules have been superseded or are no longer applicable. See `copilot-instru
 24. [ACTIONS] When the user says a slice is being promoted into main, stop at the next safe point, make no further edits, and leave SQL status unchanged unless post-validation proves it is wrong - the user wants promotion handoff stability and no extra churn
 
 25. [ACTIONS] Before declaring a todo done, always verify the target worktree is clean except for the intended slice and commit that slice first - reporting completion with a dirty worktree causes false-done status and rollback churn.
+→ **See Rule 26 (canonical) for current guidance.** This rule is retained for historical context.
 26. [ACTIONS] Never report a todo as done while the target worktree has uncommitted changes; validate, commit the finalized slice, confirm clean status, then update SQL status - this correction flagged a false-complete report on a dirty worktree
 27. [ACTIONS] When launching or verifying a dependent implementation worktree, always confirm the branch already contains the prerequisite commit(s) before treating the lane as active - this session showed a supposed follow-on retrieval lane was still based on the Wave 1 doctor baseline and wasted time exploring the wrong code
 28. [ACTIONS] Never batch `extensions_reload` with follow-up extension tool invocations; reload first, then run extension tools in a separate step and report the pause up front - this session stalled when a post-reload `lore_onboard` call was interrupted in the same batch
@@ -144,19 +153,14 @@ Some rules have been superseded or are no longer applicable. See `copilot-instru
 31. [ACTIONS] Never present a user-requested plan as complete until the default Jason/Freddy review round has finished and any active planning agents have been reconciled - skipping the review loop and handing off while planners are still active creates avoidable confusion and rework
 32. [ACTIONS] When the user asks cross-repository temporal recall or work-history questions in this `~/.copilot` workflow, use Lore retrieval/reflection tools first and only fall back to raw `session_store` SQL for verification or gaps - the user expects Lore to be the primary memory interface for that kind of recall
 33. [ACTIONS] Answer the user’s current question directly instead of re-explaining the previous mistake unless they explicitly ask for the reasoning again - repeating the prior explanation after a correction frustrates the user and misses the actual ask
-34. [GO] Always interpret the fact-find rewrite's "single lambda" preference as one lambda per area/category (for example `investmentexperience-lambda`, `protection-lambda`) unless the user explicitly says to merge areas into a shared binary - this correction clarified that separate area lambdas are the intended architecture
 35. [OTHER] When the user asks to be addressed as Matt, use his name naturally in greetings, acknowledgements, and handoffs without forcing it into every reply - this session clarified the preferred balance for name use
 36. [ACTIONS] When validating completion in this `~/.copilot` workspace, always check nested git repositories such as `extensions/lore` separately; the parent repo status can look clean while nested repo changes are still uncommitted - this session showed a false-finalization risk when only the parent `git status` was inspected
-37. [GO] When deduplicating shared helper types in Go, do not leave package-local type aliases as the finished design; prefer using the shared type directly from its owning package unless a compatibility shim is explicitly required - Matt explicitly rejected `type OptionalString = optional.String` as not Go-like
 38. [GIT] Always ignore local `.worktrees/` directories and never commit them in repositories that use git worktrees - Matt explicitly said `.worktrees` should never be committed, ever
 39. [OTHER] Always introduce yourself as Coda when the user asks for an introduction or asks about your name - the user expects the assistant's chosen name to be used explicitly.
 40. [ACTIONS] When a bash-tool verification step would rely on shell command substitution like `$(...)`, prefer a small Python loop or another plain-argument form instead - this session's history verification tripped the shell-safety guard even though the intent was benign
 41. [ACTIONS] When updating repository documentation, verify the target file is tracked and not ignored before treating the doc task as complete - this session showed that `.github/copilot-instructions.md` can exist locally via global ignores without being part of the repository history
 42. [ACTIONS] When triaging repeated GitHub Actions failures on the same PR, inspect the earliest failing run before assuming later attempts share the same root cause - this session showed one PR first failed from a stray `package-lock.json` cache artifact and later failed separately with a `yarn install` `Invalid URL`
 43. [ACTIONS] When a GitHub Actions package-install failure depends on a pinned runtime, reproduce it with the exact pinned Node/Yarn versions before changing more workflow auth or registry settings - this session showed `yarn install` failed under Volta `node` `20.0.0` but passed under newer `20.19.x`, making the runtime pin the real fix
-44. [GO] When passing a package-specific error-constructor function into a shared helper that accepts `func(string) error`, wrap constructors returning concrete error types in a local closure so the argument matches exactly - Go function types are not covariant, so `func(string) *DomainError` does not satisfy `func(string) error`
-
-45. [GO] Before treating Go compile-version mismatches as a code problem, check for exported GOROOT/GOTOOLDIR overrides and unset them if they point at an older install than the active toolchain - this session showed a stale GOROOT forced a Go 1.26.1 toolchain to load 1.25.5 stdlib/tools and produced misleading version-mismatch failures
 46. [ACTIONS] When a task is assigned to a specific git worktree, make the edits inside that worktree path and verify that worktree's status before claiming progress - editing the main checkout can leave the isolated lane untouched and produce a false sense of completion
 47. [ACTIONS] When cherry-picking a later skill-improvement lane onto a newer integration branch, compare any touched `SKILL.md` files against the current integration content before continuing; keep additive validator or scenario hooks without regressing earlier benchmark or guardrail guidance - this Wave 4 integration showed an older validator lane could silently downgrade `skill-authoring` and `workflow-contracts`
 48. [GIT] When 1Password SSH signing fails with `failed to fill whole buffer` in this `~/.copilot` workflow, treat it as an external approval or app-interop blocker after validating the staged diff and the configured signing path; do not keep inventing alternate Git/signing routes once the same trusted `op-ssh-sign` failure is reproduced directly - this session showed the remaining work can be narrowed to signed commit approval even when the repo content is ready
@@ -170,12 +174,14 @@ Some rules have been superseded or are no longer applicable. See `copilot-instru
 56. [ACTIONS] Before pushing or creating a PR after asynchronous branch reviews, always read every pending final-review result for the current HEAD or rerun the reviewers on the latest HEAD; earlier approvals are not enough once the branch advances - this session pushed before a late reviewer surfaced another README accuracy issue
 57. [ACTIONS] When the user asks only for a scoped artifact such as a composite action, deliver just that artifact and avoid extra tests, validators, or workflow rewiring unless explicitly requested - over-executing beyond the asked-for slice frustrated Matt
 58. [ACTIONS] When a final review agent reports `APPROVED` but its own reasoning surfaces a concrete plausible defect, inspect the cited code path and verify behavior directly before closing the task - this session found a real latest-attempt output bug despite an approved review status
-// hint: Logic changed on both sides. Requires understanding intent of each change.
+// [GO] Rules: See instructions/go.instructions.md for Go-specific guidance
 59. [OTHER] Treat Lore as the active memory system in this workspace; interpret remaining Coherence-named files or rules as legacy compatibility guidance unless a task explicitly targets migration support - the root repo should read Lore-first while preserving compatibility history
+// See also: Rules 64–65 for guidance on durable-rule thresholds vs. temporary task context
 60. [ACTIONS] Treat rule 26 as the canonical completion/worktree-cleanliness gate; rule 25 is retained only as historical context because both rules captured the same lesson and were creating duplicate guidance
 61. [OTHER] In this environment, `api.githubcopilot.com` is blocked by the corporate firewall — do not suggest any tool that calls it directly (including `llm-github-copilot`, `CopilotChat.nvim`, `codecompanion.nvim`). For LLM commit messages in worktrunk, use the Neovim editor fallback instead of a Copilot-backed CLI tool.
-
 62. [OTHER] When the user scopes a Lua/Neovim change to the smallest truthful implementation lane, stop extra doc or runtime probing once the required wiring is clear and ship the scoped change with the agreed validation commands - this correction explicitly prioritized implementation over more Progress-payload research
 63. [OTHER] When planning merge resolution and the user says `origin/develop` reflects the intended end state after a partial revert, treat `origin/develop` as authoritative for those reverted areas instead of preserving the branch's newer-looking tooling changes - this session showed the npm/esbuild migration was incomplete, non-working, and meant to be removed
 64. [OTHER] Never capture a one-off repo-state clarification as a durable learned rule unless it reflects a reusable preference or general practice - the `origin/develop` vs branch tooling correction in `aws-pme` was specific to this repo at this moment, so the prior rule was too broad
+// Applies the Lore-first hierarchy established in Rule 59; see Rule 65 for historical context
 65. [OTHER] Treat rule 1 as superseded historical context rather than an active reusable instruction; one-off repo-state clarifications belong in the task context unless they generalize beyond the immediate repository state
+// Clarifies the durable-rule threshold introduced in Rule 64; see Rule 59 for the Lore/Coherence hierarchy
