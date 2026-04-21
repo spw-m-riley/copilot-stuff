@@ -59,6 +59,56 @@ This improves fleet-mode execution by making policy, routing, and worktree expec
   - Use `shift+tab` or `/plan` for the planning. Example: `/plan Turn the research into a fully actionable plan. Make the plan suitable for fleet to be used. Ask GPT-5.3-codex and Claude Sonnet 4.6 to review the plan. The plan should not be considered ready until the reviewers approve it. Every reviewer must review in each round of reviews. Delegated `/plan` child agents now inherit the reviewer/helper policy too.`
   - Use `shift+tab` till you get to autopilot and `/fleet` for implementation, often it will recommend it to you anyway. During delegated implementation/edit runs in git repos, child agents now receive fleet-policy and worktree guidance, so they are nudged toward the right model and one worktree per agent/task before editing.
 
+## Skills Ecosystem
+
+The GitHub Copilot CLI includes a production skills library—16 reusable agent skills that handle recurring development tasks, from TypeScript type safety and migrations to CI/CD pipelines and version control workflows.
+
+**Skills are explicit routing decisions**: each skill activates when its specific boundary conditions are met, preventing overlapping coverage and ensuring the right tool is used for each task. Users invoke skills directly when a task matches the skill's activation condition; the CLI also recommends skills when context suggests a fit.
+
+### Skills by Category
+
+**TypeScript (6 skills)** — Compile-time and runtime type safety, configuration, and diagnostics
+- `tsc-error-triage` — Fix TypeScript compiler failures from the first causal error
+- `tsconfig-hardening` — Enable stricter TypeScript settings safely
+- `schema-boundary-typing` — Validate untrusted inputs at the edge
+- `typescript-any-eliminator` — Replace unsafe `any` with the narrowest truthful type
+- `type-test-authoring` — Write compile-time tests for generic helpers and public APIs
+- `project-references-migration` — Migrate layered TypeScript workspaces to project references
+
+**Migrations (3 skills)** — Framework and tool transitions handled in staged batches
+- `aws-sdk-v2-to-v3-migration` — Migrate AWS SDK v2 to modular v3 clients
+- `circleci-to-github-actions-migration` — Migrate CircleCI pipelines to GitHub Actions
+- `mocha-to-jest-migration` — Migrate test suites from Mocha/Chai/Sinon to Jest
+
+**Version Control (2 skills)** — Worktree and branching workflows
+- `git-worktrees` — Create and manage isolated Git worktrees
+- `worktrunk` — Configure Worktrunk for worktree lifecycle and LLM commits
+
+**Workflow & Planning (2 skills)** — Planning and handoff documentation
+- `reverse-prompt` — Rewrite rough requests into executable task briefs (activates on explicit user cue, not auto-triggered)
+- `workflow-contracts` — Create versioned markdown handoff artifacts
+
+**Code Review (1 skill)** — Pull request integration
+- `review-comment-resolution` — Resolve PR review comments and push to completion
+
+**CI/CD (1 skill)** — GitHub Actions troubleshooting
+- `github-actions-failure-triage` — Diagnose and fix failing GitHub Actions runs
+
+**Authoring (1 skill)** — Skill creation and maintenance
+- `skill-authoring` — Author reusable agent skills (e.g., "Write a skill for handling Go imports with activation conditions and routing boundaries")
+
+### Using Skills
+
+- **Direct invocation**: Invoke a skill by name when you know the task matches its activation condition
+- **Recommended routing**: The CLI monitors context and recommends skills when boundaries suggest a fit
+- **Help system**: Use `/help skills` to list all production skills, or `/help <skill-name>` for detailed documentation
+
+### Quarterly Skill Review
+
+The 16 production skills are reviewed quarterly for new additions, removals, or routing changes. Reviews are integrated into quarterly planning cycles. See the [Skills Audit](./session-state/skills-audit.md) for the complete inventory.
+
+---
+
 ## Model Tips
 
 - All models are not the same.
