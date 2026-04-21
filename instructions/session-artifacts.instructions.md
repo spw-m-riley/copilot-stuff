@@ -21,6 +21,3 @@ For research, review, or execution artifacts that feed implementation:
 ## Learned Rules
 
 <!-- New Rules appended below this line. Do not edit above this section -->
-1. [ACTIONS] When planning merge resolution and the user says `origin/develop` reflects the intended end state after a partial revert, treat `origin/develop` as authoritative for those reverted areas instead of preserving the branch's newer-looking tooling changes - this session showed the npm/esbuild migration was incomplete, non-working, and meant to be removed
-2. [ACTIONS] Never capture a one-off repo-state clarification as a durable learned rule unless it reflects a reusable preference or general practice - the `origin/develop` vs branch tooling correction in `aws-pme` was specific to this repo at this moment, so the prior rule was too broad
-3. [ACTIONS] Treat rule 1 as superseded historical context rather than an active reusable instruction; one-off repo-state clarifications belong in the task context unless they generalize beyond the immediate repository state
