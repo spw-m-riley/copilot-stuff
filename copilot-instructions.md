@@ -66,9 +66,49 @@ This file will contain a growing ruleset that improves over time. **At session s
 11. [TYPESCRIPT] Never use 'any' as a type outside of test files - common sense
 ```
 
+### Rule Migration
+
+When a global rule becomes too specialized to a file type or appears in multiple file-type instruction files:
+1. Create the file-type rule in `$HOME/.copilot/instructions/<TYPE>.instructions.md`
+2. Update the global rule with a note: "See <filename> for file-type-specific details"
+3. Do not delete the global rule; keep it as a summary for cross-repo reference
+4. In the file-type instruction file, reference the parent global rule if needed
+
+**Important [ACTIONS] Note:** The `[ACTIONS]` category is for GitHub-Actions workflow patterns only. It should appear only in:
+- `github-workflows.instructions.md` (GitHub Actions-specific rules)
+- This global file (Copilot CLI execution flow rules)
+
+File-type instruction files (`typescript.instructions.md`, `lua.instructions.md`, etc.) should not use the `[ACTIONS]` category. Use file-type-specific categories or `[OTHER]` for cross-cutting patterns instead.
+
+## File-Type Instruction Files
+
+Rules specific to file types are documented in dedicated instruction files. This table shows which categories are covered where:
+
+| Pattern | File | Category |
+|---------|------|----------|
+| `**/*.ts,**/*.tsx` | typescript.instructions.md | [TYPESCRIPT] |
+| `**/*.go` | (not yet created) | [GO] |
+| `**/*.lua` | lua.instructions.md | [LUA] |
+| `**/*.tf,**/*.tfvars,**/*.hcl` | terraform.instructions.md | [TERRAFORM] |
+| `**/*.yml,**/*.yaml` | yaml.instructions.md | [YAML] |
+| `**/*.json,**/*.jsonc,**/*.code-workspace` | json.instructions.md | [JSON] |
+| `**/*.js,**/*.mjs,**/*.cjs` | javascript.instructions.md | [JAVASCRIPT] |
+| `.github/workflows/*.{yml,yaml}` | github-workflows.instructions.md | [ACTIONS]* |
+
+*Note: `[ACTIONS]` in github-workflows.instructions.md covers GitHub Actions-specific patterns. `[ACTIONS]` in this global file covers Copilot CLI execution flow. Other file-type files do not use `[ACTIONS]`.
+
+**Global categories (appear in this file only, not in file-type files):**
+- `[ACTIONS]` — Copilot CLI execution and workflow orchestration (Copilot execution flow, not GitHub Actions)
+- `[OTHER]` — Cross-cutting patterns not specific to a file type
+- `[GIT]` — Git workflow and signing
+
 ## Learned Rules
 
 <!-- New Rules appended below this line. Do not edit above this section -->
+
+## Deprecated Rules
+
+Some rules have been superseded or are no longer applicable. See `copilot-instructions-deprecated.md` for the archive.
 
 1. [GIT] Never bypass GPG signing or 1Password-managed Git auth/signing for commits, tags, or pushes; if that trusted path blocks progress, stop and ask the user to restore or approve it instead - previous behavior tried to work around the user's security setup
 2. [ACTIONS] Always persist applicable learned rules proactively in the same turn you discover the lesson or receive the correction; never wait for the user to ask for a lesson summary or remind you to save it - prior sessions missed recording reusable lessons unless prompted
@@ -132,5 +172,10 @@ This file will contain a growing ruleset that improves over time. **At session s
 58. [ACTIONS] When a final review agent reports `APPROVED` but its own reasoning surfaces a concrete plausible defect, inspect the cited code path and verify behavior directly before closing the task - this session found a real latest-attempt output bug despite an approved review status
 // hint: Logic changed on both sides. Requires understanding intent of each change.
 59. [OTHER] Treat Lore as the active memory system in this workspace; interpret remaining Coherence-named files or rules as legacy compatibility guidance unless a task explicitly targets migration support - the root repo should read Lore-first while preserving compatibility history
-59. [ACTIONS] Treat rule 26 as the canonical completion/worktree-cleanliness gate; rule 25 is retained only as historical context because both rules captured the same lesson and were creating duplicate guidance
-60. [OTHER] In this environment, `api.githubcopilot.com` is blocked by the corporate firewall — do not suggest any tool that calls it directly (including `llm-github-copilot`, `CopilotChat.nvim`, `codecompanion.nvim`). For LLM commit messages in worktrunk, use the Neovim editor fallback instead of a Copilot-backed CLI tool.
+60. [ACTIONS] Treat rule 26 as the canonical completion/worktree-cleanliness gate; rule 25 is retained only as historical context because both rules captured the same lesson and were creating duplicate guidance
+61. [OTHER] In this environment, `api.githubcopilot.com` is blocked by the corporate firewall — do not suggest any tool that calls it directly (including `llm-github-copilot`, `CopilotChat.nvim`, `codecompanion.nvim`). For LLM commit messages in worktrunk, use the Neovim editor fallback instead of a Copilot-backed CLI tool.
+
+62. [OTHER] When the user scopes a Lua/Neovim change to the smallest truthful implementation lane, stop extra doc or runtime probing once the required wiring is clear and ship the scoped change with the agreed validation commands - this correction explicitly prioritized implementation over more Progress-payload research
+63. [OTHER] When planning merge resolution and the user says `origin/develop` reflects the intended end state after a partial revert, treat `origin/develop` as authoritative for those reverted areas instead of preserving the branch's newer-looking tooling changes - this session showed the npm/esbuild migration was incomplete, non-working, and meant to be removed
+64. [OTHER] Never capture a one-off repo-state clarification as a durable learned rule unless it reflects a reusable preference or general practice - the `origin/develop` vs branch tooling correction in `aws-pme` was specific to this repo at this moment, so the prior rule was too broad
+65. [OTHER] Treat rule 1 as superseded historical context rather than an active reusable instruction; one-off repo-state clarifications belong in the task context unless they generalize beyond the immediate repository state
