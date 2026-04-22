@@ -15,8 +15,15 @@ export function readChildMetadata(
   input,
   { extraFields = [], trimValues = false } = {},
 ) {
-  const values = [input?.agentName, input?.agentDisplayName, input?.agentDescription, ...extraFields]
-    .filter((value) => typeof value === "string" && value.trim().length > 0);
+  const values = [
+    input?.agentName,
+    input?.agentDisplayName,
+    input?.agentDescription,
+    input?.subagent?.agentName,
+    input?.subagent?.agentDisplayName,
+    input?.subagent?.agentDescription,
+    ...extraFields,
+  ].filter((value) => typeof value === "string" && value.trim().length > 0);
 
   const pieces = trimValues ? values.map((value) => value.trim()) : values;
   return pieces.join(" ").toLowerCase();

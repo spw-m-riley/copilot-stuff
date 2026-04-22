@@ -7,6 +7,8 @@
 
 import { runAllTests as runOrchestratorTests } from "./unit/orchestrator.test.mjs";
 import { runAllTests as runApprovalTests } from "./unit/reviewer-dispatch.test.mjs";
+import { runAllTests as runContextPolicyTests } from "./unit/context-policy.test.mjs";
+import { runAllTests as runSdkDispatchContractTests } from "./unit/sdk-dispatch-contract.test.mjs";
 
 async function main() {
   console.log("=".repeat(80));
@@ -14,8 +16,30 @@ async function main() {
   console.log("=".repeat(80));
   console.log();
 
+  let contextPolicyPassed = false;
+  let sdkDispatchContractPassed = false;
   let orchestratorPassed = false;
   let approvalPassed = false;
+
+  try {
+    console.log("📋 Running Shared Context Policy Tests");
+    console.log("-".repeat(80));
+    await runContextPolicyTests();
+    contextPolicyPassed = true;
+    console.log();
+  } catch (e) {
+    console.error("❌ Shared context policy tests failed");
+  }
+
+  try {
+    console.log("📋 Running SDK Dispatch Contract Tests");
+    console.log("-".repeat(80));
+    await runSdkDispatchContractTests();
+    sdkDispatchContractPassed = true;
+    console.log();
+  } catch (e) {
+    console.error("❌ SDK dispatch contract tests failed");
+  }
 
   try {
     console.log("📋 Running Orchestrator State Machine Tests");
@@ -41,6 +65,12 @@ async function main() {
   console.log("Test Summary");
   console.log("=".repeat(80));
   console.log(
+    `✓ Context Policy Tests: ${contextPolicyPassed ? "PASSED" : "FAILED"}`
+  );
+  console.log(
+    `✓ SDK Contract Tests: ${sdkDispatchContractPassed ? "PASSED" : "FAILED"}`
+  );
+  console.log(
     `✓ Orchestrator Tests: ${orchestratorPassed ? "PASSED" : "FAILED"}`
   );
   console.log(`✓ Approval Tests: ${approvalPassed ? "PASSED" : "FAILED"}`);
@@ -58,7 +88,7 @@ async function main() {
   console.log("Overall Test Coverage: ~97%");
   console.log();
 
-  if (!orchestratorPassed || !approvalPassed) {
+  if (!contextPolicyPassed || !sdkDispatchContractPassed || !orchestratorPassed || !approvalPassed) {
     process.exit(1);
   }
 }

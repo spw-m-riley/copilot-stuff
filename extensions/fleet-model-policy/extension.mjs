@@ -71,14 +71,7 @@ function clearActiveContext(sessionId) {
 }
 
 function getChildMetadataText(input) {
-  return readChildMetadata(input, {
-    extraFields: [
-      input?.subagent?.agentName,
-      input?.subagent?.agentDisplayName,
-      input?.subagent?.agentDescription,
-    ],
-    trimValues: true,
-  }).trim();
+  return readChildMetadata(input, { trimValues: true }).trim();
 }
 
 function shouldInjectFleetChildContext(input) {

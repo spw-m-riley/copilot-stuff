@@ -31,14 +31,12 @@ import {
   formatApprovalSummary,
   formatResponseSummary,
 } from "./lib/reviewer-dispatch.mjs";
+import { DEFAULT_REVIEWER_ROLE_IDS } from "./lib/reviewer-roles.mjs";
 
 const MAX_ACTIVE_SESSION_CONTEXTS = 64;
 
-// Default reviewer configuration (Jason + Freddy from plan-review-policy)
-const DEFAULT_PLAN_REVIEWERS = [
-  "gpt-5.3-codex", // Jason
-  "claude-sonnet-4.6", // Freddy
-];
+// Stable reviewer roles (model hints live in reviewer-roles.mjs)
+const DEFAULT_PLAN_REVIEWERS = DEFAULT_REVIEWER_ROLE_IDS;
 
 // Session orchestration state: sessionId -> PlanOrchestrator
 const orchestratorBySession = new Map();
@@ -195,7 +193,8 @@ const session = await joinSession({
       const reviewerContext = generateReviewerContext(
         orchestrator,
         orchestrator.state.round,
-        orchestrator.state.reviewers.size
+        orchestrator.state.reviewers.size,
+        reviewerId
       );
 
       await session.log(
@@ -238,7 +237,19 @@ const session = await joinSession({
 
       // Try to extract response from input
       // NOTE: SDK surface unclear - may need alternative detection method
-      const response = input?.response || input?.output || "";
+      const response = typeof input?.response === "string"
+        ? input.response
+        : typeof input?.output === "string"
+          ? input.output
+          : null;
+
+      if (!response) {
+        await session.log(
+          `plan-orchestrator: ${reviewerId} finished without surfaced response text; leaving reviewer pending`,
+          { ephemeral: true }
+        );
+        return;
+      }
 
       if (!hasVerdictToken(response)) {
         // No verdict token found - treat as ambiguous/missing
@@ -292,12 +303,10 @@ const session = await joinSession({
             `plan-orchestrator: Revisions needed - starting round ${orchestrator.state.round + 1}`,
             { ephemeral: true }
           );
+          await session.log(revisionContext, { ephemeral: true });
 
           orchestrator.nextRound();
           getReviewerFeedback(sessionId).clear();
-
-          // Inject revision request via context
-          return { additionalContext: revisionContext };
         }
       } else {
         // Log current round status

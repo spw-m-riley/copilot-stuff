@@ -19,6 +19,11 @@ import {
   formatApprovalSummary,
   formatResponseSummary,
 } from "../../lib/reviewer-dispatch.mjs";
+import {
+  DEFAULT_REVIEWER_ROLE_IDS,
+  getReviewerRole,
+  resolveReviewerRole,
+} from "../../lib/reviewer-roles.mjs";
 
 import { PlanOrchestrator } from "../../lib/orchestrator.mjs";
 
@@ -283,16 +288,16 @@ export function testIsReviewerAgent() {
  */
 export function testMatchReviewerAgent() {
   const reviewerMap = new Map([
-    ["gpt-5.3-codex", "pending"],
-    ["claude-sonnet-4.6", "pending"],
+    ["jason", "pending"],
+    ["freddy", "pending"],
   ]);
 
   const match1 = matchReviewerAgent("gpt-5.3-codex", reviewerMap);
   const match2 = matchReviewerAgent("claude-sonnet-4.6", reviewerMap);
   const match3 = matchReviewerAgent("unknown-model", reviewerMap);
 
-  assertEqual(match1, "gpt-5.3-codex", "Should match GPT model");
-  assertEqual(match2, "claude-sonnet-4.6", "Should match Claude model");
+  assertEqual(match1, "jason", "Should match GPT model to Jason role");
+  assertEqual(match2, "freddy", "Should match Claude model to Freddy role");
   assertEqual(match3, null, "Should return null for unknown");
 
   console.log("✓ testMatchReviewerAgent passed");
@@ -303,15 +308,15 @@ export function testMatchReviewerAgent() {
  */
 export function testMatchReviewerPartial() {
   const reviewerMap = new Map([
-    ["gpt-5.3-codex", "pending"],
-    ["claude-sonnet-4.6", "pending"],
+    ["jason", "pending"],
+    ["freddy", "pending"],
   ]);
 
   const match1 = matchReviewerAgent("GPT Review Agent", reviewerMap);
   const match2 = matchReviewerAgent("Claude Reviewer", reviewerMap);
 
-  assertEqual(match1, "gpt-5.3-codex", "Should match partial GPT");
-  assertEqual(match2, "claude-sonnet-4.6", "Should match partial Claude");
+  assertEqual(match1, "jason", "Should match partial GPT");
+  assertEqual(match2, "freddy", "Should match partial Claude");
 
   console.log("✓ testMatchReviewerPartial passed");
 }
@@ -338,10 +343,15 @@ export function testGenerateReviewerContext() {
   const orchestrator = new PlanOrchestrator();
   orchestrator.initialize(["reviewer1", "reviewer2"]);
 
-  const context = generateReviewerContext(orchestrator, 1, 3);
+  const context = generateReviewerContext(orchestrator, 1, 3, "jason");
 
   assert(context.length > 0, "Should generate non-empty context");
   assert(context.includes("plan review"), "Should mention plan review");
+  assert(context.includes("Jason"), "Should include reviewer display name");
+  assert(
+    context.includes("execution details"),
+    "Should include role-specific rubric guidance"
+  );
   assert(context.includes("[PLAN-APPROVED]"), "Should include approval token");
   assert(context.includes("[PLAN-REVISE-NEEDED]"), "Should include rejection token");
   assert(context.includes("Round 1"), "Should mention round 1");
@@ -356,8 +366,8 @@ export function testGenerateReviewerContextRounds() {
   const orchestrator = new PlanOrchestrator({ maxRounds: 5 });
   orchestrator.initialize(["a", "b", "c"]);
 
-  const context1 = generateReviewerContext(orchestrator, 1, 5);
-  const context3 = generateReviewerContext(orchestrator, 3, 5);
+  const context1 = generateReviewerContext(orchestrator, 1, 5, "jason");
+  const context3 = generateReviewerContext(orchestrator, 3, 5, "freddy");
 
   assert(context1.includes("Round 1 of 5"), "Should include round 1 of 5");
   assert(context3.includes("Round 3 of 5"), "Should include round 3 of 5");
@@ -538,8 +548,8 @@ export function testExtractMixedTokens() {
  */
 export function testMatchReviewerDisplayNames() {
   const reviewerMap = new Map([
-    ["gpt-5.3-codex", "pending"],
-    ["claude-sonnet-4.6", "pending"],
+    ["jason", "pending"],
+    ["freddy", "pending"],
   ]);
 
   // Jason is typically used for GPT
@@ -547,10 +557,60 @@ export function testMatchReviewerDisplayNames() {
   // Freddy is typically used for Claude
   const match2 = matchReviewerAgent("Freddy", reviewerMap);
 
-  assertEqual(match1, "gpt-5.3-codex", "Should match Jason to GPT");
-  assertEqual(match2, "claude-sonnet-4.6", "Should match Freddy to Claude");
+  assertEqual(match1, "jason", "Should match Jason display name to role");
+  assertEqual(match2, "freddy", "Should match Freddy display name to role");
 
   console.log("✓ testMatchReviewerDisplayNames passed");
+}
+
+/**
+ * Test: Reviewer role registry contract
+ */
+export function testReviewerRoleRegistryContract() {
+  assertEqual(
+    DEFAULT_REVIEWER_ROLE_IDS.join(","),
+    "jason,freddy",
+    "Should expose stable default reviewer role ids"
+  );
+
+  const jason = getReviewerRole("jason");
+
+  assert(jason, "Should return Jason role");
+  assertEqual(jason.id, "jason", "Should preserve stable role id");
+  assertEqual(jason.displayName, "Jason", "Should expose display name");
+  assert(
+    jason.aliases.includes("gpt-5.3-codex"),
+    "Should include model alias without making it the role id"
+  );
+  assert(
+    jason.persona.includes("execution details"),
+    "Should expose persona guidance"
+  );
+  assert(
+    jason.rubric.length > 0,
+    "Should expose rubric guidance"
+  );
+  assert(
+    jason.preferredModels.includes("gpt-5.3-codex"),
+    "Should expose preferred model hints"
+  );
+
+  console.log("✓ testReviewerRoleRegistryContract passed");
+}
+
+/**
+ * Test: Resolve reviewer role aliases
+ */
+export function testResolveReviewerRoleAlias() {
+  const resolvedJason = resolveReviewerRole(" GPT-5.3-Codex ");
+  const resolvedFreddy = resolveReviewerRole("freddy");
+  const resolvedUnknown = resolveReviewerRole("unknown-reviewer");
+
+  assertEqual(resolvedJason?.id, "jason", "Should resolve model hint to Jason role");
+  assertEqual(resolvedFreddy?.id, "freddy", "Should resolve display alias to Freddy role");
+  assertEqual(resolvedUnknown, null, "Should return null for unknown aliases");
+
+  console.log("✓ testResolveReviewerRoleAlias passed");
 }
 
 /**
@@ -703,6 +763,8 @@ export async function runAllTests() {
     testExtractFeedbackPreservesContext,
     testExtractMixedTokens,
     testMatchReviewerDisplayNames,
+    testReviewerRoleRegistryContract,
+    testResolveReviewerRoleAlias,
     testIsReviewerAgentCaseInsensitive,
     testParseWithUnicode,
     testExtractFeedbackUnicode,

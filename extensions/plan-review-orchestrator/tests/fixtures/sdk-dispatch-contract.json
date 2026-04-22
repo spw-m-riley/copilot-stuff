@@ -1,0 +1,12 @@
+{
+  "bannedLaunchPatterns": [
+    "session.send(",
+    "session.sendAndWait(",
+    "session.rpc.agent.select",
+    "modifiedPrompt"
+  ],
+  "forbiddenOnSubagentEndPatterns": [
+    "additionalContext",
+    "|| \"\""
+  ]
+}
