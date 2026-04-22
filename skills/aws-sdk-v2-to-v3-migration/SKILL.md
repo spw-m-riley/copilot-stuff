@@ -1,6 +1,6 @@
 ---
 name: aws-sdk-v2-to-v3-migration
-description: Migrate JavaScript or TypeScript services off AWS SDK v2 and onto modular v3 clients, one service at a time.
+description: "Use when the codebase still imports from 'aws-sdk' v2, uses new AWS.*() constructors, .promise() calls, AWS.config.update(), DocumentClient, or s3.upload() — and needs a safe modular v3 migration without changing runtime behavior."
 metadata:
   category: migrations
   audience: general-coding-agent

@@ -1,6 +1,6 @@
 ---
 name: circleci-to-github-actions-migration
-description: Migrate CircleCI pipelines to GitHub Actions with explicit parity for jobs, filters, caches, artifacts, and deployment gates.
+description: Use when a repository still depends on .circleci/config.yml jobs, workflows, or artifacts that need to be replaced or phased out with GitHub Actions — including incremental shadow runs, staged cutover, and parity checks.
 metadata:
   category: migrations
   audience: general-coding-agent

@@ -1,6 +1,6 @@
 ---
 name: reverse-prompt
-description: Rewrite rough requests into executable task briefs with clear goal, constraints, deliverables, and next-phase routing.
+description: Use when a request is under-specified, ambiguous, or needs sharpening before research, planning, or implementation begins — or when the user explicitly asks to improve, rewrite, or reverse-prompt their ask.
 metadata:
   category: workflow
   audience: general-coding-agent

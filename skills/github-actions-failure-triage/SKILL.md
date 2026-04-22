@@ -1,6 +1,6 @@
 ---
 name: github-actions-failure-triage
-description: Diagnose failing GitHub Actions runs and apply the smallest evidence-backed fix in repositories already on Actions.
+description: Use when a GitHub Actions run, job, or check is failing and root-cause diagnosis is needed before touching any files — especially after workflow edits, action version bumps, runner changes, cache invalidation, or matrix changes in a repo already on Actions.
 metadata:
   category: ci
   audience: general-coding-agent
@@ -25,6 +25,13 @@ Use this skill when a repository already uses GitHub Actions and you need to dia
 - The main task is worktree or branch isolation for parallel work.
 - The user is asking for greenfield CI design or a broad GitHub Actions redesign with no concrete failing run to anchor on.
 - The primary action required is changing org-admin settings, runner fleet configuration, branch protection, or environment policy rather than diagnosing a repository-owned failure.
+
+## Iron Law
+
+> **No edits before reading the concrete failing evidence.**
+>
+> Read the exact failing run, job, step, and logs before touching any file.
+> Speculative edits without evidence are the most common cause of wasted reruns.
 
 ## Routing boundary
 
@@ -63,6 +70,8 @@ Use the closest matching workflow:
 Do not collect secret values. Only confirm whether the expected names, scopes, and inheritance behavior are present.
 
 ## First move
+
+**Announce at start:** "I'm using the github-actions-failure-triage skill to diagnose this run."
 
 1. Anchor the exact failing run, attempt, job, step, SHA, branch or ref, and event.
 2. Read the failed-step logs and surrounding setup context before editing anything.
@@ -114,6 +123,16 @@ Use this as the fast path once the failure bucket is known:
 - **Should** prefer the smallest change that explains the failure and preserves the surrounding workflow shape.
 - **Should** distinguish flaky, pre-existing, and newly introduced failures before claiming a fix.
 - **Should** escalate instead of guessing when the failure depends on org-admin controls, runner-fleet health, or broader CI redesign.
+
+## Common rationalisations
+
+| Rationalisation | Reality |
+|---|---|
+| "I'll just rerun it to see if it's flaky" | A rerun without evidence only wastes a run. Read the logs first. |
+| "It's probably a YAML syntax issue" | Most failures are runner, secret, or project bugs — not YAML. Read the logs before assuming. |
+| "It was working before the last merge, so it must be that" | Correlation is not causation. Anchor on the exact failing step. |
+| "I'll fix something obvious while I read the logs" | Speculative fixes in parallel with investigation create confounding variables. |
+| "The fix is small, I don't need to wait for the run" | A fix that seems small can pass locally and fail in CI for unrelated reasons. Wait for evidence. |
 
 ## Validation
 

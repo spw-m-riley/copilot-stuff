@@ -1,6 +1,6 @@
 ---
 name: tsc-error-triage
-description: Triage TypeScript compiler failures from the first causal error, then fix the source before downstream call sites.
+description: "Use when tsc or the project typecheck command reports failures — especially after a refactor, dependency upgrade, tsconfig change, or strict-mode flag addition that causes a burst of compiler errors."
 metadata:
   category: typescript
   audience: general-coding-agent
@@ -21,6 +21,13 @@ metadata:
 - The task is primarily about runtime bugs with no TypeScript compiler signal.
 - The repository is not using TypeScript or does not have a meaningful typecheck command.
 - The request is to redesign the type model broadly rather than to triage concrete compiler failures.
+
+## Iron Law
+
+> **Never patch leaf errors when a shared root cause is unresolved.**
+>
+> Fix the first causal error in the chain — broken export, generic constraint, config mismatch — before touching downstream call sites.
+> One root-cause fix can collapse dozens of leaf errors.
 
 ## Inputs to gather
 

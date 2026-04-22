@@ -1,6 +1,6 @@
 ---
 name: tsconfig-hardening
-description: Harden TypeScript configuration incrementally, keeping stricter flags, module resolution, and project layout in sync.
+description: Use when enabling stricter TypeScript flags safely, resolving module resolution or configuration drift causing recurring issues, consolidating confusing tsconfig chains, fixing misalignment between config and project layout, or adding project references to a monorepo — without disrupting the build or creating cascading type errors.
 metadata:
   category: typescript
   audience: general-coding-agent

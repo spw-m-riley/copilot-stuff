@@ -1,6 +1,6 @@
 ---
 name: review-comment-resolution
-description: Resolve pull request review comments by checking each concern, applying only valid fixes, and pushing the updated branch through workflow completion.
+description: Use when a pull request has review comments or reviewer feedback that needs to be addressed — including deciding which comments are valid concerns before making changes, and pushing fixes through completed workflow checks.
 metadata:
   category: code-review
   audience: general-coding-agent
@@ -24,6 +24,13 @@ metadata:
 - You cannot access the branch, PR, or review comment context needed to judge the concern.
 - The user explicitly instructs you to apply every review comment exactly as written without assessment.
 
+## Iron Law
+
+> **Classify every comment before editing any file.**
+>
+> Inspect the actual code and context for each comment before accepting or rejecting the concern.
+> Never apply review comments mechanically; never dismiss them without evidence.
+
 ## Inputs to gather
 
 **Required before editing**
@@ -41,6 +48,8 @@ metadata:
 - Whether you should post follow-up replies for comments you decide not to fix.
 
 ## First move
+
+**Announce at start:** "I'm using the review-comment-resolution skill to address these comments."
 
 1. Fetch the in-scope review comments and map each one to its file, code context, and current relevance.
 2. Classify each comment using the disposition guide before editing anything.
@@ -102,3 +111,13 @@ Do not leave an unresolved comment without a reason. If the concern is real but 
 - [`references/comment-disposition.md`](references/comment-disposition.md) - how to classify review comments before fixing or rejecting them.
 - [`references/push-and-workflow-wait.md`](references/push-and-workflow-wait.md) - how to commit, push, and wait for workflows or checks on the updated branch.
 - [`references/review-resolution-scenarios.md`](references/review-resolution-scenarios.md) - compact routing and handoff scenarios for maintaining the review-resolution workflow.
+
+## Integration
+
+**Called by:**
+- Any skill that pushes a branch and creates a PR — route here when the PR receives review feedback
+
+**Pairs with:**
+- [`github-actions-failure-triage`](../github-actions-failure-triage/SKILL.md) — if workflows fail after your push, diagnose those failures before calling the review task complete
+- [`git-worktrees`](../git-worktrees/SKILL.md) — when working in an isolated worktree, keep it alive until the review cycle is done
+- [`workflow-contracts`](../workflow-contracts/SKILL.md) — use a review-outcome contract when the result needs a durable artifact for a downstream phase

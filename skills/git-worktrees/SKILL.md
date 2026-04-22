@@ -98,3 +98,10 @@ See [Worktrunk command equivalents](references/worktrunk-commands.md) and the `w
 - [Naming defaults and examples](assets/naming-examples.md)
 - [Recovery and cleanup guide](references/recovery-and-cleanup.md)
 - [Worktrunk command equivalents](references/worktrunk-commands.md)
+
+## Integration
+
+**Pairs with:**
+- [`worktrunk`](../worktrunk/SKILL.md) — use `wt switch --create` / `wt merge` / `wt remove` instead of raw git commands when Worktrunk is installed; the `worktrunk` skill covers hooks, LLM commits, and merge pipeline
+- [`review-comment-resolution`](../review-comment-resolution/SKILL.md) — after pushing a branch from a worktree, address PR review comments in the same worktree before cleanup
+- [`github-actions-failure-triage`](../github-actions-failure-triage/SKILL.md) — if a pushed branch fails CI, diagnose the failure before removing the worktree

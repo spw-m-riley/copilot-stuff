@@ -1,6 +1,6 @@
 ---
 name: typescript-any-eliminator
-description: Replace unsafe `any` with the narrowest truthful TypeScript type, reusing shared types and boundary guards.
+description: Use when TypeScript source contains explicit `any` in application code, shared helpers, DTOs, or API layers that should be narrowed without changing runtime behavior — or when a reviewer or lint rule flags unsafe `any` usage.
 metadata:
   category: typescript
   audience: general-coding-agent
