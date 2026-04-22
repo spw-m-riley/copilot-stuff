@@ -86,6 +86,8 @@ A skill is ready to hand off when it:
 - A description that only names the skill's domain without listing concrete trigger phrases is likely to undertrigger — the skill will be skipped when it would help.
 - **Red flag:** if the draft starts embedding repo policy, one-off orchestration, or environment-specific branching, move that content out of the skill.
 - **Handoff trigger:** if the shape needs a dedicated operator persona, split orchestration, or long-lived state, promote it to a specialized agent instead of widening the skill.
+- **Critical:** A description that summarises the skill's workflow causes agents to follow the description as a shortcut instead of reading the full skill body. Descriptions must only contain triggering conditions — what signals mean "read this skill now?" — never process summaries. (This was empirically documented by Jesse Lactin's obra/superpowers collection.)
+- **Red flag:** A description that starts with a verb like "Migrate...", "Diagnose...", "Replace...", "Rewrite..." is almost certainly a workflow summary. Start with "Use when..." or a symptom/scenario.
 
 ## Anti-patterns
 
@@ -110,6 +112,7 @@ A skill is ready to hand off when it:
   realistic request that should trigger it and one near-miss that should not. The
   description alone (not the SKILL.md body) should be sufficient to distinguish them.
   If neither triggers reliably, the description needs more explicit trigger phrases.
+- Description test: Cover the SKILL.md body and read only the description. Does it tell you *when* to use the skill, or *what the skill does*? If the latter — rewrite it. The description alone should distinguish "should I read this?" without revealing the workflow.
 - If the target client supports skill reload or listing, verify the skill remains discoverable there.
 
 ## Examples
