@@ -22,6 +22,7 @@ Your personal Copilot CLI setup — a collection of instructions, agents, skills
 | Skill | [`type-test-authoring`](./skills/type-test-authoring/SKILL.md) | Lock compile-time inference/assignability contracts after type surfaces are truthful. |
 | Skill | [`tsc-error-triage`](./skills/tsc-error-triage/SKILL.md) | Fix TypeScript compiler failures in root-cause order before patching leaves. |
 | Agent | [`typescript-api-test-generator`](./agents/typescript-api-test-generator.agent.md) | Add or expand runtime tests for TypeScript APIs, handlers, and Lambda flows. |
+| Skill | [`context-map`](./skills/context-map/SKILL.md) | Map likely files, dependencies, tests, and reference patterns before multi-file planning or implementation. |
 
 ## Extensions
 
@@ -125,7 +126,7 @@ This lands in the `doc-coauthoring` skill territory.
 
 ## Skills Ecosystem
 
-This setup includes **22 reusable agent skills** — a production-grade library that handles everything from TypeScript compile errors and type safety to CI/CD migrations, testing workflows, and git orchestration. Each skill activates only when its specific conditions are met, preventing overlap and ensuring the right tool gets used for each task.
+This setup includes **23 reusable agent skills** — a production-grade library that handles everything from TypeScript compile errors and type safety to CI/CD migrations, testing workflows, and git orchestration. Each skill activates only when its specific conditions are met, preventing overlap and ensuring the right tool gets used for each task.
 
 **Skills are explicit routing decisions**: when you invoke a skill or the CLI recommends one, you're calling out a solution with clear activation boundaries. No guessing. No "hope this works."
 
@@ -149,7 +150,8 @@ This setup includes **22 reusable agent skills** — a production-grade library 
 - `systematic-debugging` — Hit a wall? Isolate the root cause before guessing at fixes
 - `verification-before-completion` — Don't claim "tests pass" without running them fresh
 
-**Workflow & Planning (4 skills)** — Planning, handoff docs, and task orchestration
+**Workflow & Planning (5 skills)** — Planning, handoff docs, and task orchestration
+- `context-map` — Map likely files, dependencies, tests, and reference patterns before multi-file work
 - `reverse-prompt` — Turn a vague request into an executable task brief (explicit user trigger)
 - `workflow-contracts` — Create versioned markdown handoff artifacts for multi-turn work
 - `finishing-a-development-branch` — Branch is done. Now what? Merge, PR, stash, or discard?
@@ -175,13 +177,13 @@ Skills activate in three ways:
 
 - **You invoke directly** — When you know your task matches a skill's activation condition, just call it by name
 - **We recommend it** — The CLI watches context and suggests skills when boundaries match
-- **You ask `/help skills`** — List all 22 skills or drill into one with `/help <skill-name>`
+- **You ask `/help skills`** — List all 23 skills or drill into one with `/help <skill-name>`
 
 Think of skills as specialized tools you grab when you recognize the problem. No guessing. Clear activation rules. Explicit boundaries.
 
 ### Quarterly Skill Review
 
-The 22 skills are reviewed quarterly for new additions, removals, or routing adjustments. Reviews are baked into quarterly planning cycles. See the [Skills Audit](./session-state/skills-audit.md) for the complete inventory.
+The 23 skills are reviewed quarterly for new additions, removals, or routing adjustments. Reviews are baked into quarterly planning cycles. See the [Skills Audit](./session-state/skills-audit.md) for the complete inventory.
 
 ---
 

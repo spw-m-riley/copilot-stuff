@@ -62,10 +62,11 @@ metadata:
 1. Extract the user's intent, scope, constraints, deliverable, and completion signal.
 2. Decide whether this is `rewrite-and-return` or `rewrite-and-proceed` using the mode-selection rules above and [`references/decision-rules.md`](references/decision-rules.md) for edge cases.
 3. Fill the brief structure from [`references/brief-template.md`](references/brief-template.md), adding exact `@` file or directory mentions when they are known.
-4. Surface assumptions and blockers explicitly instead of hiding them inside the rewritten brief.
-5. If the request is `rewrite-and-return`, return the improved brief plus assumptions or blockers and the recommended next phase.
-6. If the request is `rewrite-and-proceed`, use the improved brief internally and continue into the appropriate next phase.
-7. If a blocking ambiguity remains after rewriting, stop at the brief and blocker instead of forcing execution.
+4. When the main blocker is missing repository context, use [`references/context-needs-output.md`](references/context-needs-output.md) to return `Must See`, `Should See`, `Already Have`, and `Uncertainties` instead of guessing.
+5. Surface assumptions and blockers explicitly instead of hiding them inside the rewritten brief.
+6. If the request is `rewrite-and-return`, return the improved brief plus assumptions or blockers and the recommended next phase.
+7. If the request is `rewrite-and-proceed`, use the improved brief internally and continue into the appropriate next phase.
+8. If a blocking ambiguity remains after rewriting, stop at the brief and blocker instead of forcing execution.
 
 ## Guardrails
 
@@ -94,10 +95,12 @@ metadata:
 - `Rewrite this rough ask into the best executable prompt for this repository: add a skill that improves prompts before implementation.`
 - `Before you start, sharpen my prompt and then move into planning mode: add a reverse prompt skill under @skills/.`
 - `Improve this prompt only: audit @extensions/ and tell me the best next prompt to use.`
+- `Before answering, tell me which files you need to see in this repo and group them into must-see vs should-see.`
 
 ## Reference files
 
 - [Brief template](references/brief-template.md) - canonical shape for rewritten execution briefs.
+- [Context-needs output](references/context-needs-output.md) - how to ask for required vs helpful repository context before answering or planning.
 - [Decision rules](references/decision-rules.md) - rules for mode selection, blockers, and next-phase routing.
 - [Examples matrix](assets/examples.md) - repository-local before/after examples and expected outcomes.
 - [Rewrite mode scenarios](references/rewrite-mode-scenarios.md) - compact mode-selection and escalation cases for maintenance.
