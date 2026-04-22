@@ -126,7 +126,9 @@ This lands in the `doc-coauthoring` skill territory.
 
 ## Skills Ecosystem
 
-This setup includes **23 reusable agent skills** — a production-grade library that handles everything from TypeScript compile errors and type safety to CI/CD migrations, testing workflows, and git orchestration. Each skill activates only when its specific conditions are met, preventing overlap and ensuring the right tool gets used for each task.
+This setup includes a growing library of reusable agent skills — a production-grade set of workflows that handles everything from TypeScript compile errors and type safety to CI/CD migrations, testing workflows, and git orchestration. Each skill activates only when its specific conditions are met, preventing overlap and ensuring the right tool gets used for each task.
+
+The repo-tracked baseline now includes `context-map`, and the live `~/.copilot` profile also carries a wave-1 Awesome Copilot adoption set (`agent-governance`, `agent-supply-chain`, and `acquire-codebase-knowledge`) via user-scope installs into the main `~/.copilot` checkout's `skills/` directory. The category counts below describe the repo-tracked baseline catalog in this worktree; the wave-1 user-scope skills are documented separately because they currently live as local installs in the main `~/.copilot` profile. See [Awesome Copilot Adoption (Wave 1)](#awesome-copilot-adoption-wave-1) for the durable install notes and defer list.
 
 **Skills are explicit routing decisions**: when you invoke a skill or the CLI recommends one, you're calling out a solution with clear activation boundaries. No guessing. No "hope this works."
 
@@ -150,7 +152,7 @@ This setup includes **23 reusable agent skills** — a production-grade library 
 - `systematic-debugging` — Hit a wall? Isolate the root cause before guessing at fixes
 - `verification-before-completion` — Don't claim "tests pass" without running them fresh
 
-**Workflow & Planning (5 skills)** — Planning, handoff docs, and task orchestration
+**Workflow & Planning** — Planning, handoff docs, and task orchestration
 - `context-map` — Map likely files, dependencies, tests, and reference patterns before multi-file work
 - `reverse-prompt` — Turn a vague request into an executable task brief (explicit user trigger)
 - `workflow-contracts` — Create versioned markdown handoff artifacts for multi-turn work
@@ -177,13 +179,50 @@ Skills activate in three ways:
 
 - **You invoke directly** — When you know your task matches a skill's activation condition, just call it by name
 - **We recommend it** — The CLI watches context and suggests skills when boundaries match
-- **You ask `/help skills`** — List all 23 skills or drill into one with `/help <skill-name>`
+- **You ask `/help skills`** — List the installed skills or drill into one with `/help <skill-name>`
 
 Think of skills as specialized tools you grab when you recognize the problem. No guessing. Clear activation rules. Explicit boundaries.
 
 ### Quarterly Skill Review
 
-The 23 skills are reviewed quarterly for new additions, removals, or routing adjustments. Reviews are baked into quarterly planning cycles. See the [Skills Audit](./session-state/skills-audit.md) for the complete inventory.
+The skills catalog is reviewed quarterly for new additions, removals, or routing adjustments. Reviews are baked into quarterly planning cycles. See the [Skills Audit](./session-state/skills-audit.md) for the complete inventory.
+
+## Awesome Copilot Adoption (Wave 1)
+
+Wave 1 adopts the highest-signal additions from [Awesome Copilot](https://github.com/github/awesome-copilot) without duplicating the planning, context-mapping, and agent-authoring surfaces this setup already has.
+
+| Kind | Addition | Why it made wave 1 | Where it lives / durability |
+| --- | --- | --- | --- |
+| Plugin | `doublecheck@awesome-copilot` | Adds a verification-heavy research and writeup pass with explicit confidence labels. | Local plugin state only: the install is reflected in local `config.json` and `installed-plugins/awesome-copilot/`, while this README is the durable tracked record. |
+| Plugin | `awesome-copilot@awesome-copilot` | Adds a lightweight discovery layer for re-checking new Awesome Copilot assets later. | Local plugin state only: same local-only durability boundary as `doublecheck`. |
+| Skill | `agent-governance` | Adds reusable governance patterns for tool access, approval gates, audit trails, and fail-closed behavior. | User-scope install under `~/.copilot/skills/agent-governance/` in the live main checkout. |
+| Skill | `agent-supply-chain` | Adds integrity-manifest and verification patterns for reviewing third-party agent/plugin content. | User-scope install under `~/.copilot/skills/agent-supply-chain/` in the live main checkout. |
+| Skill | `acquire-codebase-knowledge` | Adds a durable repo-onboarding / reconnaissance workflow for producing traceable codebase knowledge packs. | User-scope install under `~/.copilot/skills/acquire-codebase-knowledge/` in the live main checkout. |
+
+### Install notes
+
+```bash
+copilot plugin install doublecheck@awesome-copilot
+copilot plugin install awesome-copilot@awesome-copilot
+gh skill install github/awesome-copilot agent-governance --scope user
+gh skill install github/awesome-copilot agent-supply-chain --scope user
+gh skill install github/awesome-copilot acquire-codebase-knowledge --scope user
+```
+
+- **Plugins are machine-local state.** In this setup, plugin enablement and marketplace cache details live in local `config.json` plus `installed-plugins/awesome-copilot/`; those are not the durable artifact for wave 1.
+- **The README is the durable artifact.** This file records what was adopted, why it was chosen, and how to reproduce the local install state later.
+- **User-scope skills land in the main `~/.copilot` checkout's `skills/` directory.** For this profile, `gh skill install --scope user` materializes the adopted skills there rather than inside ignored plugin caches.
+- **Those skill copies are currently local install state.** They live in a tracked-looking path, but for this wave the authoritative tracked artifact is the README update in this worktree rather than the live installed copies from the main checkout.
+- **The commands above install the current upstream versions.** If you later need a pinned revision, record that ref explicitly instead of assuming the marketplace default stayed unchanged.
+
+### Deferred / follow-on items
+
+| Item | Why it is not in wave 1 | When to revisit |
+| --- | --- | --- |
+| `context-engineering` | Useful, but it overlaps heavily with the local `context-map` skill plus the existing research→plan workflow, so it would duplicate context-mapping behavior rather than add a clearly new surface. | Revisit only if the packaged `/context-map` plugin workflow proves meaningfully better than the local skill + planning flow. |
+| `project-planning` | The repo already has `implementation-planner`, `workflow-contracts`, and plan-review extensions, so another planning plugin would mostly duplicate existing planning/PRD generation surfaces. | Revisit if you want packaged PRD/issue-generation commands beyond the current local planning stack. |
+| `Custom Agent Foundry` | Strong design reference, but the repo already has `skill-authoring`, custom agents, and established authoring patterns; keeping it out of wave 1 avoids duplicating daily authoring workflow. | Revisit as a rubric/reference if custom-agent authoring needs a dedicated external coach later. |
+| `agentic-eval` | Valuable evaluator/optimizer pattern, but it is explicitly deferred so wave 1 can land documentation and the high-signal installs first without turning evaluation loops into a gate. | Consider as a separate follow-on once wave-1 usage is stable and documented. |
 
 ---
 
