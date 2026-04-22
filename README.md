@@ -1,12 +1,14 @@
 # Copilot Config
 
-| Column1                                                | Column2                                              |
-| ------------------------------------------------------ | ---------------------------------------------------- |
-| [User Copilot Instructions](./copilot-instructions.md) | Short, generic concepts for all projects             |
-| [User Instructions](./instructions/)                   | General rules at a file type level                   |
-| [User Agents](./agents/)                               | Specialised Agents for specific tasks                |
-| [User Skills](./skills/)                               | A set of instructions that help with tasks/workflows |
-| [User Extensions](./extensions/)                       | Think git hooks but for the agent lifecycle          |
+Your personal Copilot CLI setup — a collection of instructions, agents, skills, and extensions that work together to make AI-assisted development smoother and more powerful.
+
+| What | Where | Purpose |
+| --- | --- | --- |
+| [User Copilot Instructions](./copilot-instructions.md) | Root | Core principles and learned rules that apply everywhere |
+| [File-Type Instructions](./instructions/) | `instructions/` | Language-specific guidance (TypeScript, Go, YAML, etc.) |
+| [Custom Agents](./agents/) | `agents/` | Specialized agents for orchestration and complex workflows |
+| [Skills](./skills/) | `skills/` | Reusable task-specific workflows you can invoke directly |
+| [Extensions](./extensions/) | `extensions/` | Auto-discovered lifecycle hooks and custom tools |          |
 
 
 ## Capabilities index
@@ -23,143 +25,224 @@
 
 ## Extensions
 
-These live in [`./extensions/`](./extensions/) and are auto-discovered by the Copilot CLI. They add either lifecycle hooks, custom tools, or both.
+These live in [`./extensions/`](./extensions/) and are auto-discovered by the Copilot CLI. They're the unsung heroes quietly injecting themselves into your workflow via lifecycle hooks, custom tools, or both.
 
-> Lore is the active local-memory system in this workspace.
-> Remaining `coherence` naming in the root repo is legacy compatibility residue, not the primary implementation surface.
+> **Lore is the active memory system here.** The remaining `coherence` naming in the root repo is legacy compatibility residue, not the primary implementation surface.
 
-| Extension | What it does |
+### Extension Catalog
+
+| Extension | What It Does |
 | --------- | ------------ |
-| `lore` | Local-first memory and continuity extension for Copilot CLI. Keep Lore-specific setup, rollout, maintenance, browser, and health docs in [`./extensions/`](./extensions/). |
-| `ci-migration-context` | Detects CI migration-related prompts such as CircleCI to GitHub Actions work and injects extra migration context in the parent turn, then propagates that checklist into relevant delegated child agents. |
-| `copilot-healthcheck` | Adds the `mr_healthcheck_run` tool, which performs a lightweight environment check for the current working directory and reports things like repo state and key local Copilot files/tools. |
-| `fleet-model-policy` | Applies prompt-time steering for fleet mode so implementation-heavy fleet work prefers `GPT-5.3-codex`, and now propagates that policy into delegated implementation-style child agents. |
-| `gha-url-router` | Detects GitHub Actions run and job URLs in prompts, injects structured routing context in the parent turn, and now passes that run/job context into relevant delegated child agents too. |
-| `plan-review-policy` | Adds the default `/plan` review policy, including the Jason (`GPT-5.3-codex`) and Freddy (`Claude Sonnet 4.6`) reviewer loop, and now propagates reviewer/helper guidance into delegated `/plan` child agents. |
-| `post-edit-lint` | Watches edit-style tool calls and then runs targeted formatting, linting, and validation steps for common file types such as JS/TS, JSON, YAML, Terraform, and shell files, feeding the results back into the conversation. |
-| `research-current-model-policy` | Keeps `/research` aligned with the currently selected foreground model and reasoning effort, instead of falling back to the bundled research model default. |
-| `worktree-manager` | Adds the `mr_worktree_create`, `mr_worktree_list`, `mr_worktree_status`, and `mr_worktree_remove` tools, and now injects child-agent guidance for implementation-style delegated tasks so git edits stay isolated in dedicated worktrees. |
+| `lore` | Local-first memory and continuity for Copilot CLI. Handles session recall, learning from your workflow, and keeping context sharp across sessions. Keep Lore-specific setup, rollout, maintenance, and health docs in [`./extensions/lore`](./extensions/lore). |
+| `plan-review-policy` | Adds the `/plan` review workflow with Jason (`GPT-5.3-codex`) and Freddy (`Claude Sonnet 4.6`) reviewer loop, then propagates that guidance into delegated `/plan` child agents. |
+| `plan-review-orchestrator` | Orchestrates plan review feedback, approvals, and round-trip refinement across multiple reviewers, ensuring coordination and sign-off before treating a plan as done. |
+| `ci-migration-context` | Detects CI migration requests (e.g., CircleCI→GitHub Actions) and injects extra migration context + checklist into parent turns and delegated child agents. |
+| `fleet-model-policy` | Steers implementation-heavy fleet work toward `GPT-5.3-codex`, then propagates that policy preference into delegated implementation-style child agents. |
+| `gha-url-router` | Detects GitHub Actions run/job URLs in prompts, injects structured routing context, and passes that context into delegated investigation agents. |
+| `post-edit-lint` | Watches `edit`-style tool calls and runs targeted formatting, linting, and validation for JS/TS, JSON, YAML, Terraform, and shell files, feeding results back into the conversation. |
+| `research-current-model-policy` | Keeps `/research` aligned with your currently selected model and reasoning effort, instead of falling back to a bundled default. |
+| `worktree-manager` | Adds `mr_worktree_create`, `mr_worktree_list`, `mr_worktree_status`, and `mr_worktree_remove` tools, plus injects worktree guidance into implementation-style child agents so edits stay isolated. |
+| `copilot-healthcheck` | Adds the `mr_healthcheck_run` tool — a lightweight environment check that reports repo state and key local Copilot files/tools. |
 
-Child-agent context propagation is currently enabled in:
+### Child-Agent Context Propagation
 
-- `fleet-model-policy` (delegated implementation-style fleet subagents)
-- `plan-review-policy` (delegated reviewer/helper subagents spawned from `/plan`)
-- `ci-migration-context` (delegated CI migration and workflow-debugging subagents)
-- `gha-url-router` (delegated GitHub Actions investigation subagents)
-- `worktree-manager` (delegated implementation/edit/task-style subagents in git repos)
+Several extensions inject policy and guidance into delegated child agents:
+- **fleet-model-policy** → implementation-style child agents (model preference)
+- **plan-review-policy** → `/plan` child agents (reviewer loop)
+- **plan-review-orchestrator** → plan review child agents (orchestration state)
+- **ci-migration-context** → CI migration & workflow-debug child agents (migration checklists)
+- **gha-url-router** → GitHub Actions investigation child agents (run/job context)
+- **worktree-manager** → implementation/edit/task child agents (worktree guidance)
 
-This improves fleet-mode execution by making policy, routing, and worktree expectations available inside delegated child runs instead of limiting that context to the parent prompt.
+## Workflow: Research → Plan → Implement
+
+The most reliable path through complex work is structure. Start with research, move to planning, then execute.
+
+### Step 1: Research (Gather signals)
+Use `/research` to dig into your problem space. Example:
+```
+/research @project-d/ needs to migrate from CircleCI to GitHub Actions. 
+There are three other projects that have been through this @project-a/ @project-b/ @project-c/
+Use those as guides. Get deep: understand the shared workflows, the migration approach, 
+terraform changes, and anything else that will make this smooth.
+```
+
+### Step 2: Plan (Get buy-in)
+Use `/plan` to turn research into actionable work. The plan gets reviewed by Jason (`GPT-5.3-codex`) and Freddy (`Claude Sonnet 4.6`) — both reviewers must approve before you move on.
+
+```
+/plan Turn the research into a fully actionable plan suitable for fleet execution. 
+Jason and Freddy should review. The plan is not ready until both reviewers approve it.
+```
+
+### Step 3: Implement (Execute)
+Use `/fleet` or direct agent delegation for implementation. Child agents inherit worktree guidance, model preferences, and fleet policy automatically.
+
+---
 
 ## Prompt Tips
 
-- goal + constraints + deliverables + approval rule, plus @ mentions for exact files. Example: `There are npm packages in @package.json which need to be updated. Only update the packages which are non-major releases. The work is only complete if all tests and lint/formatting rules pass after the packages have been updated.`
+- **Be specific**: Goal + constraints + deliverables + approval rule. Example:
+  > "There are npm packages in @package.json that need updates. Only update non-major releases. Work is done when all tests and lint/formatting pass."
 
-- The most optimal workflow is Research -> Plan -> Implement
-  - Use `/research` for your research. Example prompt: `/research @project-d/ needs to be migrated from CircleCI to GitHub Actions. There are other projects in this directory which have been through the process @project-a/ , @project-b/ and @project-c/ Use those as guides to how the migration should/could be done. Go in deep and make sure you have a full understanding of the shared workflows, the approach to the migrations, the terraform changes, and anything else which is required to make the migration run as smoothly as possible.`
-  - Use `shift+tab` or `/plan` for the planning. Example: `/plan Turn the research into a fully actionable plan. Make the plan suitable for fleet to be used. Ask GPT-5.3-codex and Claude Sonnet 4.6 to review the plan. The plan should not be considered ready until the reviewers approve it. Every reviewer must review in each round of reviews. Delegated `/plan` child agents now inherit the reviewer/helper policy too.`
-  - Use `shift+tab` till you get to autopilot and `/fleet` for implementation, often it will recommend it to you anyway. During delegated implementation/edit runs in git repos, child agents now receive fleet-policy and worktree guidance, so they are nudged toward the right model and one worktree per agent/task before editing.
+- **@ mention files**: Point directly at files you're concerned about, especially for audits or refactors.
+
+- **Model preferences matter**: Some models excel at research (GPT-5.4, Claude Sonnet/Opus), others at implementation (GPT-5.3-codex, Claude Opus). Experiment and find what works for your workflow.
+
+### Real-World Examples
+
+**Example 1: CI Migration** (CircleCI → GitHub Actions)
+```
+/research @existing-service/ is still on CircleCI. We also have @newer-service/ and @another-service/ 
+that have already been migrated. Use those as reference implementations. Get deep on the workflow 
+structure, the shared actions, the terraform changes, and anything else that makes the migration smooth.
+```
+After research approves, plan it:
+```
+/plan Turn this research into a migration timeline with clear phases. 
+Include all affected workflows, test requirements, and rollback procedures. 
+Jason and Freddy should review. Plan is ready only when both approve.
+```
+Then implement with `/fleet` — child agents inherit `ci-migration-context` guidance automatically.
+
+**Example 2: Type Safety Audit** (Finding and fixing `any` in TypeScript)
+```
+@src/ contains unsafe `any` types we need to fix. 
+Goal: Replace with narrowest truthful types or add proper type guards.
+Only change application code (not test files). 
+Work is done when tsc passes with strict mode and all tests pass.
+```
+This naturally recommends the `typescript-any-eliminator` skill.
+
+**Example 3: Documentation Overhaul** (Writing + reviewing docs)
+```
+@docs/ needs a complete rewrite for clarity and tone. 
+Goal: Keep technical accuracy, add examples, make it approachable.
+Don't just copy-paste older docs — validate claims against the code.
+Done when docs are reviewed by another human and all examples work.
+```
+This lands in the `doc-coauthoring` skill territory.
 
 ## Skills Ecosystem
 
-The GitHub Copilot CLI includes a production skills library—16 reusable agent skills that handle recurring development tasks, from TypeScript type safety and migrations to CI/CD pipelines and version control workflows.
+This setup includes **22 reusable agent skills** — a production-grade library that handles everything from TypeScript compile errors and type safety to CI/CD migrations, testing workflows, and git orchestration. Each skill activates only when its specific conditions are met, preventing overlap and ensuring the right tool gets used for each task.
 
-**Skills are explicit routing decisions**: each skill activates when its specific boundary conditions are met, preventing overlapping coverage and ensuring the right tool is used for each task. Users invoke skills directly when a task matches the skill's activation condition; the CLI also recommends skills when context suggests a fit.
+**Skills are explicit routing decisions**: when you invoke a skill or the CLI recommends one, you're calling out a solution with clear activation boundaries. No guessing. No "hope this works."
 
 ### Skills by Category
 
 **TypeScript (6 skills)** — Compile-time and runtime type safety, configuration, and diagnostics
-- `tsc-error-triage` — Fix TypeScript compiler failures from the first causal error
-- `tsconfig-hardening` — Enable stricter TypeScript settings safely
-- `schema-boundary-typing` — Validate untrusted inputs at the edge
-- `typescript-any-eliminator` — Replace unsafe `any` with the narrowest truthful type
-- `type-test-authoring` — Write compile-time tests for generic helpers and public APIs
-- `project-references-migration` — Migrate layered TypeScript workspaces to project references
+- `tsc-error-triage` — When `tsc` screams at you, find the first real error (not the cascade)
+- `tsconfig-hardening` — Enable stricter TypeScript without your codebase exploding
+- `schema-boundary-typing` — Untrusted input? Validate at runtime before treating it as typed
+- `typescript-any-eliminator` — Replace that `any` with the narrowest truthful type
+- `type-test-authoring` — Write compile-time tests so your generic helpers don't regress
+- `project-references-migration` — Layer a monorepo with TypeScript project references safely
 
 **Migrations (3 skills)** — Framework and tool transitions handled in staged batches
-- `aws-sdk-v2-to-v3-migration` — Migrate AWS SDK v2 to modular v3 clients
-- `circleci-to-github-actions-migration` — Migrate CircleCI pipelines to GitHub Actions
-- `mocha-to-jest-migration` — Migrate test suites from Mocha/Chai/Sinon to Jest
+- `aws-sdk-v2-to-v3-migration` — Migrate AWS SDK v2 → v3 modular clients without breaking things
+- `circleci-to-github-actions-migration` — Move from CircleCI → GitHub Actions with parity checking
+- `mocha-to-jest-migration` — Migrate test suites from Mocha/Chai/Sinon → Jest incrementally
 
-**Version Control (2 skills)** — Worktree and branching workflows
-- `git-worktrees` — Create and manage isolated Git worktrees
-- `worktrunk` — Configure Worktrunk for worktree lifecycle and LLM commits
+**Testing & Development (3 skills)** — Test authoring, debugging, and verification
+- `test-driven-development` — Failing test first. Implementation after. Always.
+- `systematic-debugging` — Hit a wall? Isolate the root cause before guessing at fixes
+- `verification-before-completion` — Don't claim "tests pass" without running them fresh
 
-**Workflow & Planning (2 skills)** — Planning and handoff documentation
-- `reverse-prompt` — Rewrite rough requests into executable task briefs (activates on explicit user cue, not auto-triggered)
-- `workflow-contracts` — Create versioned markdown handoff artifacts
+**Workflow & Planning (4 skills)** — Planning, handoff docs, and task orchestration
+- `reverse-prompt` — Turn a vague request into an executable task brief (explicit user trigger)
+- `workflow-contracts` — Create versioned markdown handoff artifacts for multi-turn work
+- `finishing-a-development-branch` — Branch is done. Now what? Merge, PR, stash, or discard?
+- `doc-coauthoring` — Write docs collaboratively with context gathering and reader feedback loops
 
 **Code Review (1 skill)** — Pull request integration
 - `review-comment-resolution` — Resolve PR review comments and push to completion
 
 **CI/CD (1 skill)** — GitHub Actions troubleshooting
-- `github-actions-failure-triage` — Diagnose and fix failing GitHub Actions runs
+- `github-actions-failure-triage` — GitHub Actions broke. Find the root cause and fix it.
 
-**Authoring (1 skill)** — Skill creation and maintenance
-- `skill-authoring` — Author reusable agent skills (e.g., "Write a skill for handling Go imports with activation conditions and routing boundaries")
+**Authoring & Configuration (2 skills)** — Skill creation and setup workflows
+- `skill-authoring` — Write reusable agent skills from scratch with activation conditions
+- `init` — Create or update copilot-instructions.md and per-file instruction files
+
+**Version Control (2 skills)** — Worktree and branching workflows
+- `git-worktrees` — Create and manage isolated Git worktrees for parallel lanes
+- `worktrunk` — Advanced worktree lifecycle, LLM-generated commits, and coordination
 
 ### Using Skills
 
-- **Direct invocation**: Invoke a skill by name when you know the task matches its activation condition
-- **Recommended routing**: The CLI monitors context and recommends skills when boundaries suggest a fit
-- **Help system**: Use `/help skills` to list all production skills, or `/help <skill-name>` for detailed documentation
+Skills activate in three ways:
+
+- **You invoke directly** — When you know your task matches a skill's activation condition, just call it by name
+- **We recommend it** — The CLI watches context and suggests skills when boundaries match
+- **You ask `/help skills`** — List all 22 skills or drill into one with `/help <skill-name>`
+
+Think of skills as specialized tools you grab when you recognize the problem. No guessing. Clear activation rules. Explicit boundaries.
 
 ### Quarterly Skill Review
 
-The 16 production skills are reviewed quarterly for new additions, removals, or routing changes. Reviews are integrated into quarterly planning cycles. See the [Skills Audit](./session-state/skills-audit.md) for the complete inventory.
+The 22 skills are reviewed quarterly for new additions, removals, or routing adjustments. Reviews are baked into quarterly planning cycles. See the [Skills Audit](./session-state/skills-audit.md) for the complete inventory.
 
 ---
 
-## Model Tips
+## Model Selection Tips
 
-- All models are not the same.
-  - Some models are great for the research phase (GPT-5.4, Claude Sonnet/Opus, Gemini) some are not (GPT-5.3-codex)
-  - Some are great at the implementation phase (GPT-5.3-codex/5.4, Claude Opus) some are not (Gemini)
-- Find the model which is best suited to you or delivers the best output for you. Presently, GPT-5.4 does the best of everything for **me** but I still want other models to check its work (alongside manual checks) prior to its release I would use Sonnet for research & plan and then 5.3-codex for implementation.
-- Reasoning doesn't always work best at the highest setting.
-  - When using `/model` you can select the reasoning level for the model, the default is often the one the copilot team believes is the most optimal but you may find different. Example: GPT-5.4 default is set at `medium`, I prefer the output of `high` and find `xhigh` to make more mistakes.
+**All models are not created equal.** Each one has strengths and weak spots.
+
+### Research Phase
+- **Good**: GPT-5.4, Claude Sonnet, Claude Opus, Gemini (good at exploration and pattern synthesis)
+- **Not great**: GPT-5.3-codex (strong at implementation, weaker at research discovery)
+
+### Implementation Phase
+- **Good**: GPT-5.3-codex, GPT-5.4, Claude Opus (fast, reliable, handles detailed edits)
+- **Not great**: Gemini (hit-or-miss on complex implementation)
+
+### Reasoning Effort
+- Don't assume "max reasoning" is always better. Example: GPT-5.4's default is `medium`, but you might prefer `high`. Experiment. (`xhigh` often introduces more mistakes than it solves.)
+
+### The Sweet Spot
+Find the model and reasoning level that works for *you* and your workflow. No universal answer — it's personal preference + output quality for your use cases.
 
 ## Worktree Management
 
-Git worktrees enable parallel development lanes with isolated checkouts. All active worktrees live in `.worktrees/` and follow a structured naming convention.
+Git worktrees let you maintain multiple isolated checkouts in parallel — one branch per worktree, no checkout thrashing, no merge conflicts from parallel edits. All active worktrees live in `.worktrees/` and follow a structured naming scheme.
 
-**Naming Convention:** See [WORKTREE_NAMING.md](./WORKTREE_NAMING.md) for the formal three-category scheme:
-- `.worktrees/agent/<AGENT_ID>` — Long-running agent lanes (days to weeks)
-- `.worktrees/task/<TASK_ID>` — Bounded feature/fix tasks (hours to 1–2 days)
-- `.worktrees/temp/<PURPOSE>` — Temporary exploration (minutes to hours)
+**The Golden Rule: Never commit `.worktrees/` to the repository. Ever.**
 
-**Migration status:** The 54 existing worktrees are being transitioned to the new naming scheme. A proof-of-concept batch of 8 high-visibility worktrees has been renamed to demonstrate the pattern:
-- **Agent lanes:** `coherence-browser`, `wave1-doctor-observe-only`, `phase-3-router-core`, `phase-4-maintenance-scheduler`
-- **Task worktrees:** `add-style-retrieval`, `audit-root-docs`, `fix-research-effort-fallback`, `pin-context7-version`
+### Naming Convention
 
-The remaining ~46 flat-pattern worktrees will be migrated incrementally as their work completes or at each monthly audit cycle.
+See [WORKTREE_NAMING.md](./WORKTREE_NAMING.md) for the formal scheme:
 
-## Worktree Cleanup
+- **`.worktrees/agent/<AGENT_ID>`** — Long-running agent lanes (days to weeks). Examples: `coherence-browser`, `phase-3-router-core`
+- **`.worktrees/task/<TASK_ID>`** — Bounded feature/fix tasks (hours to 1–2 days). Examples: `fix-lore-backfill-ordering`, `add-style-retrieval`
+- **`.worktrees/temp/<PURPOSE>`** — Throwaway exploration (minutes to hours). Examples: `spike-performance`, `test-integration`
 
-Active worktrees are managed using the naming convention in [WORKTREE_NAMING.md](./WORKTREE_NAMING.md).
+### Cleanup (Monthly Audit)
 
-**Cleanup procedure:**
-1. Verify the worktree is clean (no uncommitted changes): `git -C .worktrees/<CATEGORY>/<ID> status`
-2. Merge or abandon the branch (move work to main if needed)
-3. Remove the worktree: `mr_worktree_remove <ID>` or `git worktree remove .worktrees/<CATEGORY>/<ID>`
-4. Clean up the branch: `git branch -d agent/<ID>` or `git branch -d task/<ID>`
+1. Check worktree status: `git -C .worktrees/<CATEGORY>/<ID> status`
+2. Verify no uncommitted changes
+3. Merge or abandon the branch
+4. Remove: `mr_worktree_remove <ID>` or `git worktree remove .worktrees/<CATEGORY>/<ID>`
+5. Optionally delete the branch: `git branch -d agent/<ID>` or `git branch -d task/<ID>`
 
-**Monthly audit:**
-- Run `git worktree list` to see all active worktrees
-- Check for branches with no activity in 30+ days
-- Use `git log --oneline -1 <branch>` to verify last commit date
-- Archive orphaned worktrees with `mr_worktree_remove`
+**Monthly audit**: Run `git worktree list`, check for branches inactive 30+ days, archive orphaned worktrees.
 
-**Example cleanup:**
-```bash
-# Check worktree status
-mr_worktree_status task/fix-lore-backfill-ordering
+**54 existing worktrees** are being transitioned to this naming scheme. A proof-of-concept batch of 8 high-visibility worktrees has already been renamed. The remaining ~46 flat-pattern worktrees will migrate incrementally as their work completes.
 
-# Remove after promotion
-mr_worktree_remove task/fix-lore-backfill-ordering
+---
 
-# Verify cleanup
-git worktree list
-```
+## Custom Agents
+
+Beyond the built-in agents (task, explore, rubber-duck, code-review, general-purpose), this setup includes **4 custom agents** for specialized workflows:
+
+| Agent | What It Does | Use When |
+|-------|-------------|----------|
+| **ci-migration-orchestrator** | Orchestrates multi-workflow CI migrations with planning, validation, and rollout coordination. Works with the reusable `circleci-to-github-actions-migration` skill. | CircleCI→GitHub Actions spans multiple workflows or environments and needs phased rollout |
+| **implementation-planner** | Breaks complex work into actionable plans with clear tasks, dependencies, and parallelizable phases. Outputs stable `v1` planner contracts. | You want a detailed implementation plan before coding (explicitly ask for it) |
+| **typescript-api-test-generator** | Writes runtime tests for TypeScript APIs, request handlers, and Lambda functions using your repo's existing test framework. | You need new or expanded test coverage around a TypeScript API surface |
+| **web-research-analyst** | Investigates external docs, patterns, and prior art, then distills findings into actionable recommendations and handoff-friendly summaries. | You need research + comparisons grounded in actual documentation before deciding on an approach |
+
+All four are manual-only (you invoke them explicitly), not auto-triggered. They integrate with skills and workflow contracts for clear handoff and coordination.
 
 ---
 
