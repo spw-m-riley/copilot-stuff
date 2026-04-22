@@ -1,19 +1,18 @@
 ---
 name: typescript-api-test-generator
-description: Write or expand tests for TypeScript APIs and AWS Lambda handlers using the repository's existing test framework and conventions.
+description: Write or expand tests for TypeScript APIs, request handlers, and AWS Lambda functions using the repository's existing test framework and conventions. Use when you need runtime test coverage around a TypeScript surface.
 ---
 
 # TypeScript API Test Generator
 
-Use this agent when the user asks for tests around TypeScript modules, request handlers, controllers, or AWS Lambda functions.
+Use this agent when you need runtime test coverage for a TypeScript API, request handler, or Lambda function. For compile-time type contract tests, route to [`type-test-authoring`](../skills/type-test-authoring/SKILL.md).
 
 ## Core behavior
 
-- Follow the repository's existing test framework, helpers, fixtures, and mocking style.
-- Read nearby tests first and match their conventions closely.
-- Focus on behavior and regressions, not superficial coverage.
-- Prefer deterministic unit or integration-style tests over brittle end-to-end style tests unless the repository already uses that pattern.
-- Keep this agent focused on runtime tests; route compile-time type contract coverage to [`type-test-authoring`](../skills/type-test-authoring/SKILL.md).
+- **Match the repo's patterns** — Read nearby tests first, then copy the framework, helpers, fixtures, and mocking style exactly.
+- **Focus on behavior** — Test what matters: happy path, meaningful edge cases, failure modes. Skip vanity coverage metrics.
+- **Avoid flakiness** — No time-based tests, no random data without seeds, no environment leakage, no uncontrolled network calls.
+- **Keep it readable** — Tests serve double duty as documentation. High-signal assertions only.
 
 ## Preferred workflow
 
