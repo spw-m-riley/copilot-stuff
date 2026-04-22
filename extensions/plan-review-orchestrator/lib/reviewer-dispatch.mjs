@@ -2,6 +2,12 @@
  * Reviewer dispatch and context injection
  */
 
+import {
+  formatReviewerRoleLabel,
+  getTrackedReviewerRole,
+  reviewerRoleMatchesText,
+} from "./reviewer-roles.mjs";
+
 /**
  * Dispatch reviewers for a review round
  * 
@@ -13,17 +19,35 @@
  * @param {number} totalRounds - Total reviewers
  * @returns {string} Context prompt for reviewer guidance
  */
-export function generateReviewerContext(orchestrator, round, totalRound) {
+export function generateReviewerContext(orchestrator, round, totalRound, reviewerId) {
   if (!orchestrator.state) {
     return "";
   }
 
   const reviewerCount = orchestrator.state.reviewers.size;
   const roundInfo = `Round ${round} of ${orchestrator.state.maxRounds}`;
+  const reviewerRole = getTrackedReviewerRole(reviewerId);
+  const reviewerLabel = reviewerRole
+    ? `${reviewerRole.displayName} (${reviewerRole.id})`
+    : "a plan reviewer";
+  const roleSpecificGuidance = reviewerRole
+    ? [
+        `Assigned reviewer role: ${reviewerLabel}.`,
+        `Persona guidance: ${reviewerRole.persona}`,
+        `Preferred model hints: ${reviewerRole.preferredModels.join(", ")}`,
+        "",
+        "Role-specific rubric:",
+        ...reviewerRole.rubric.map(
+          (criterion, index) => `${index + 1}. ${criterion}`
+        ),
+        "",
+      ]
+    : [];
 
   const instructions = [
-    `You are a plan reviewer (1 of ${reviewerCount} reviewers in ${roundInfo}).`,
+    `You are supporting plan review as ${reviewerLabel} (1 of ${reviewerCount} reviewers in ${roundInfo}).`,
     "",
+    ...roleSpecificGuidance,
     "Your role:",
     "1. Review the plan for clarity, completeness, and feasibility",
     "2. Check that tasks are concrete, dependencies are clear, and validation steps are present",
@@ -53,7 +77,7 @@ export function generateRevisionRequest(reviewerFeedback, orchestrator) {
 
   const feedbackEntries = Array.from(reviewerFeedback.entries())
     .map(([reviewerId, feedback]) => {
-      return `**${reviewerId}:**\n${feedback}`;
+      return `**${formatReviewerRoleLabel(reviewerId)}:**\n${feedback}`;
     })
     .join("\n\n");
 
@@ -84,7 +108,6 @@ export function isReviewerAgent(childMetadata) {
 
   const normalized = childMetadata.toLowerCase();
 
-  // Check for reviewer-related keywords
   return (
     normalized.includes("review") ||
     normalized.includes("reviewer") ||
@@ -106,21 +129,22 @@ export function matchReviewerAgent(agentName, reviewerMap) {
 
   const normalized = agentName.toLowerCase();
 
-  // Check for exact or partial matches
   for (const reviewerId of reviewerMap.keys()) {
+    const reviewerRole = getTrackedReviewerRole(reviewerId);
+    if (reviewerRole && reviewerRoleMatchesText(reviewerRole, normalized)) {
+      return reviewerMap.has(reviewerRole.id) ? reviewerRole.id : reviewerId;
+    }
+
     const idNormalized = reviewerId.toLowerCase();
 
-    // Check for exact match
     if (normalized === idNormalized) {
       return reviewerId;
     }
 
-    // Check for keyword inclusion (e.g., agent name contains model keywords)
     if (
       (normalized.includes("gpt") && idNormalized.includes("gpt")) ||
       (normalized.includes("claude") && idNormalized.includes("claude"))
     ) {
-      // Check version/model match
       const gptMatch =
         normalized.includes("gpt") && idNormalized.includes("gpt");
       const claudeMatch =
@@ -129,14 +153,6 @@ export function matchReviewerAgent(agentName, reviewerMap) {
       if (gptMatch || claudeMatch) {
         return reviewerId;
       }
-    }
-
-    // Fallback: check for agent display names (e.g., "Jason", "Freddy")
-    if (
-      (idNormalized.includes("gpt") && normalized.includes("jason")) ||
-      (idNormalized.includes("claude") && normalized.includes("freddy"))
-    ) {
-      return reviewerId;
     }
   }
 

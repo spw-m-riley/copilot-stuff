@@ -151,8 +151,8 @@ export function testPlanCommandDetection() {
       active: true,
       round: 1,
       reviewers: new Map([
-        ["gpt-5.3-codex", "pending"],
-        ["claude-sonnet-4.6", "pending"],
+        ["jason", "pending"],
+        ["freddy", "pending"],
       ]),
       maxRounds: 3,
     });
@@ -198,10 +198,10 @@ export function testReviewerContextInjection() {
 
     // Orchestrator injects orchestrator-specific context
     orchestrator.log(
-      "plan-orchestrator: injecting reviewer context for gpt-5.3-codex (round 1)",
+      "plan-orchestrator: injecting reviewer context for jason (round 1)",
       { ephemeral: true }
     );
-    orchestrator.recordContext("You are a plan reviewer (1 of 2 reviewers in Round 1 of 3)...");
+    orchestrator.recordContext("You are supporting plan review as Jason (jason) (1 of 2 reviewers in Round 1 of 3)...");
   }
 
   // Verify both injected context
@@ -235,7 +235,7 @@ export function testApprovalTracking() {
   const orchestrator = new MockExtensionHarness("plan-review-orchestrator");
 
   const sessionId = "session-1";
-  const reviewerId = "gpt-5.3-codex";
+  const reviewerId = "jason";
   const response = "Plan looks good!\n\n[PLAN-APPROVED]";
 
   // Simulate onSubagentEnd hook

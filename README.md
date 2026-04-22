@@ -35,7 +35,7 @@ These live in [`./extensions/`](./extensions/) and are auto-discovered by the Co
 | --------- | ------------ |
 | `lore` | Local-first memory and continuity for Copilot CLI. Handles session recall, learning from your workflow, and keeping context sharp across sessions. Keep Lore-specific setup, rollout, maintenance, and health docs in [`./extensions/lore`](./extensions/lore). |
 | `plan-review-policy` | Adds the `/plan` review workflow with Jason (`GPT-5.3-codex`) and Freddy (`Claude Sonnet 4.6`) reviewer loop, then propagates that guidance into delegated `/plan` child agents. |
-| `plan-review-orchestrator` | Orchestrates plan review feedback, approvals, and round-trip refinement across multiple reviewers, ensuring coordination and sign-off before treating a plan as done. |
+| `plan-review-orchestrator` | Adds passive plan-review orchestration: initializes review state on `/plan`, injects context into runtime-launched matching reviewer children, and tracks surfaced reviewer verdicts without launching reviewers itself. |
 | `ci-migration-context` | Detects CI migration requests (e.g., CircleCI→GitHub Actions) and injects extra migration context + checklist into parent turns and delegated child agents. |
 | `fleet-model-policy` | Steers implementation-heavy fleet work toward `GPT-5.3-codex`, then propagates that policy preference into delegated implementation-style child agents. |
 | `gha-url-router` | Detects GitHub Actions run/job URLs in prompts, injects structured routing context, and passes that context into delegated investigation agents. |
