@@ -2,9 +2,9 @@
 
 ## Overview
 
-This document defines the formal naming convention for Git worktrees in the Copilot CLI project. The scheme ensures worktrees are easily identified by purpose, helps manage parallel development, and simplifies cleanup and auditing.
+This document defines the formal naming scheme for Git worktrees in this Copilot CLI project. The goal: keep parallel development organized, make cleanup easy, and never (ever) commit `.worktrees/` to the repo.
 
-**Guiding principle**: One worktree per agent lane, task branch, or temporary exploration. Worktrees are **never committed** to the repository (see [Rule 38](#rule-38-enforcement)).
+**The Golden Rule:** One worktree per agent lane, task, or quick experiment. Worktrees are **never committed** (see [Rule 38](#rule-38-enforcement)).
 
 ---
 
@@ -14,66 +14,69 @@ All worktrees live in `.worktrees/` and follow this structure:
 
 ### `.worktrees/agent/<AGENT_ID>` — Long-Running Agent Lanes
 
-Used for agent-driven implementation work that may span multiple sessions and requires isolated parallel progress.
+These are the workhorse worktrees. An agent (or a person acting like one) lands here for days or weeks, chipping away at a feature area or major refactor.
 
 **Characteristics:**
-- Persistent across sessions
+- Persistent across sessions — this is a lane, not a one-off
 - Tied to a specific agent or team working on a feature area
 - Branch pattern: `agent/<AGENT_ID>`
 - Typical lifecycle: days to weeks
+- Think: "We're shipping this, incrementally"
 
 **Examples:**
-- `.worktrees/agent/ci-migration-orchestrator` (CircleCI→GitHub Actions migration)
-- `.worktrees/agent/typescript-api-test-generator` (writing API tests)
-- `.worktrees/agent/coherence-browser` (building memory browsing UI)
+- `.worktrees/agent/ci-migration-orchestrator` — Multi-session CircleCI→GitHub Actions migration
+- `.worktrees/agent/typescript-api-test-generator` — Building comprehensive test coverage over time
+- `.worktrees/agent/coherence-browser` — Building a memory browsing UI feature
 
 ### `.worktrees/task/<TASK_ID>` — Feature/Fix Tasks
 
-Used for bounded feature development or bug fixes that are expected to complete within a single session or a few sessions.
+Scoped, reviewable work. You have a clear goal, a PR ready, and you'll be done in hours or a day or two.
 
 **Characteristics:**
 - Scoped work with clear completion criteria
-- Feature branches that will be reviewed and merged to main
+- Feature branches that get reviewed and merged to main
 - Branch pattern: `task/<TASK_ID>` (e.g., `task/fix-lore-backfill-ordering`)
 - Typical lifecycle: hours to 1–2 days
+- Think: "This is one logical unit of work"
 
 **Examples:**
-- `.worktrees/task/fix-lore-backfill-ordering` (fix a specific bug)
-- `.worktrees/task/skills-ecosystem-documentation` (document skill authoring)
-- `.worktrees/task/router-core-validation` (validate router improvements)
+- `.worktrees/task/fix-lore-backfill-ordering` — Bug fix, PR, merge, done
+- `.worktrees/task/skills-ecosystem-documentation` — Write skill docs in isolation
+- `.worktrees/task/router-core-validation` — Validate one router improvement, test, ship
 
-### `.worktrees/temp/<PURPOSE>` — Temporary Exploration
+### `.worktrees/temp/<PURPOSE>` — Throwaway Exploration
 
-Used for quick, throwaway investigation or testing that may not result in commits or branches.
+Quick experiments that might not live past the current session. No commitment. No branch (usually). Just you, the code, and a hypothesis.
 
 **Characteristics:**
-- Ephemeral; expected to be removed after use
+- Ephemeral — expect to throw it away
 - No formal branch; local experiments only
-- Branch pattern: often no branch, or `temp/<PURPOSE>`
+- Branch pattern: optional, or `temp/<PURPOSE>` if you want to track it
 - Typical lifecycle: minutes to a few hours
-- **ID uniqueness:** Use semi-unique identifiers to prevent collision (e.g., `temp/debug-2025-04-21` instead of just `temp/debug`); this is especially important if multiple people run quick tests in parallel
+- **ID uniqueness:** Use semi-unique names to avoid collisions if multiple people spike in parallel (e.g., `temp/debug-2025-04-21` instead of just `temp/debug`)
 
 **Examples:**
-- `.worktrees/temp/quick-test` (fast reproduction of an issue)
-- `.worktrees/temp/schema-spike` (try out a schema change locally)
-- `.worktrees/temp/debug-session` (isolated debugging environment)
-- `.worktrees/temp/debug-2025-04-21` (timestamp-based uniqueness for parallel testing)
+- `.worktrees/temp/quick-test` — Reproduce an issue fast
+- `.worktrees/temp/schema-spike` — Try out a schema change locally without committing
+- `.worktrees/temp/debug-session` — Isolated debugging environment
+- `.worktrees/temp/debug-2025-04-21` — Timestamped to avoid collision during parallel testing
 
 ---
 
 ## Rationale
 
-### Why separate categories?
+### Why three categories?
 
-1. **Agent lanes** cluster related work (CLI improvements, documentation, feature stacks) and signal that progress is incremental and collaborative.
-2. **Task worktrees** make it clear work is scoped and reviewable, preventing accidental scope creep.
-3. **Temp worktrees** provide escape hatches for experimentation without polluting the agent/task namespaces.
+1. **Agent lanes** cluster related work (they'll be active for days) and signal that progress is collaborative and incremental. "Check back here" implicitly.
+2. **Task worktrees** make scope crystal clear: one logical unit of work, one branch, one PR, done. Prevents scope creep.
+3. **Temp worktrees** are your escape hatch for experiments. No judgment. Throw it away when you're done.
 
-### Why `.worktrees/` at all?
+### Why `.worktrees/` directory at all?
 
-- Git worktrees are isolated checkouts that reduce friction when switching between parallel branches.
-- Explicit `.worktrees/` root makes cleanup and auditing easier: `ls .worktrees/` gives a snapshot of active work.
-- Keeps the main checkout clean (no stray branches, simpler `git branch` output).
+- **Git worktrees are fast checkouts** — no thrashing between branches or merge state confusion
+- **Explicit `.worktrees/` root makes management obvious** — `ls .worktrees/` shows your active work landscape
+- **Keeps main checkout clean** — no stray branches cluttering `git branch` output, no checkout conflicts
+- **Cleanup is straightforward** — old worktrees are easy to find and remove without hunting the filesystem
 
 ---
 
@@ -95,11 +98,11 @@ Example: `.worktrees/add-style-retrieval` remains until the branch is merged; ne
 
 ---
 
-## Cleanup and Auditing
+## Cleanup and Auditing (Keep the Garage Tidy)
 
 ### When to Clean Up
 
-A worktree should be removed when:
+Remove a worktree when:
 
 1. **After promotion into main** — The branch is merged or cherry-picked, and the work is done
 2. **After completion or abandonment** — Exploration is finished or cancelled, no further changes needed
@@ -107,21 +110,20 @@ A worktree should be removed when:
 
 ### How to Clean Up
 
-#### Step 1: Verify the worktree is clean
+#### Step 1: Verify the worktree is clean (nothing left behind)
 
 ```bash
 cd .worktrees/<CATEGORY>/<ID>
 git status
 ```
 
-**Clean-state definition:** A worktree is considered *clean* for promotion when:
-- No uncommitted tracked or untracked changes exist in the working directory
-- The branch is up-to-date with its base (no divergent commits)
-- All changes have been committed to the branch (or stashed/discarded if not needed)
+**Clean = ready to remove:**
+- No uncommitted tracked or untracked changes
+- Branch is up-to-date with its base
+- All desired changes are committed (or stashed if you want to keep them)
 
-If you have changes:
-
-- **Keep them:** Commit before cleanup (or stash and move to a different branch)
+**If you have changes:**
+- **Keep them:** Commit before cleanup (or stash for another branch)
 - **Discard them:** `git reset --hard HEAD`
 
 #### Step 2: Remove the worktree
@@ -130,19 +132,16 @@ If you have changes:
 mr_worktree_remove <ID>
 ```
 
-This command:
-- Removes the worktree directory
-- Optionally deletes the local branch (pass `--deleteBranch` if needed)
+This command removes the worktree directory and optionally deletes the local branch.
 
 **Example:**
-
 ```bash
 mr_worktree_remove coherence-doctor-wave4
 ```
 
-#### Step 3: Clean up the branch on origin (if applicable)
+#### Step 3: Clean up the branch on origin (if it was pushed)
 
-If the branch was pushed and is no longer needed:
+If the branch exists on GitHub and you don't need it anymore:
 
 ```bash
 git push origin --delete agent/<AGENT_ID>
@@ -150,9 +149,9 @@ git push origin --delete agent/<AGENT_ID>
 git push origin --delete task/<TASK_ID>
 ```
 
-### Monthly Audit Procedure
+### Monthly Audit (Keep the Dashboard Updated)
 
-At the end of each month, check for orphaned or stale worktrees:
+At the end of each month, scan for orphaned or stale worktrees:
 
 1. **List all worktrees and their branches:**
 
