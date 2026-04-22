@@ -211,11 +211,13 @@ Git worktrees let you maintain multiple isolated checkouts in parallel — one b
 
 ### Naming Convention
 
-See [WORKTREE_NAMING.md](./WORKTREE_NAMING.md) for the formal scheme:
+See the **[`git-worktrees` skill](./skills/git-worktrees/SKILL.md)** for comprehensive guidance:
 
 - **`.worktrees/agent/<AGENT_ID>`** — Long-running agent lanes (days to weeks). Examples: `coherence-browser`, `phase-3-router-core`
 - **`.worktrees/task/<TASK_ID>`** — Bounded feature/fix tasks (hours to 1–2 days). Examples: `fix-lore-backfill-ordering`, `add-style-retrieval`
 - **`.worktrees/temp/<PURPOSE>`** — Throwaway exploration (minutes to hours). Examples: `spike-performance`, `test-integration`
+
+For the full naming scheme, conventions, and lifecycle examples, see [`git-worktrees/references/naming-conventions.md`](./skills/git-worktrees/references/naming-conventions.md).
 
 ### Cleanup (Monthly Audit)
 

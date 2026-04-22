@@ -7,6 +7,20 @@ import {
   setBoundedContext,
 } from "../_shared/context-policy.mjs";
 
+/**
+ * Plan Review Policy Extension
+ * 
+ * Injects planning rules and guidelines into /plan mode context.
+ * 
+ * Integrates with plan-review-orchestrator extension (non-conflicting):
+ * - Both extensions activate independently on /plan slash command
+ * - Both maintain separate session state (no collision)
+ * - Both inject context additively for reviewer and helper subagents
+ * - Coordination: policy provides guidelines, orchestrator provides dispatch logic
+ * 
+ * See plan-review-orchestrator/extension.mjs for orchestration details.
+ */
+
 const MAX_ACTIVE_SESSION_CONTEXTS = 64;
 const REVIEWER_ALLOW_LIST = ["review", "reviewer"];
 const HELPER_ALLOW_LIST = ["plan", "planner", "task", "implementation", "general-purpose"];
