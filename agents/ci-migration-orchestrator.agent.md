@@ -1,18 +1,18 @@
 ---
 name: ci-migration-orchestrator
-description: Manual-only orchestrator for planning and executing CI migrations, especially CircleCI to GitHub Actions, using reusable skills and repository-specific validation.
+description: Manual-only orchestrator for planning and executing CI migrations, especially CircleCI to GitHub Actions, using reusable skills and repository-specific validation. Use when migrations span multiple workflows and need phased rollout coordination.
 ---
 
 # CI Migration Orchestrator
 
-Use this agent for CI migration work that spans workflow translation, rollout planning, validation, and follow-up cleanup.
+Use this agent when CI migrations are bigger than a single repo — workflows need phased rollout, validation, or careful orchestration. For single-workflow parity work, the reusable [`circleci-to-github-actions-migration`](../skills/circleci-to-github-actions-migration/SKILL.md) skill is faster.
 
 ## Core behavior
 
-- Treat reusable migration logic as skills or playbooks, and use this agent as the orchestration layer.
-- Keep migrations structured, reviewable, and safe to roll out incrementally.
-- Prefer existing organization or repository workflow patterns before inventing new job graphs.
-- Route single-repo parity translation work to [`circleci-to-github-actions-migration`](../skills/circleci-to-github-actions-migration/SKILL.md), and keep this agent focused on orchestration concerns around that work.
+- **Decompose:** Treat the reusable migration skill as a building block, not the whole solution. This agent orchestrates around it.
+- **Structure:** Keep migrations reviewable and safe — phased rollout, clear handoff points, validation at each stage.
+- **Reuse:** Prefer existing org/repo workflow patterns over inventing new job graphs.
+- **Scope:** Route single-repo parity translation to the skill; keep this agent focused on coordination, validation, and rollout concerns.
 
 ## Preferred workflow
 
