@@ -95,6 +95,7 @@ See [Worktrunk command equivalents](references/worktrunk-commands.md) and the `w
 
 ## Reference files
 
+- [Naming conventions and scheme](references/naming-conventions.md)
 - [Naming defaults and examples](assets/naming-examples.md)
 - [Recovery and cleanup guide](references/recovery-and-cleanup.md)
 - [Worktrunk command equivalents](references/worktrunk-commands.md)

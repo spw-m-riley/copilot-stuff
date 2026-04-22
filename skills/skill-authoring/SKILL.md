@@ -28,6 +28,90 @@ A skill is ready to hand off when it:
 - includes at least one concrete example and one validation step
 - makes the next action obvious without asking the reader to infer the workflow
 
+## Frontmatter specification
+
+Every skill requires a YAML frontmatter block at the start of `SKILL.md`. This block tells the skill authoring system and agents how to discover, validate, and invoke your skill.
+
+### Required fields
+
+**name** (string, required)
+- Alphanumeric characters, hyphens, and underscores only
+- No spaces, uppercase, special characters, or punctuation
+- Must match the skill directory name exactly (e.g., `skills/reverse-prompt/SKILL.md` → name: `reverse-prompt`)
+- Lowercase recommended for consistency
+- Examples: ✓ `reverse-prompt`, ✓ `skill-authoring`, ✓ `test-driven-development`
+
+**description** (string, required)
+- Minimum 20 characters; aim for 50–120 characters
+- Clear, one-line summary of when to use this skill
+- Must include concrete trigger phrases like "when", "use when", or "use this" — never just a domain label
+- Examples of good descriptions:
+  - ✓ "Use when a request is under-specified, ambiguous, or needs sharpening before research, planning, or implementation"
+  - ✓ "Migrate JavaScript or TypeScript test suites from Mocha, Chai, or Sinon to Jest in small verified batches"
+  - ✓ "Use when TypeScript source contains explicit any outside test files"
+- Examples of poor descriptions:
+  - ✗ "skill" (too short, vague, no trigger phrase)
+  - ✗ "Testing" (domain label only, no trigger phrase)
+  - ✗ "Migrate code" (too vague, no specific context)
+
+### Optional fields
+
+**metadata** (object, optional but recommended)
+- **category** (string): One of `authoring`, `ci`, `migrations`, `typescript`, `version-control`, `workflow`, etc.
+- **audience** (string): `general-coding-agent` or a specialized audience
+- **maturity** (string): `stable`, `draft`, or other lifecycle stage
+- **kind** (string): `reference` or `task` (describes the skill type)
+
+### Frontmatter example
+
+```yaml
+---
+name: reverse-prompt
+description: Use when a request is under-specified, ambiguous, or needs sharpening before research, planning, or implementation begins — or when the user explicitly asks to improve, rewrite, or reverse-prompt their ask.
+metadata:
+  category: workflow
+  audience: general-coding-agent
+  maturity: stable
+---
+```
+
+### Validation checklist
+
+The validator script (`scripts/validate-skill-library.mjs`) checks that:
+
+- [ ] `name` matches the directory name (e.g., `skills/my-skill/SKILL.md` → `name: my-skill`)
+- [ ] `name` contains only alphanumeric, hyphens, underscores (no spaces or special characters)
+- [ ] `description` exists and is at least 20 characters long
+- [ ] `description` includes a trigger phrase ("when", "use this", or "use when")
+- [ ] Frontmatter is properly delimited with `---` markers
+- [ ] No syntax errors in YAML parsing
+
+### Troubleshooting frontmatter issues
+
+| Issue | Cause | Fix |
+|-------|-------|-----|
+| "frontmatter name does not match directory" | Name in `---` block doesn't match folder | Rename the `name:` field to match the skill directory name |
+| "name contains invalid characters" | Spaces, uppercase, or special characters in name | Use lowercase alphanumeric, hyphens, underscores only (e.g., `my-skill-v2`) |
+| "description is too short" | Description under 20 characters | Expand description to at least 20 chars and include concrete trigger phrases |
+| "missing frontmatter key name" or "description" | Frontmatter block incomplete | Add both `name:` and `description:` keys between `---` delimiters |
+| "missing frontmatter block" | No `---` delimiters in SKILL.md | Add `---` at the top of the file and close the frontmatter with another `---` |
+| "unterminated frontmatter block" | Only one `---` marker or no closing `---` | Ensure frontmatter is wrapped: `---` on first line and `---` after the last field |
+
+### Running the validator
+
+To validate a skill's frontmatter and structure:
+
+```bash
+node skills/skill-authoring/scripts/validate-skill-library.mjs [SKILL.md paths...]
+```
+
+Validate all skills:
+```bash
+node skills/skill-authoring/scripts/validate-skill-library.mjs
+```
+
+The validator will report specific issues and how to fix them.
+
 ## Do not use this skill when
 
 - The guidance belongs in global instructions or a repository-wide policy file instead of a reusable skill.
