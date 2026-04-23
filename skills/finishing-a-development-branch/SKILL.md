@@ -59,7 +59,9 @@ Then:
 3. If tests fail → fix and retest, report the failure, do not proceed to options
 4. If tests pass → proceed to Four Options section
 
-## Workflow: Four Integration Options
+## Workflow
+
+### Four Integration Options
 
 ### Verify tests pass first
 
@@ -115,6 +117,8 @@ After presenting and executing an option, validate:
 - **Option 4 validation:** User typed "discard"; branch is force-deleted; worktree is removed; no residual files
 
 ## Examples
+
+Each example below walks through the full decision boundary: verify tests, check worktree cleanliness, present all four options, execute the chosen one.
 
 ### Example 1: Merge locally (Option 1)
 
@@ -257,3 +261,9 @@ Worktree cleaned up; branch removed
 **Activates:** When implementation is complete and tests pass; agent is deciding final branch fate.
 
 **Deactivates:** After user confirms one of four options and execution is complete (merge verified, PR created, branch kept, or discarded).
+
+## Reference files
+
+- [`git-worktrees`](../git-worktrees/SKILL.md) — worktree lifecycle management and cleanup via `mr_worktree_remove`
+- [`worktrunk`](../worktrunk/SKILL.md) — `wt merge` for Option 1 when Worktrunk is installed
+- [`review-comment-resolution`](../review-comment-resolution/SKILL.md) — handling review feedback cycles after Option 2 (PR creation)

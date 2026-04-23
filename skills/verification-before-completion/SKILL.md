@@ -44,14 +44,14 @@ metadata:
 | "The build failed; here's why" + no rebuild | ✅ Yes | Rebuild, read full error output |
 | "This PR is ready" (untested) | ✅ Yes | Run tests, linting, build before claiming readiness |
 
-## Inputs to Gather
+## Inputs to gather
 
 1. **Claim**: What are you about to claim? (e.g., "tests pass", "bug is fixed", "build works")
 2. **Command**: What single command proves or disproves this claim?
 3. **Success Criteria**: What does success look like in the output? (exit code 0, "0 failures", "All tests passed", etc.)
 4. **Scope**: Which tests, files, or targets? (e.g., "all tests" vs. "one unit test" vs. "integration suite")
 
-## First Move
+## First move
 
 Before proceeding:
 
@@ -118,6 +118,8 @@ After verification:
 - [ ] If verification failed, I understand why and what to fix next
 
 ## Examples
+
+Each example below shows the full Gate in practice — state the claim, identify the command, run it fresh, and verify the output.
 
 ### Example 1: "Tests Pass" Claim
 
@@ -221,8 +223,13 @@ PASS  src/parser.test.ts
 
 ---
 
-## Reference
+## Notes
 
 - This skill applies to all verification scenarios: test passes, build succeeds, lint clean, bug fixed, command execution, agent completion.
 - Do not skip the Gate. The Gate is the entire point of this skill.
 - If you are uncertain, state the uncertainty as part of your verification result.
+
+## Reference files
+
+- [`systematic-debugging`](../systematic-debugging/SKILL.md) — use when root cause investigation is needed before verifying a fix
+- [`test-driven-development`](../test-driven-development/SKILL.md) — use when writing tests to prove behavior before claiming correctness

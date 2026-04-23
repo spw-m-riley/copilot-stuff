@@ -5,6 +5,7 @@ metadata:
   category: authoring
   audience: general-coding-agent
   maturity: draft
+  kind: task
   reader_testing: required
 ---
 
@@ -146,3 +147,15 @@ The skill workflow is complete when:
 - [ ] Feedback has been incorporated and the document is finalized.
 - [ ] The document is published or merged into the repository.
 - [ ] Related documentation is updated with cross-references to the new or updated document.
+
+## Examples
+
+- "Write a README for my new CLI tool for first-time users" → gather audience, scope, and constraints (Stage 1), draft structure (Stage 2), share with a first-time user for feedback (Stage 3).
+- "Improve our API reference so developers can get started in 5 minutes" → identify the developer audience goal, reorganize around their entry points, validate with a developer new to the API.
+- "Refactor our runbook so on-call engineers can follow it under pressure" → capture current workflows from operators (Stage 1), restructure around tasks not systems (Stage 2), test with an on-call engineer who did not write it (Stage 3).
+
+## Reference files
+
+- [`references/stage-1-context-gathering.md`](references/stage-1-context-gathering.md) — context gathering checklist and detailed guidance for Stage 1
+- [`references/stage-2-refinement-structure.md`](references/stage-2-refinement-structure.md) — guidance on organizing content and drafting sections in Stage 2
+- [`references/stage-3-reader-testing.md`](references/stage-3-reader-testing.md) — guidance on planning reader sessions and prioritizing changes in Stage 3

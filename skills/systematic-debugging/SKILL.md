@@ -155,6 +155,8 @@ Debugging is complete when:
 
 ## Examples
 
+Select the investigation pattern that best matches the current failure mode:
+
 ### Example 1: Test failure with stack trace
 
 **Symptom:** Unit test fails with `AssertionError: expected 42 but got 0`

@@ -1,22 +1,29 @@
 ---
-description: |-
-    Verify supply chain integrity for AI agent plugins, tools, and dependencies. Use this skill when:
-    - Generating SHA-256 integrity manifests for agent plugins or tool packages
-    - Verifying that installed plugins match their published manifests
-    - Detecting tampered, modified, or untracked files in agent tool directories
-    - Auditing dependency pinning and version policies for agent components
-    - Building provenance chains for agent plugin promotion (dev → staging → production)
-    - Any request like "verify plugin integrity", "generate manifest", "check supply chain", or "sign this plugin"
-metadata:
-    github-path: skills/agent-supply-chain
-    github-ref: refs/heads/main
-    github-repo: https://github.com/github/awesome-copilot
-    github-tree-sha: 7c9231a915167858a34fb12cb23727bc433d3671
 name: agent-supply-chain
+description: "Use this skill when generating SHA-256 integrity manifests for agent plugins, verifying that installed plugins match their manifests, detecting tampered files, auditing dependency pinning, or building provenance chains for plugin promotion."
+metadata:
+  category: workflow
+  audience: general-coding-agent
+  maturity: stable
+  kind: reference
 ---
 # Agent Supply Chain Integrity
 
 Generate and verify integrity manifests for AI agent plugins and tools. Detect tampering, enforce version pinning, and establish supply chain provenance.
+
+## Use this skill when
+
+- Generating SHA-256 integrity manifests for agent plugins or tool packages before promotion
+- Verifying that installed plugins match their published manifests
+- Detecting tampered, modified, or untracked files in agent tool directories
+- Auditing dependency pinning and version policies for agent components
+- Building provenance chains for agent plugin promotion (dev → staging → production)
+- Any request like "verify plugin integrity", "generate manifest", "check supply chain", or "sign this plugin"
+
+## Do not use this skill when
+
+- The plugin is a simple local script with no distributable files or production promotion path.
+- You need runtime governance or policy controls for agent tool calls during execution; use `agent-governance` instead.
 
 ## Overview
 
@@ -29,14 +36,6 @@ Later: Plugin Directory → Re-Hash Files → Compare Against INTEGRITY.json
                                                     ↓
                                           Match? VERIFIED : TAMPERED
 ```
-
-## When to Use
-
-- Before promoting a plugin from development to production
-- During code review of plugin PRs
-- As a CI step to verify no files were modified after review
-- When auditing third-party agent tools or MCP servers
-- Building a plugin marketplace with integrity requirements
 
 ---
 
@@ -335,9 +334,22 @@ Add to your GitHub Actions workflow:
 
 ---
 
-## Related Resources
+## Validation
 
-- [OpenSSF SLSA](https://slsa.dev/) — Supply-chain Levels for Software Artifacts
-- [npm Provenance](https://docs.npmjs.com/generating-provenance-statements) — Sigstore-based package provenance
-- [Agent Governance Toolkit](https://github.com/microsoft/agent-governance-toolkit) — Includes integrity verification and plugin signing
-- [OWASP ASI-09: Supply Chain Integrity](https://owasp.org/www-project-agentic-ai-threats/)
+After implementing supply chain controls, verify end-to-end integrity:
+
+- Run `generate_manifest()` on a fresh plugin directory and confirm `INTEGRITY.json` is written with the correct file count.
+- Modify a tracked file and re-run `verify_manifest()` — confirm the output includes `MODIFIED: <file>`.
+- Add an untracked file and re-verify — confirm the output includes `UNTRACKED: <file>`.
+- Run `promotion_check()` before any production promotion and confirm all checks (integrity, required files, pinned deps) pass.
+- Run the CI verification step in `references/ci-integration.md` and confirm the workflow exits 0 on a clean plugin.
+
+## Examples
+
+- "Lock in the state of `my-agent-plugin/` after code review" → run `generate_manifest("my-agent-plugin/")`, commit `INTEGRITY.json` to the PR.
+- "Verify that the deployed plugin hasn't been tampered with since the last review" → run `verify_manifest("my-agent-plugin/")` and check for MODIFIED or UNTRACKED entries.
+- "Gate our plugin release pipeline on integrity" → use `promotion_check()` as a pre-deploy step; fail the pipeline if any check does not pass.
+
+## Reference files
+
+- [`references/ci-integration.md`](references/ci-integration.md) — GitHub Actions workflow template for manifest verification in CI
