@@ -56,11 +56,14 @@ Every skill requires a YAML frontmatter block at the start of `SKILL.md`. This b
 
 ### Optional fields
 
-**metadata** (object, optional but recommended)
+**metadata** (object, recommended)
 - **category** (string): One of `authoring`, `ci`, `migrations`, `typescript`, `version-control`, `workflow`, etc.
 - **audience** (string): `general-coding-agent` or a specialized audience
 - **maturity** (string): `stable`, `draft`, or other lifecycle stage
-- **kind** (string): `reference` or `task` (describes the skill type)
+- **kind** (string, **required for draft skills**): `task` for multi-step playbooks; `reference` for lookup-heavy guidance. Must be set before a skill can be promoted from `draft` to `stable`.
+- **reader_testing** (string, documented extension): `required` when reader-testing is a mandatory stage. See `references/metadata-contract.md` for the full list of allowed optional extensions.
+
+**Do not add** `license`, `compatibility`, `author`, `inspired-by`, `argument-hint`, or any other top-level keys beyond `name`, `description`, and `metadata`. Do not add upstream provenance keys (`github-path`, `github-ref`, `github-repo`, `github-tree-sha`, `version`, `enhancements`) inside the `metadata` block. See `references/metadata-contract.md` for the full contract, rationale, and exception policy.
 
 ### Frontmatter example
 
@@ -83,6 +86,9 @@ The validator script (`scripts/validate-skill-library.mjs`) checks that:
 - [ ] `name` contains only alphanumeric, hyphens, underscores (no spaces or special characters)
 - [ ] `description` exists and is at least 20 characters long
 - [ ] `description` includes a trigger phrase ("when", "use this", or "use when")
+- [ ] No forbidden top-level keys (`argument-hint`, `compatibility`, `license`, `author`, `inspired-by`)
+- [ ] No forbidden provenance keys in `metadata` (`github-path`, `github-ref`, `github-repo`, `github-tree-sha`, `author`, `inspired-by`, `version`, `enhancements`)
+- [ ] `metadata.kind` is set to `task` or `reference` for all `draft` skills
 - [ ] Frontmatter is properly delimited with `---` markers
 - [ ] No syntax errors in YAML parsing
 
@@ -96,6 +102,9 @@ The validator script (`scripts/validate-skill-library.mjs`) checks that:
 | "missing frontmatter key name" or "description" | Frontmatter block incomplete | Add both `name:` and `description:` keys between `---` delimiters |
 | "missing frontmatter block" | No `---` delimiters in SKILL.md | Add `---` at the top of the file and close the frontmatter with another `---` |
 | "unterminated frontmatter block" | Only one `---` marker or no closing `---` | Ensure frontmatter is wrapped: `---` on first line and `---` after the last field |
+| "forbidden top-level frontmatter key" | Extra keys like `license`, `argument-hint` at top level | Move content to `metadata`, `## Inputs to gather`, or `references/`; see `metadata-contract.md` |
+| "forbidden provenance key metadata.*" | Upstream `github-*` or attribution fields inside `metadata` | Remove provenance fields; preserve attribution in a commit message or `PROVENANCE.md` |
+| "metadata.kind is required for draft skills" | New skill missing `kind` field | Add `kind: task` or `kind: reference` under `metadata` |
 
 ### Running the validator
 
@@ -210,4 +219,6 @@ The validator will report specific issues and how to fix them.
 - `assets/skill-template.md` - starter template for a new `SKILL.md`
 - `references/layering-guide.md` - where guidance belongs across instructions, skills, and agents
 - `references/checklist.md` - final authoring and validation checklist
+- `references/metadata-contract.md` - canonical frontmatter contract: required fields, allowed optional extensions, forbidden keys, and exception policy
+- `references/import-rewrite-contract.md` - shared target shape for rewriting upstream skills into this local library
 - `scripts/validate-skill-library.mjs` - local validator for skill library metadata, examples, and support-file references

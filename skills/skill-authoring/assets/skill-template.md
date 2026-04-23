@@ -81,3 +81,5 @@ Use this skill when ...
 Use `metadata.kind: task` for multi-step playbooks with explicit outputs and validation.
 
 Use `metadata.kind: reference` for lookup-heavy guidance where the main value is navigation, conventions, or examples.
+
+`metadata.kind` is **required** for all `draft` skills and must be set before promotion to `stable`. See `skills/skill-authoring/references/metadata-contract.md` for the full frontmatter contract, including forbidden top-level keys and forbidden provenance fields.
