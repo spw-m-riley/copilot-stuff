@@ -29,6 +29,22 @@ const TASK_ONLY_HEADINGS = new Set([
 
 const VALID_KINDS = new Set(["task", "reference"]);
 
+// Metadata contract: only these top-level keys are permitted in skill frontmatter.
+// See skills/skill-authoring/references/metadata-contract.md for rationale.
+const ALLOWED_TOP_LEVEL_KEYS = new Set(["name", "description", "metadata"]);
+
+// Upstream provenance keys that must not appear inside the metadata block.
+const FORBIDDEN_METADATA_KEYS = new Set([
+  "github-path",
+  "github-ref",
+  "github-repo",
+  "github-tree-sha",
+  "author",
+  "inspired-by",
+  "version",
+  "enhancements",
+]);
+
 function normalize(text) {
   return text.replace(/\r\n?/g, "\n");
 }
@@ -343,7 +359,29 @@ async function validateSkillContent(filePath, frontmatter, body) {
     }
   }
 
+  // Metadata contract: forbidden top-level keys.
+  // See skills/skill-authoring/references/metadata-contract.md for the full contract.
+  for (const key of Object.keys(frontmatter)) {
+    if (!ALLOWED_TOP_LEVEL_KEYS.has(key)) {
+      errors.push(
+        `forbidden top-level frontmatter key: ${key}; allowed keys are name, description, metadata — see skills/skill-authoring/references/metadata-contract.md`,
+      );
+    }
+  }
+
   const metadata = frontmatter.metadata;
+
+  // Metadata contract: forbidden provenance keys inside metadata.
+  if (metadata && typeof metadata === "object") {
+    for (const key of Object.keys(metadata)) {
+      if (FORBIDDEN_METADATA_KEYS.has(key)) {
+        errors.push(
+          `forbidden provenance key metadata.${key}; remove upstream attribution fields from frontmatter — see skills/skill-authoring/references/metadata-contract.md`,
+        );
+      }
+    }
+  }
+
   if (metadata && typeof metadata === "object" && "kind" in metadata) {
     const kind = metadata.kind;
     if (!VALID_KINDS.has(kind)) {
@@ -351,6 +389,19 @@ async function validateSkillContent(filePath, frontmatter, body) {
         `invalid metadata.kind ${kind || "<missing>"}; expected one of task, reference`,
       );
     }
+  }
+
+  // Metadata contract: metadata.kind is required for draft skills.
+  // New skills must declare their kind before promotion to stable.
+  if (
+    metadata &&
+    typeof metadata === "object" &&
+    metadata.maturity === "draft" &&
+    !("kind" in metadata)
+  ) {
+    errors.push(
+      'metadata.kind is required for draft skills; set to "task" or "reference" — see skills/skill-authoring/references/metadata-contract.md',
+    );
   }
 
   const { searchableBody, errors: fenceErrors } = stripFencedCodeBlocks(body);
