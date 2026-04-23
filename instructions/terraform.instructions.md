@@ -2,20 +2,39 @@
 applyTo: "**/*.tf,**/*.tfvars,**/*.hcl"
 ---
 
-Prefer existing modules, naming conventions, locals, and variable patterns before introducing new Terraform structure.
-Keep plans predictable: avoid unnecessary churn in resource arguments, ordering, and computed values.
-Prefer explicit inputs, outputs, and provider configuration over hidden coupling between modules or environments.
-Reuse the repository's existing Terraform tooling and validation flow rather than introducing parallel wrappers or ad hoc scripts.
-Keep resource blocks, dynamic expressions, and conditionals readable; optimize for maintainability over clever compression.
-Be deliberate with `lifecycle`, `depends_on`, and `ignore_changes` so behavior stays explainable during plan and apply.
-Never commit Terraform state, credentials, or other sensitive artifacts; keep sensitive values out of state when the repository's established patterns allow it.
-Mark sensitive variables and outputs as `sensitive = true` where appropriate, and keep variable and output contracts explicit with clear `description` and `type` fields.
-Prefer least-privilege access patterns and encryption defaults for infrastructure that handles sensitive data or crosses trust boundaries.
-Prefer small, well-bounded modules that group related resources; avoid extra abstraction layers that obscure ownership, inputs, or plan intent.
-Use data sources to look up external or shared infrastructure, but prefer direct references or module outputs for resources managed in the same stack.
-Run the repository's standard Terraform formatting, validation, lint, and test commands before considering a change complete.
-When the repository already has Terraform test or documentation patterns, extend those existing `.tftest.hcl` and doc surfaces instead of inventing ad hoc replacements.
-Document non-obvious infrastructure decisions, module assumptions, and operational constraints close to the Terraform they affect or in the repository's standard docs surface.
+# Terraform guidance
+
+## Purpose and Scope
+
+- Applies to `**/*.tf`, `**/*.tfvars`, and `**/*.hcl` files in this workspace.
+- Use these rules for predictable Terraform changes that stay aligned with existing module patterns, validation flow, and infrastructure safety constraints.
+
+## Core Guidance
+
+- Prefer existing modules, naming conventions, locals, and variable patterns before introducing new Terraform structure.
+- Keep plans predictable: avoid unnecessary churn in resource arguments, ordering, and computed values.
+- Prefer explicit inputs, outputs, and provider configuration over hidden coupling between modules or environments.
+- Reuse the repository's existing Terraform tooling and validation flow rather than introducing parallel wrappers or ad hoc scripts.
+- Keep resource blocks, dynamic expressions, and conditionals readable; optimize for maintainability over clever compression.
+- Be deliberate with `lifecycle`, `depends_on`, and `ignore_changes` so behavior stays explainable during plan and apply.
+- Never commit Terraform state, credentials, or other sensitive artifacts; keep sensitive values out of state when the repository's established patterns allow it.
+- Mark sensitive variables and outputs as `sensitive = true` where appropriate, and keep variable and output contracts explicit with clear `description` and `type` fields.
+- Prefer least-privilege access patterns and encryption defaults for infrastructure that handles sensitive data or crosses trust boundaries.
+- Prefer small, well-bounded modules that group related resources; avoid extra abstraction layers that obscure ownership, inputs, or plan intent.
+- Use data sources to look up external or shared infrastructure, but prefer direct references or module outputs for resources managed in the same stack.
+- When the repository already has Terraform test or documentation patterns, extend those existing `.tftest.hcl` and doc surfaces instead of inventing ad hoc replacements.
+- Document non-obvious infrastructure decisions, module assumptions, and operational constraints close to the Terraform they affect or in the repository's standard docs surface.
+
+## Validation Expectations
+
+- Run the repository's standard Terraform formatting, validation, lint, and test commands for any touched stack before considering the change complete.
+- Verify provider versions and current schema behavior when acting on attribute-validity or deprecation guidance.
+
+## Maintenance Notes
+
+- Keep `## Learned Rules` as the final section in the file; do not add new sections after it.
+- Append new learned rules without renumbering existing entries; numbering gaps can reflect archived or superseded rules.
+- Use `[TERRAFORM]` for Terraform-specific learned rules in this file and keep broader workflow or repository-policy guidance in the root instructions.
 
 ## Learned Rules
 
