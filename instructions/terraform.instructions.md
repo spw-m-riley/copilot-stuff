@@ -1,4 +1,5 @@
 ---
+description: 'Guidance for Terraform and HCL files in this workspace'
 applyTo: "**/*.tf,**/*.tfvars,**/*.hcl"
 ---
 

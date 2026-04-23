@@ -1,4 +1,5 @@
 ---
+description: 'Guidance for TypeScript source files in this workspace'
 applyTo: "**/*.ts,**/*.tsx"
 ---
 

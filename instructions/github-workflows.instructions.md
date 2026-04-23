@@ -1,4 +1,5 @@
 ---
+description: 'Guidance for GitHub Actions workflow files in this workspace'
 applyTo: "**/.github/workflows/*.{yml,yaml}"
 ---
 
