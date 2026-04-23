@@ -74,7 +74,7 @@ See [discoverability-filter.md](references/discoverability-filter.md) for deeper
 | "Enforce a linter or rule" | ✗ | Use tsconfig, eslint config, tooling setup (not instructions) |
 | "Change the actual code" | ✗ | Use a coding or debugging skill |
 
-## Inputs to Gather
+## Inputs to gather
 
 Before starting, clarify:
 
@@ -94,7 +94,7 @@ Before starting, clarify:
    - Does the repository have security, signing, or deployment gates that must be preserved?
    - Are there previous decisions documented elsewhere that should not be repeated?
 
-## First Move
+## First move
 
 1. **Audit current state:**
    - List all existing instruction files and their last update date
@@ -186,6 +186,8 @@ After writing or updating an instruction file:
 
 ## Examples
 
+The examples below each pass the 3-Question Check: non-discoverable, accurate, and materially useful to an agent.
+
 ### Example 1: Adding a TypeScript-specific instruction
 
 **Scenario:** A TypeScript project repeatedly sees agents use `any` in main code, even though the repo has strict `noImplicitAny` and a clear pattern of using `unknown` at boundaries.
@@ -222,8 +224,7 @@ After writing or updating an instruction file:
 
 See [instruction-examples.md](references/instruction-examples.md) for more worked examples.
 
-## Next Steps
+## Reference files
 
-- Reference [discoverability-filter.md](references/discoverability-filter.md) for a deeper dive on the filter concept and how to evaluate edge cases
-- Reference [instruction-examples.md](references/instruction-examples.md) for real examples of good vs. bad instructions
-- Use the Quality Gate as a checklist before considering an instruction file complete
+- [`references/discoverability-filter.md`](references/discoverability-filter.md) — deeper guidance and worked examples for applying the discoverability filter
+- [`references/instruction-examples.md`](references/instruction-examples.md) — real examples of good vs. bad instruction lines across several repositories

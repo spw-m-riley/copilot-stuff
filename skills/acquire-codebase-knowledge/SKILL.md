@@ -1,28 +1,35 @@
 ---
-argument-hint: 'Optional: specific area to focus on, e.g. "architecture only", "testing and concerns"'
-compatibility: Cross-platform. Requires Python 3.8+ and git. Run scripts/scan.py from the target project root.
-description: Use this skill when the user explicitly asks to map, document, or onboard into an existing codebase. Trigger for prompts like "map this codebase", "document this architecture", "onboard me to this repo", or "create codebase docs". Do not trigger for routine feature implementation, bug fixes, or narrow code edits unless the user asks for repository-level discovery.
-license: MIT
-metadata:
-    enhancements:
-        - Multi-language manifest detection (25+ languages supported)
-        - CI/CD pipeline detection (10+ platforms)
-        - Container & orchestration detection
-        - Code metrics by language
-        - Security & compliance config detection
-        - Performance testing markers
-    github-path: skills/acquire-codebase-knowledge
-    github-ref: refs/heads/main
-    github-repo: https://github.com/github/awesome-copilot
-    github-tree-sha: 21f240c8fa6898781ca7154e282ec8c79e420c20
-    version: "1.3"
 name: acquire-codebase-knowledge
+description: "Use this skill when the user explicitly asks to map, document, or onboard into an existing codebase. Trigger for prompts like \"map this codebase\", \"document this architecture\", \"onboard me to this repo\", or \"create codebase docs\". Do not trigger for routine feature implementation, bug fixes, or narrow code edits unless the user asks for repository-level discovery."
+metadata:
+  category: workflow
+  audience: general-coding-agent
+  maturity: stable
+  kind: task
 ---
 # Acquire Codebase Knowledge
 
 Produces seven populated documents in `docs/codebase/` covering everything needed to work effectively on the project. Only document what is verifiable from files or terminal output — never infer or assume.
 
-## Output Contract (Required)
+## Use this skill when
+
+- The user explicitly asks to map, document, or onboard into an existing codebase.
+- Prompts include: "map this codebase", "document this architecture", "onboard me to this repo", or "create codebase docs".
+
+## Do not use this skill when
+
+- The task is a routine feature implementation, bug fix, or narrow code edit without a repository-level discovery request.
+- The user wants a quick file summary — just read the file directly.
+
+## Inputs to gather
+
+- **Optional**: specific area to focus on, e.g. "architecture only" or "testing and concerns". Default to all seven areas.
+
+## First move
+
+Run `scripts/scan.py` from the project root first, then read intent documents (`README.md`, `ARCHITECTURE.md`, top-level docs) before opening source files.
+
+## Outputs
 
 Before finishing, all of the following must be true:
 
@@ -155,7 +162,20 @@ Use these sections during Phase 2 to inform investigation questions and identify
 
 ---
 
-## Bundled Assets
+## Validation
+
+- Confirm `docs/codebase/` contains all seven required files after Phase 3 completes.
+- Spot-check two or three claims per document against the source files cited in the evidence list.
+- Review the final `[ASK USER]` list — every item should be a real intent ambiguity, not a missing terminal command.
+- Run `scripts/scan.py` again on the target repo and confirm the output is consistent with `STACK.md`.
+
+## Examples
+
+- "Map this repo for a new developer" → run Phase 1 scan, produce all seven `docs/codebase/` files with evidence lists and a numbered `[ASK USER]` block.
+- "Document only the architecture and testing layers" → pass `"architecture and testing"` as the focus area; produce only `ARCHITECTURE.md` and `TESTING.md` (use Focus Area Mode).
+- "Onboard me to this TypeScript monorepo" → run scan.py, read workspace manifests and CI config, then produce `STACK.md` calling out each package's runtime and toolchain separately.
+
+## Reference files
 
 | Asset | When to load |
 |-------|-------------|

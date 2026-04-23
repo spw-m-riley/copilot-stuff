@@ -63,7 +63,7 @@ Before starting, clarify:
 
 The test failure is your proof that the feature does not exist yet. This is the RED phase.
 
-## Red-Green-Refactor Cycle
+## Workflow
 
 1. **RED:** Write one minimal failing test for the specific behavior. Confirm it fails for the right reason (feature missing, not syntax error).
    - One assertion or one logical outcome per test when possible.

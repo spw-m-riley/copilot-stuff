@@ -1,23 +1,30 @@
 ---
-description: |-
-    Patterns and techniques for adding governance, safety, and trust controls to AI agent systems. Use this skill when:
-    - Building AI agents that call external tools (APIs, databases, file systems)
-    - Implementing policy-based access controls for agent tool usage
-    - Adding semantic intent classification to detect dangerous prompts
-    - Creating trust scoring systems for multi-agent workflows
-    - Building audit trails for agent actions and decisions
-    - Enforcing rate limits, content filters, or tool restrictions on agents
-    - Working with any agent framework (PydanticAI, CrewAI, OpenAI Agents, LangChain, AutoGen)
-metadata:
-    github-path: skills/agent-governance
-    github-ref: refs/heads/main
-    github-repo: https://github.com/github/awesome-copilot
-    github-tree-sha: b76e562c86d4c19ecaa1b857967399ff239147a9
 name: agent-governance
+description: "Use this skill when building AI agents that call external tools, implementing policy-based access controls, adding semantic intent classification, creating trust scoring systems, building audit trails, or enforcing rate limits and content filters on agents."
+metadata:
+  category: workflow
+  audience: general-coding-agent
+  maturity: stable
+  kind: reference
 ---
 # Agent Governance Patterns
 
 Patterns for adding safety, trust, and policy enforcement to AI agent systems.
+
+## Use this skill when
+
+- Building AI agents that call external tools (APIs, databases, file systems)
+- Implementing policy-based access controls for agent tool usage
+- Adding semantic intent classification to detect dangerous prompts
+- Creating trust scoring systems for multi-agent workflows
+- Building audit trails for agent actions and decisions
+- Enforcing rate limits, content filters, or tool restrictions on agents
+- Working with any agent framework (PydanticAI, CrewAI, OpenAI Agents, LangChain, AutoGen)
+
+## Do not use this skill when
+
+- The agent runs in a fully trusted environment with no external tool access and no compliance requirements.
+- You only need static code analysis or security review of agent source code; this skill provides runtime governance patterns, not static audit tools.
 
 ## Overview
 
@@ -28,13 +35,6 @@ User Request → Intent Classification → Policy Check → Tool Execution → A
                      ↓                      ↓               ↓
               Threat Detection         Allow/Deny      Trust Update
 ```
-
-## When to Use
-
-- **Agents with tool access**: Any agent that calls external tools (APIs, databases, shell commands)
-- **Multi-agent systems**: Agents delegating to other agents need trust boundaries
-- **Production deployments**: Compliance, audit, and safety requirements
-- **Sensitive operations**: Financial transactions, data access, infrastructure management
 
 ---
 
@@ -540,23 +540,24 @@ Match governance strictness to risk level:
 
 ---
 
-## Quick Start Checklist
+## Validation
+
+Apply the implementation checklist after wiring governance into an agent:
+
+- Blocked tools raise `PermissionError` with the correct policy name
+- Content filters catch the blocked patterns before tool execution occurs
+- Rate limit counts calls correctly and denies at the configured threshold
+- Audit trail captures allowed, denied, and error events for every tool call
+- Policy composition uses most-restrictive-wins semantics when layers are combined
 
 ```markdown
-## Agent Governance Implementation Checklist
-
-### Setup
+### Implementation checklist
 - [ ] Define governance policy (allowed tools, blocked patterns, rate limits)
 - [ ] Choose governance level (open/standard/strict/locked)
-- [ ] Set up audit trail storage
-
-### Implementation
 - [ ] Add @govern decorator to all tool functions
 - [ ] Add intent classification to user input processing
 - [ ] Implement trust scoring for multi-agent interactions
 - [ ] Wire up audit trail export
-
-### Validation
 - [ ] Test that blocked tools are properly denied
 - [ ] Test that content filters catch sensitive patterns
 - [ ] Test rate limiting behavior
@@ -564,10 +565,16 @@ Match governance strictness to risk level:
 - [ ] Test policy composition (most-restrictive-wins)
 ```
 
----
+## Examples
 
-## Related Resources
+Select the governance controls appropriate for the risk level of the agent:
 
-- [Agent Governance Toolkit](https://github.com/microsoft/agent-governance-toolkit) — Full governance framework
-- [AgentMesh Integrations](https://github.com/microsoft/agent-governance-toolkit/tree/main/packages/agentmesh-integrations) — Framework-specific packages
-- [OWASP Top 10 for LLM Applications](https://owasp.org/www-project-top-10-for-large-language-model-applications/)
+- **Internal dev agent** — audit-only mode, no restrictions: create an `AuditTrail` and log events without blocking any calls.
+- **Standard production agent** — allowlist + content filters + rate limiting: use `GovernancePolicy` with `allowed_tools`, `blocked_patterns`, and `max_calls_per_request`.
+- **Compliance-critical agent** — all controls + human approval: add `require_human_approval` for sensitive tool operations such as `send_email` or `write_report`.
+
+See Patterns 1–5 in this document for full Python code for each governance component, and Pattern 6 for framework-specific wiring.
+
+## Reference files
+
+- [`references/framework-integration.md`](references/framework-integration.md) — framework-specific integration notes for PydanticAI, CrewAI, OpenAI Agents SDK, LangChain, and AutoGen
