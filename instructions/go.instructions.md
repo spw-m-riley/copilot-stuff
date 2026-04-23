@@ -1,4 +1,5 @@
 ---
+description: 'Guidance for Go source files in this workspace'
 applyTo: "**/*.go"
 ---
 

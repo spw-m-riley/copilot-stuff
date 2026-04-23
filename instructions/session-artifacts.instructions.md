@@ -1,4 +1,5 @@
 ---
+description: 'Guidance for session-state markdown artifacts in this workspace'
 applyTo: "session-state/**/*.md"
 ---
 

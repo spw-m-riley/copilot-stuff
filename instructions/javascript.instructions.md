@@ -1,4 +1,5 @@
 ---
+description: 'Guidance for JavaScript files in this workspace'
 applyTo: "**/*.js,**/*.mjs,**/*.cjs"
 ---
 

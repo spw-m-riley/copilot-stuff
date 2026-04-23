@@ -79,8 +79,8 @@ See [discoverability-filter.md](references/discoverability-filter.md) for deeper
 Before starting, clarify:
 
 1. **Scope:** Which instruction files are in scope?
-   - `.github/copilot-instructions.md` (root / global guidance)
-   - `instructions/*.instructions.md` (file-type specific: typescript.instructions.md, go.instructions.md, etc.)
+   - `copilot-instructions.md` in `~/.copilot`, or `.github/copilot-instructions.md` in other repos (root / global guidance)
+   - `instructions/*.instructions.md` in `~/.copilot`, or `.github/instructions/*.instructions.md` in other repos (file-type specific guides; keep both `description` and `applyTo` in YAML frontmatter)
    - `AGENTS.md` (agent roster and routing)
    - Per-project files (if this is a multi-project workspace)
 
@@ -124,7 +124,7 @@ Before starting, clarify:
 
 ### Phase 3: Write or Update
 - Create new file or update existing file
-- Follow the file-type structure (YAML frontmatter, sections, learned rules)
+- Follow the file-type structure (YAML frontmatter with both `description` and `applyTo`, sections, learned rules)
 - Use concrete examples from the repository (actual file names, commands, configs)
 - Link to reference docs where appropriate
 
@@ -170,6 +170,7 @@ For each line in the instruction file:
 After writing or updating an instruction file:
 
 1. **Checklist:**
+   - [ ] Every `*.instructions.md` file in scope keeps both `description` and `applyTo` in YAML frontmatter
    - [ ] Each line passes the 3-Question Check (non-discoverable, accurate, materially useful)
    - [ ] No duplicates with existing documentation (README, ADRs, config files)
    - [ ] All file paths and command examples are correct (spot-check in the repo)

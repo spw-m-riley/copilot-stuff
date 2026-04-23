@@ -1,4 +1,5 @@
 ---
+description: 'Guidance for Lua and Neovim-oriented files in this workspace'
 applyTo: "**/*.lua"
 ---
 

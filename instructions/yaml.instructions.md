@@ -1,4 +1,5 @@
 ---
+description: 'Guidance for YAML files in this workspace'
 applyTo: "**/*.{yml,yaml}"
 ---
 

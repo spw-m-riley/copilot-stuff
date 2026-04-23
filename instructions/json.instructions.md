@@ -1,4 +1,5 @@
 ---
+description: 'Guidance for JSON and JSONC files in this workspace'
 applyTo: "**/*.json,**/*.jsonc,**/*.code-workspace"
 ---
 
