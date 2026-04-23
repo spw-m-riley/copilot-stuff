@@ -183,3 +183,4 @@ Some rules have been superseded or are no longer applicable. See `copilot-instru
 // Applies the Lore-first hierarchy established in Rule 59; see Rule 65 for historical context
 65. [OTHER] Treat rule 1 as superseded historical context rather than an active reusable instruction; one-off repo-state clarifications belong in the task context unless they generalize beyond the immediate repository state
 // Clarifies the durable-rule threshold introduced in Rule 64; see Rule 59 for the Lore/Coherence hierarchy
+66. [GIT] Never run `git push` in parallel with a merge, cherry-pick, or other branch-promotion step that the push depends on; complete the promotion first, verify local `main` points at the intended commit, then push - this session batched merge and push together and briefly published the pre-merge tip instead of the intended promoted commit
