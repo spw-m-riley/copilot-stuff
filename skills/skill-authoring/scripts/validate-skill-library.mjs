@@ -20,6 +20,13 @@ const REQUIRED_HEADINGS = [
   "## Reference files",
 ];
 
+// Headings required only for task skills (omitted in reference skills per the import-rewrite-contract).
+const TASK_ONLY_HEADINGS = new Set([
+  "## Inputs to gather",
+  "## First move",
+  "## Workflow",
+]);
+
 const VALID_KINDS = new Set(["task", "reference"]);
 
 function normalize(text) {
@@ -349,9 +356,13 @@ async function validateSkillContent(filePath, frontmatter, body) {
   const { searchableBody, errors: fenceErrors } = stripFencedCodeBlocks(body);
   errors.push(...fenceErrors);
 
+  const isReferenceSkill = metadata?.kind === "reference";
   const lines = searchableBody.split("\n");
   let previousIndex = -1;
   for (const heading of REQUIRED_HEADINGS) {
+    if (isReferenceSkill && TASK_ONLY_HEADINGS.has(heading)) {
+      continue;
+    }
     const index = findHeadingLineIndex(lines, heading);
     if (index === -1) {
       errors.push(`missing heading ${heading}`);
