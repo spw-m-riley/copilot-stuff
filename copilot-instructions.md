@@ -36,7 +36,7 @@ This file will contain a growing ruleset that improves over time. **At session s
 1. When the user corrects you or you make a mistake, **immediately append a new rule** to the appropriate `## Learned Rules` section before you consider the task complete.
 2. Rules are numbered sequentially and written as clear, imperative instructions.
 3. Format: `N. [CATEGORY] Never/Always do X - because Y`
-4. Categories: `[TYPESCRIPT]`, `[ACTIONS]`, `[GO]`, `[LUA]`, `[NEOVIM]`, `[GIT]`, `[OTHER]`
+4. Categories: `[TYPESCRIPT]`, `[JAVASCRIPT]`, `[GO]`, `[TERRAFORM]`, `[YAML]`, `[JSON]`, `[ACTIONS]`, `[NEOVIM]`, `[GIT]`, `[OTHER]`
 5. Before starting any task, scan all rules below for relevant constraints
 6. If two rules conflict, the higher-numbered (newer) rule wins
 7. Never delete rules. If a rule becomes obsolete, append a new rule that supersedes it.
@@ -88,18 +88,19 @@ Rules specific to file types are documented in dedicated instruction files. This
 |---------|------|----------|
 | `**/*.ts,**/*.tsx` | typescript.instructions.md | [TYPESCRIPT] |
 | `**/*.go` | go.instructions.md | [GO] |
-| `**/*.lua` | lua.instructions.md | [LUA] |
+| `**/*.lua` | lua.instructions.md | [NEOVIM]* |
 | `**/*.tf,**/*.tfvars,**/*.hcl` | terraform.instructions.md | [TERRAFORM] |
 | `**/*.yml,**/*.yaml` | yaml.instructions.md | [YAML] |
-| `**/*.json,**/*.jsonc,**/*.code-workspace` | json.instructions.md | [JSON] |
+| `**/*.json,**/*.jsonc,**/*.code-workspace` | json.instructions.md | [JSON] / [OTHER]* |
 | `**/*.js,**/*.mjs,**/*.cjs` | javascript.instructions.md | [JAVASCRIPT] |
-| `.github/workflows/*.{yml,yaml}` | github-workflows.instructions.md | [ACTIONS]* |
+| `session-state/**/*.md` | session-artifacts.instructions.md | [OTHER] |
+| `**/.github/workflows/*.{yml,yaml}` | github-workflows.instructions.md | [ACTIONS]* |
 
-*Note: `[ACTIONS]` in github-workflows.instructions.md covers GitHub Actions-specific patterns. `[ACTIONS]` in this global file covers Copilot CLI execution flow. Other file-type files do not use `[ACTIONS]`.
+*Notes: `lua.instructions.md` uses `[NEOVIM]` because this workspace's Lua surface is primarily Neovim-oriented. `json.instructions.md` may use `[OTHER]` for cross-cutting config-policy rules anchored to JSON-owned files. `[ACTIONS]` in github-workflows.instructions.md covers GitHub Actions-specific patterns. `[ACTIONS]` in this global file covers Copilot CLI execution flow. Other file-type files do not use `[ACTIONS]`.
 
-**Global categories (appear in this file only, not in file-type files):**
+**Cross-cutting categories:**
 - `[ACTIONS]` — Copilot CLI execution and workflow orchestration (Copilot execution flow, not GitHub Actions)
-- `[OTHER]` — Cross-cutting patterns not specific to a file type
+- `[OTHER]` — Cross-cutting patterns that are not specific to a language/runtime category; keep them in this file by default, but scoped instruction files may also use `[OTHER]` when the file-pattern table explicitly routes that guidance there
 - `[GIT]` — Git workflow and signing
 
 ## Worktree Audit Cadence
@@ -184,3 +185,4 @@ Some rules have been superseded or are no longer applicable. See `copilot-instru
 65. [OTHER] Treat rule 1 as superseded historical context rather than an active reusable instruction; one-off repo-state clarifications belong in the task context unless they generalize beyond the immediate repository state
 // Clarifies the durable-rule threshold introduced in Rule 64; see Rule 59 for the Lore/Coherence hierarchy
 66. [GIT] Never run `git push` in parallel with a merge, cherry-pick, or other branch-promotion step that the push depends on; complete the promotion first, verify local `main` points at the intended commit, then push - this session batched merge and push together and briefly published the pre-merge tip instead of the intended promoted commit
+67. [OTHER] Keep `## Learned Rules` as the final section in every instruction file and never add later sections beneath it - Matt explicitly wants new learned rules to append at the true end of those files
