@@ -166,19 +166,19 @@ assert(feedback.includes("Timeline needs review"));
 ### 3. Reviewer Discovery
 ```javascript
 const reviewerMap = new Map([
-  ["gpt-5.3-codex", "pending"],
-  ["claude-sonnet-4.6", "pending"],
+  ["jason", "pending"],
+  ["freddy", "pending"],
 ]);
 
 // Match by full name
-matchReviewerAgent("gpt-5.3-codex", reviewerMap); // → "gpt-5.3-codex"
+matchReviewerAgent("jason", reviewerMap); // → "jason"
 
 // Match by display name
-matchReviewerAgent("Jason", reviewerMap); // → "gpt-5.3-codex"
-matchReviewerAgent("Freddy", reviewerMap); // → "claude-sonnet-4.6"
+matchReviewerAgent("Jason", reviewerMap); // → "jason"
+matchReviewerAgent("Freddy", reviewerMap); // → "freddy"
 
 // Match by partial name
-matchReviewerAgent("GPT Review Agent", reviewerMap); // → "gpt-5.3-codex"
+matchReviewerAgent("Architecture Reviewer", reviewerMap); // → "freddy"
 ```
 
 ### 4. Error Handling

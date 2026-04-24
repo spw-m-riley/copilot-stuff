@@ -32,15 +32,8 @@ No safe supported SDK auto-launch path was proven in this repository, and the do
 Stable role ids:
 
 ```javascript
-["jason", "freddy"]
+["jason", "freddy", "myers"];
 ```
-
-Current aliases / preferred model hints:
-
-- `jason` ↔ `gpt-5.3-codex`
-- `freddy` ↔ `claude-sonnet-4.6`
-
-The role ids are the contract; model names are matching aids and display hints.
 
 ## Relevant Files
 

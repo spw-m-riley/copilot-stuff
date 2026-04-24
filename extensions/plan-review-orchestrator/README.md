@@ -40,7 +40,7 @@ The following are intentionally out of scope for the shipped contract:
 - **`lib/orchestrator.mjs`** — in-memory state machine for rounds, approvals, and completion.
 - **`lib/approval-tracker.mjs`** — strict verdict token parsing.
 - **`lib/reviewer-dispatch.mjs`** — reviewer matching and role-specific context generation.
-- **`lib/reviewer-roles.mjs`** — stable reviewer role registry (`jason` / `freddy`) plus model/display aliases.
+- **`lib/reviewer-roles.mjs`** — stable reviewer role registry (`jason` / `freddy`) plus role/display aliases.
 
 ### Reviewer Role Registry
 
@@ -50,12 +50,7 @@ The shipped reviewer ids are stable role ids, not model ids:
 DEFAULT_REVIEWER_ROLE_IDS; // ["jason", "freddy"]
 ```
 
-Current preferred model hints remain:
-
-- `jason` → `gpt-5.3-codex`
-- `freddy` → `claude-sonnet-4.6`
-
-Those model names are aliases and hints for matching/context, not the orchestrator's stable ids.
+Reviewer matching accepts those stable ids, their display names, and role-oriented aliases without coupling the orchestrator state to any runtime-specific reviewer label.
 
 ## Hook Behavior
 

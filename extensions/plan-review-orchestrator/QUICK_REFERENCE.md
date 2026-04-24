@@ -19,11 +19,6 @@ Passive `/plan` review coordination: track `jason` / `freddy`, inject role-aware
 DEFAULT_REVIEWER_ROLE_IDS; // ["jason", "freddy"]
 ```
 
-Alias / hint mapping:
-
-- `jason` → `gpt-5.3-codex`
-- `freddy` → `claude-sonnet-4.6`
-
 ## Hook Summary
 
 ```text

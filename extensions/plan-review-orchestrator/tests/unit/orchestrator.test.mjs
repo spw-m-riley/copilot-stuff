@@ -33,7 +33,7 @@ function assertDeepEqual(actual, expected, message) {
  */
 export function testInitialize() {
   const orchestrator = new PlanOrchestrator({ maxRounds: 3 });
-  orchestrator.initialize(["gpt-5.3-codex", "claude-sonnet-4.6"]);
+  orchestrator.initialize(["jason", "freddy"]);
 
   assert(orchestrator.state !== null, "State should be initialized");
   assert(orchestrator.state.active === true, "Should be active");
@@ -44,12 +44,12 @@ export function testInitialize() {
     "Should have 2 reviewers"
   );
   assertEqual(
-    orchestrator.state.reviewers.get("gpt-5.3-codex"),
+    orchestrator.state.reviewers.get("jason"),
     "pending",
     "Reviewer 1 should be pending"
   );
   assertEqual(
-    orchestrator.state.reviewers.get("claude-sonnet-4.6"),
+    orchestrator.state.reviewers.get("freddy"),
     "pending",
     "Reviewer 2 should be pending"
   );
@@ -62,17 +62,17 @@ export function testInitialize() {
  */
 export function testRecordSingleApproval() {
   const orchestrator = new PlanOrchestrator({ maxRounds: 3 });
-  orchestrator.initialize(["gpt-5.3-codex", "claude-sonnet-4.6"]);
+  orchestrator.initialize(["jason", "freddy"]);
 
-  orchestrator.recordApproval("gpt-5.3-codex", true);
+  orchestrator.recordApproval("jason", true);
 
   assertEqual(
-    orchestrator.state.reviewers.get("gpt-5.3-codex"),
+    orchestrator.state.reviewers.get("jason"),
     "approved",
     "Should be approved"
   );
   assertEqual(
-    orchestrator.state.reviewers.get("claude-sonnet-4.6"),
+    orchestrator.state.reviewers.get("freddy"),
     "pending",
     "Other should still be pending"
   );
@@ -86,10 +86,10 @@ export function testRecordSingleApproval() {
  */
 export function testAllApproved() {
   const orchestrator = new PlanOrchestrator({ maxRounds: 3 });
-  orchestrator.initialize(["gpt-5.3-codex", "claude-sonnet-4.6"]);
+  orchestrator.initialize(["jason", "freddy"]);
 
-  orchestrator.recordApproval("gpt-5.3-codex", true);
-  orchestrator.recordApproval("claude-sonnet-4.6", true);
+  orchestrator.recordApproval("jason", true);
+  orchestrator.recordApproval("freddy", true);
 
   assert(orchestrator.allApproved(), "All should be approved");
 
@@ -107,10 +107,10 @@ export function testAllApproved() {
  */
 export function testAnyRejected() {
   const orchestrator = new PlanOrchestrator({ maxRounds: 3 });
-  orchestrator.initialize(["gpt-5.3-codex", "claude-sonnet-4.6"]);
+  orchestrator.initialize(["jason", "freddy"]);
 
-  orchestrator.recordApproval("gpt-5.3-codex", true);
-  orchestrator.recordApproval("claude-sonnet-4.6", false);
+  orchestrator.recordApproval("jason", true);
+  orchestrator.recordApproval("freddy", false);
 
   assert(orchestrator.anyRejected(), "Should detect rejection");
   assert(!orchestrator.allApproved(), "Should not all be approved");
@@ -126,11 +126,11 @@ export function testAnyRejected() {
  */
 export function testNextRound() {
   const orchestrator = new PlanOrchestrator({ maxRounds: 3 });
-  orchestrator.initialize(["gpt-5.3-codex", "claude-sonnet-4.6"]);
+  orchestrator.initialize(["jason", "freddy"]);
 
   // Round 1: mixed responses
-  orchestrator.recordApproval("gpt-5.3-codex", true);
-  orchestrator.recordApproval("claude-sonnet-4.6", false);
+  orchestrator.recordApproval("jason", true);
+  orchestrator.recordApproval("freddy", false);
 
   assert(orchestrator.state.round === 1, "Should be round 1");
 
@@ -139,12 +139,12 @@ export function testNextRound() {
 
   assertEqual(orchestrator.state.round, 2, "Should be round 2");
   assertEqual(
-    orchestrator.state.reviewers.get("gpt-5.3-codex"),
+    orchestrator.state.reviewers.get("jason"),
     "pending",
     "Should reset to pending"
   );
   assertEqual(
-    orchestrator.state.reviewers.get("claude-sonnet-4.6"),
+    orchestrator.state.reviewers.get("freddy"),
     "pending",
     "Should reset to pending"
   );
@@ -157,11 +157,11 @@ export function testNextRound() {
  */
 export function testMaxRoundsTermination() {
   const orchestrator = new PlanOrchestrator({ maxRounds: 2 });
-  orchestrator.initialize(["gpt-5.3-codex", "claude-sonnet-4.6"]);
+  orchestrator.initialize(["jason", "freddy"]);
 
   // Round 1: rejection
-  orchestrator.recordApproval("gpt-5.3-codex", false);
-  orchestrator.recordApproval("claude-sonnet-4.6", false);
+  orchestrator.recordApproval("jason", false);
+  orchestrator.recordApproval("freddy", false);
 
   let completion = orchestrator.isComplete();
   assert(!completion.complete, "Should not be complete after round 1 rejection");
@@ -169,8 +169,8 @@ export function testMaxRoundsTermination() {
   orchestrator.nextRound();
 
   // Round 2: still rejection
-  orchestrator.recordApproval("gpt-5.3-codex", false);
-  orchestrator.recordApproval("claude-sonnet-4.6", false);
+  orchestrator.recordApproval("jason", false);
+  orchestrator.recordApproval("freddy", false);
 
   completion = orchestrator.isComplete();
   assert(completion.complete, "Should be complete after max rounds");

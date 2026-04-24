@@ -24,7 +24,7 @@ export class PlanOrchestrator {
 
   /**
    * Initialize orchestrator with reviewer list
-   * @param {string[]} reviewerIds - List of reviewer agent IDs (e.g., ["gpt-5.3-codex", "claude-sonnet-4.6"])
+   * @param {string[]} reviewerIds - List of reviewer agent IDs (e.g., ["jason", "freddy"])
    */
   initialize(reviewerIds) {
     if (!Array.isArray(reviewerIds) || reviewerIds.length === 0) {

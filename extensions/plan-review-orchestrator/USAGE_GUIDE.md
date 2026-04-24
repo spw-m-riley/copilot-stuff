@@ -9,7 +9,7 @@ Welcome to the Plan Review Orchestrator! This guide will help you understand wha
 The Plan Review Orchestrator automatically coordinates multi-reviewer approval workflows for your plans. When you use the `/plan` slash command, the extension:
 
 1. **Detects** that you've entered plan mode
-2. **Initializes** a multi-reviewer coordination session with Jason (GPT-5.3-Codex) and Freddy (Claude Sonnet 4.6)
+2. **Initializes** a multi-reviewer coordination session with Jason and Freddy
 3. **Injects** reviewer-specific guidance so each reviewer understands their role
 4. **Tracks** their approvals as they review your plan
 5. **Coordinates** revisions if any reviewer requests changes
@@ -49,6 +49,7 @@ The orchestrator is **disabled by default**. To enable it, update your Copilot C
 Once enabled, the orchestrator will automatically activate whenever you use `/plan`.
 
 **To disable it temporarily**, either:
+
 1. Remove or set the config flag to `false`
 2. Exit plan mode and restart your session
 
@@ -60,7 +61,7 @@ Here's what a typical orchestrated plan review looks like:
 You:     /plan
 
 System:  Initializing Plan Review Orchestrator
-         Reviewers: Jason (GPT-5.3-Codex), Freddy (Claude Sonnet 4.6)
+         Reviewers: Jason, Freddy
          Max rounds: 3
 
 [ROUND 1 - Jason Reviews]
@@ -114,27 +115,27 @@ The orchestrator reads from your standard Copilot CLI config:
 
 ### Rollout Flag Details
 
-| Setting | Type | Default | Description |
-|---------|------|---------|-------------|
+| Setting                  | Type    | Default | Description                                                                          |
+| ------------------------ | ------- | ------- | ------------------------------------------------------------------------------------ |
 | `planReviewOrchestrator` | boolean | `false` | Enable/disable orchestrator. When `true`, orchestrator activates on `/plan` command. |
 
 ### Default Reviewers
 
 The orchestrator uses two default reviewers:
 
-| Reviewer | Model | Specialization |
-|----------|-------|-----------------|
-| **Jason** | GPT-5.3-Codex | Code architecture, technical depth, implementation feasibility |
-| **Freddy** | Claude Sonnet 4.6 | Clarity, structure, completeness, user perspective |
+| Reviewer   | Specialization                                                 |
+| ---------- | -------------------------------------------------------------- |
+| **Jason**  | Code architecture, technical depth, implementation feasibility |
+| **Freddy** | Clarity, structure, completeness, user perspective             |
 
 Both reviewers see your plan and provide feedback independently, then coordinate through the orchestrator.
 
 ### Multi-Round Limits
 
-| Setting | Value | Description |
-|---------|-------|-------------|
-| **Max Rounds** | 3 | Maximum revision cycles before orchestration completes, even if not all reviewers approve. |
-| **Per-Reviewer Timeout** | 30s | Time to wait for each reviewer's response before treating as rejection. |
+| Setting                  | Value | Description                                                                                |
+| ------------------------ | ----- | ------------------------------------------------------------------------------------------ |
+| **Max Rounds**           | 3     | Maximum revision cycles before orchestration completes, even if not all reviewers approve. |
+| **Per-Reviewer Timeout** | 30s   | Time to wait for each reviewer's response before treating as rejection.                    |
 
 **What if max rounds is reached?**
 
@@ -159,7 +160,7 @@ You retain full control—approval is advisory, not enforced.
 ```
 You: /plan
      I want to implement JWT-based authentication for our API.
-     
+
      Key decisions:
      - Store JWT in httpOnly cookies
      - 15-minute token expiry
@@ -220,11 +221,11 @@ System: plan-orchestrator: Freddy → approved
 
 **Output Token Reference:**
 
-| Event | Token | Meaning |
-|-------|-------|---------|
-| Jason approves | `[PLAN-APPROVED]` | Reviewer is satisfied; plan is ready |
-| Freddy requests changes | `[PLAN-REVISE-NEEDED]` | Reviewer wants revisions before approval |
-| Session completes | (no token) | Orchestrator finished (all approved or max rounds) |
+| Event                   | Token                  | Meaning                                            |
+| ----------------------- | ---------------------- | -------------------------------------------------- |
+| Jason approves          | `[PLAN-APPROVED]`      | Reviewer is satisfied; plan is ready               |
+| Freddy requests changes | `[PLAN-REVISE-NEEDED]` | Reviewer wants revisions before approval           |
+| Session completes       | (no token)             | Orchestrator finished (all approved or max rounds) |
 
 ### Example 2: Plan with Multiple Revision Rounds
 
@@ -233,7 +234,7 @@ System: plan-orchestrator: Freddy → approved
 ```
 You: /plan
      Plan to migrate 10M user records from PostgreSQL to DynamoDB.
-     
+
      Approach:
      1. Create CDC pipeline using AWS Lambda
      2. Run parallel writes (both databases) for 2 weeks
@@ -347,6 +348,7 @@ System: ✅ All reviewers approved after 2 round(s)
 **Solutions:**
 
 1. **Check the rollout flag:**
+
    ```json
    // ~/.copilot/config.json
    {
@@ -355,9 +357,11 @@ System: ✅ All reviewers approved after 2 round(s)
      }
    }
    ```
+
    Make sure `planReviewOrchestrator` is set to `true`.
 
 2. **Restart your session:**
+
    ```bash
    # If Copilot CLI is running, restart it
    killall node  # or restart your terminal
@@ -376,12 +380,13 @@ System: ✅ All reviewers approved after 2 round(s)
 **Expected behavior:** Both reviewers should respond, but there can be legitimate reasons only one appears:
 
 - **Freddy is still reviewing** — They may take longer. Give them up to 30 seconds.
-- **Freddy approved silently** — Some models may not provide verbose feedback.
+- **Freddy approved silently** — Some reviewer sessions may not provide verbose feedback.
 - **Network issue** — The second reviewer may have timed out. The system will treat this as a revision needed.
 
 **If this happens repeatedly:**
+
 1. Check your internet connection
-2. Verify both `gpt-5.3-codex` and `claude-sonnet-4.6` models are available
+2. Verify both reviewer roles can still be launched in your current runtime
 3. File an issue if the second reviewer consistently doesn't appear
 
 ### Unclear Token Formats
@@ -390,21 +395,23 @@ System: ✅ All reviewers approved after 2 round(s)
 
 **Reference table:**
 
-| Scenario | Token | Meaning | Example |
-|----------|-------|---------|---------|
-| Reviewer approves | `[PLAN-APPROVED]` | Plan is ready to implement | Freddy ends with: "Looks good! [PLAN-APPROVED]" |
-| Reviewer requests changes | `[PLAN-REVISE-NEEDED]` | Revisions required before approval | Jason ends with: "Add error handling. [PLAN-REVISE-NEEDED]" |
-| No token found | (defaults to reject) | Treated as revision needed | Jason responds but forgets token → treated as rejection |
-| Both tokens present | (ambiguous) | Defaults to revision needed | "[PLAN-APPROVED] Actually, [PLAN-REVISE-NEEDED]" → rejection |
-| Token not at end | (still counted) | Token in middle of response is valid | "We [PLAN-APPROVED] this approach yesterday" → approval |
+| Scenario                  | Token                  | Meaning                              | Example                                                      |
+| ------------------------- | ---------------------- | ------------------------------------ | ------------------------------------------------------------ |
+| Reviewer approves         | `[PLAN-APPROVED]`      | Plan is ready to implement           | Freddy ends with: "Looks good! [PLAN-APPROVED]"              |
+| Reviewer requests changes | `[PLAN-REVISE-NEEDED]` | Revisions required before approval   | Jason ends with: "Add error handling. [PLAN-REVISE-NEEDED]"  |
+| No token found            | (defaults to reject)   | Treated as revision needed           | Jason responds but forgets token → treated as rejection      |
+| Both tokens present       | (ambiguous)            | Defaults to revision needed          | "[PLAN-APPROVED] Actually, [PLAN-REVISE-NEEDED]" → rejection |
+| Token not at end          | (still counted)        | Token in middle of response is valid | "We [PLAN-APPROVED] this approach yesterday" → approval      |
 
 **Token formats accepted:**
+
 - `[PLAN-APPROVED]` (standard)
 - `[plan-approved]` (case-insensitive)
 - `[Plan-Approved]` (case-insensitive)
 - `[ PLAN-APPROVED ]` (with spaces)
 
 **Tips:**
+
 - Tokens are **case-insensitive**, so `[PLAN-APPROVED]`, `[plan-approved]`, and `[Plan-Approved]` all work
 - Tokens can appear **anywhere** in the response (beginning, middle, end)
 - **One token per response** — if both tokens are present, the system treats it as ambiguous and defaults to rejection
@@ -418,12 +425,14 @@ System: ✅ All reviewers approved after 2 round(s)
 
 1. **Restart your session:**
    The orchestrator automatically clears state when your session ends. Simply:
+
    ```bash
    # Exit the current session and start a new one
    exit
    ```
 
 2. **Force exit plan mode:**
+
    ```bash
    # Type Escape or Ctrl+C to exit plan mode
    # Orchestrator will clean up automatically
@@ -431,19 +440,21 @@ System: ✅ All reviewers approved after 2 round(s)
 
 3. **Check orchestrator logs:**
    Look for messages like:
+
    ```
    plan-orchestrator: cleared session state
    ```
+
    This confirms the orchestrator cleaned up properly.
 
 4. **Manual reset** (if needed):
    Edit `~/.copilot/config.json` and toggle the flag:
    ```json
-   { "rollout": { "planReviewOrchestrator": false } }  // Disable
+   { "rollout": { "planReviewOrchestrator": false } } // Disable
    ```
    Then re-enable:
    ```json
-   { "rollout": { "planReviewOrchestrator": true } }  // Re-enable
+   { "rollout": { "planReviewOrchestrator": true } } // Re-enable
    ```
 
 ---
@@ -455,6 +466,7 @@ System: ✅ All reviewers approved after 2 round(s)
 If you started a session with the orchestrator enabled but want to switch to non-orchestrated planning:
 
 **Option 1: Exit and rejoin**
+
 ```
 You: /exit  (exit plan mode)
 System: Plan orchestration halted
@@ -462,6 +474,7 @@ You: /plan  (rejoin without triggering orchestrator for this round)
 ```
 
 **Option 2: Update config and reload**
+
 ```bash
 # Edit config
 ~/.copilot/config.json
@@ -477,10 +490,12 @@ The orchestrator will not initialize for new `/plan` sessions after this change.
 **Note:** Reviewer customization is a planned feature for future releases.
 
 Currently, the orchestrator always uses:
-- **Jason** (GPT-5.3-Codex)
-- **Freddy** (Claude Sonnet 4.6)
+
+- **Jason**
+- **Freddy**
 
 In future versions, you'll be able to:
+
 - Override reviewer selection per session
 - Add custom reviewers (e.g., domain experts)
 - Adjust reviewer weights (if you trust one more than another)
@@ -496,11 +511,13 @@ The Plan Review Orchestrator coexists safely with other Copilot extensions, incl
 - **Other extensions** — The orchestrator uses isolated session state and doesn't interfere with other extensions.
 
 **Key points:**
+
 - The orchestrator and plan-review-policy extensions **do not conflict** — they run on different hooks
 - The orchestrator's reviewer-specific context **complements** the general planning guidance from plan-review-policy
 - You can enable/disable the orchestrator independently without affecting other extensions
 
 **Example:** With both extensions enabled:
+
 1. `plan-review-policy` injects general planning guidelines (scope, risks, resources)
 2. `plan-orchestrator` injects reviewer-specific context (focus areas for Jason/Freddy)
 3. Reviewers see both sets of context and provide feedback
@@ -520,10 +537,10 @@ The Plan Review Orchestrator coexists safely with other Copilot extensions, incl
 
 The Plan Review Orchestrator automates multi-reviewer coordination for your plans:
 
-✅ **Enable** via config flag `{ rollout: { planReviewOrchestrator: true } }`  
-✅ **Trigger** by using `/plan` slash command  
-✅ **Coordinate** Jason and Freddy through multiple revision rounds (max 3)  
-✅ **Complete** when all reviewers approve or max rounds reached  
-✅ **Control** remains yours — approval is advisory  
+✅ **Enable** via config flag `{ rollout: { planReviewOrchestrator: true } }`
+✅ **Trigger** by using `/plan` slash command
+✅ **Coordinate** Jason and Freddy through multiple revision rounds (max 3)
+✅ **Complete** when all reviewers approve or max rounds reached
+✅ **Control** remains yours — approval is advisory
 
 Happy planning! 🎯

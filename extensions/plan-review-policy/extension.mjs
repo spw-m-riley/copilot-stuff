@@ -9,15 +9,15 @@ import {
 
 /**
  * Plan Review Policy Extension
- * 
+ *
  * Injects planning rules and guidelines into /plan mode context.
- * 
+ *
  * Integrates with plan-review-orchestrator extension (non-conflicting):
  * - Both extensions activate independently on /plan slash command
  * - Both maintain separate session state (no collision)
  * - Both inject context additively for reviewer and helper subagents
  * - Coordination: policy provides guidelines, orchestrator provides dispatch logic
- * 
+ *
  * See plan-review-orchestrator/extension.mjs for orchestration details.
  */
 
@@ -27,7 +27,7 @@ const HELPER_ALLOW_LIST = ["plan", "planner", "task", "implementation", "general
 const HELPER_DENY_LIST = ["research", "review", "reviewer", "explore", "config", "configure"];
 const PLAN_REVIEW_RULES = [
   "- In plan mode, default to a reviewer loop before treating the plan as complete.",
-  '- Use GPT-5.3-codex ("Jason") and Claude Sonnet 4.6 ("Freddy") as the default plan reviewers unless the user explicitly asks for a different reviewer set.',
+  '- Name the reviewers Jason, Myers and Freddy as the default plan reviewers unless the user explicitly asks for a different reviewer set.',
   "- Every reviewer must review every round of plan revisions; do not drop a reviewer from later rounds.",
   "- Do not treat the plan as approved until all reviewers approve in the same round.",
   "- If any reviewer requests changes, update the plan and run another full review round with all reviewers.",

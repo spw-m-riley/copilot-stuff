@@ -35,7 +35,7 @@ import { DEFAULT_REVIEWER_ROLE_IDS } from "./lib/reviewer-roles.mjs";
 
 const MAX_ACTIVE_SESSION_CONTEXTS = 64;
 
-// Stable reviewer roles (model hints live in reviewer-roles.mjs)
+// Stable reviewer roles used for default orchestration
 const DEFAULT_PLAN_REVIEWERS = DEFAULT_REVIEWER_ROLE_IDS;
 
 // Session orchestration state: sessionId -> PlanOrchestrator
