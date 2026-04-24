@@ -14,12 +14,14 @@
 
 ## Planning policy
 
-- In plan mode, default to a reviewer loop before treating the plan as complete.
-- Use GPT-5.3-codex ("Jason") and Claude Sonnet 4.6 ("Freddy") as the default plan reviewers unless I explicitly ask for a different reviewer set.
-- Every reviewer must review every round of plan revisions; do not drop a reviewer from later rounds.
-- Do not treat the plan as approved until all reviewers approve in the same round.
-- If any reviewer requests changes, update the plan and run another full review round with all reviewers.
-- Stay in planning mode until I explicitly ask to implement.
+- In plan mode, default to using the `/plan-review-loop` skill before treating the plan as complete.
+- Use the explicit `/plan-review-loop` skill invocation: `Use the /plan-review-loop skill to review and refine the current plan`
+- The default reviewers are Jason (implementation/execution focus) and Freddy (architecture/risk focus); both must approve in the same round for plan approval.
+- Do not treat the plan as approved until the `/plan-review-loop` skill returns unanimous approval from all configured reviewers in the same round.
+- If any reviewer requests changes, update the plan and re-invoke the skill for another review round.
+- The skill enforces a 3-round maximum; if not approved after round 3, you decide the next step outside the skill.
+- To customize reviewers, edit or create persona files in `skills/plan-review-loop/references/personas/` before invoking the skill.
+- Stay in planning mode until you explicitly ask to implement.
 
 ## Session hygiene
 
@@ -191,3 +193,4 @@ Some rules have been superseded or are no longer applicable. See `copilot-instru
 70. [OTHER] In the `~/.copilot` repo, always include both `description` and `applyTo` in the YAML frontmatter of every `*.instructions.md` file in the top-level `instructions/` directory, and keep `description` concise about the file's purpose and scope - Matt asked to backfill the missing metadata and make future iterations preserve it
 71. [OTHER] Never put user-specific absolute paths or `session-state/` artifacts into shared repo skills, docs, or instruction files; use stable repo-relative paths only - Matt explicitly corrected shared skill references that pointed at local machine paths and private session artifacts
 72. [OTHER] In files under `extensions/`, never reference branded model names or specific model IDs unless Matt explicitly asks for them - he explicitly asked to remove names like Sonnet and `GPT-5.3-codex` from that subtree
+73. [ACTIONS] Never present a user-requested plan as complete until the explicit `/plan-review-loop` skill has run and all default reviewers (Jason and Freddy) approve in the same round; use the skill invocation `Use the /plan-review-loop skill to review and refine the current plan` before marking planning complete (supersedes Rule 31's ambient-extension phrasing)

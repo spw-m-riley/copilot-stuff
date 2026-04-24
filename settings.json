@@ -16,16 +16,7 @@
     "doublecheck@awesome-copilot": true,
     "awesome-copilot@awesome-copilot": true
   },
-  "footer": {
-    "showModelEffort": true,
-    "showDirectory": true,
-    "showBranch": true,
-    "showContextWindow": true,
-    "showQuota": true,
-    "showAgent": true
-  },
-  "model": "gpt-5.4",
-  "effortLevel": "high",
+  "footer": {},
   "extraKnownMarketplaces": {},
   "lastLoggedInUser": {
     "host": "https://github.com",
@@ -69,5 +60,6 @@
   ],
   "rollout": {
     "planReviewOrchestrator": true
-  }
+  },
+  "model": "auto"
 }

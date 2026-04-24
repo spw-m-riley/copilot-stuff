@@ -35,13 +35,10 @@ These live in [`./extensions/`](./extensions/) and are auto-discovered by the Co
 | Extension | What It Does |
 | --------- | ------------ |
 | `lore` | Local-first memory and continuity for Copilot CLI. Handles session recall, learning from your workflow, and keeping context sharp across sessions. Keep Lore-specific setup, rollout, maintenance, and health docs in [`./extensions/lore`](./extensions/lore). |
-| `plan-review-policy` | Adds the `/plan` review workflow with Jason (`GPT-5.3-codex`) and Freddy (`Claude Sonnet 4.6`) reviewer loop, then propagates that guidance into delegated `/plan` child agents. |
-| `plan-review-orchestrator` | Adds passive plan-review orchestration: initializes review state on `/plan`, injects context into runtime-launched matching reviewer children, and tracks surfaced reviewer verdicts without launching reviewers itself. |
 | `ci-migration-context` | Detects CI migration requests (e.g., CircleCI→GitHub Actions) and injects extra migration context + checklist into parent turns and delegated child agents. |
 | `fleet-model-policy` | Steers implementation-heavy fleet work toward `GPT-5.3-codex`, then propagates that policy preference into delegated implementation-style child agents. |
 | `gha-url-router` | Detects GitHub Actions run/job URLs in prompts, injects structured routing context, and passes that context into delegated investigation agents. |
 | `post-edit-lint` | Watches `edit`-style tool calls and runs targeted formatting, linting, and validation for JS/TS, JSON, YAML, Terraform, and shell files, feeding results back into the conversation. |
-| `research-current-model-policy` | Keeps `/research` aligned with your currently selected model and reasoning effort, instead of falling back to a bundled default. |
 | `worktree-manager` | Adds `mr_worktree_create`, `mr_worktree_list`, `mr_worktree_status`, and `mr_worktree_remove` tools, plus injects worktree guidance into implementation-style child agents so edits stay isolated. |
 | `copilot-healthcheck` | Adds the `mr_healthcheck_run` tool — a lightweight environment check that reports repo state and key local Copilot files/tools. |
 
@@ -49,8 +46,6 @@ These live in [`./extensions/`](./extensions/) and are auto-discovered by the Co
 
 Several extensions inject policy and guidance into delegated child agents:
 - **fleet-model-policy** → implementation-style child agents (model preference)
-- **plan-review-policy** → `/plan` child agents (reviewer loop)
-- **plan-review-orchestrator** → plan review child agents (orchestration state)
 - **ci-migration-context** → CI migration & workflow-debug child agents (migration checklists)
 - **gha-url-router** → GitHub Actions investigation child agents (run/job context)
 - **worktree-manager** → implementation/edit/task child agents (worktree guidance)
@@ -193,8 +188,7 @@ Wave 1 adopts the highest-signal additions from [Awesome Copilot](https://github
 
 | Kind | Addition | Why it made wave 1 | Where it lives / durability |
 | --- | --- | --- | --- |
-| Plugin | `doublecheck@awesome-copilot` | Adds a verification-heavy research and writeup pass with explicit confidence labels. | Local plugin state only: the install is reflected in local `config.json` and `installed-plugins/awesome-copilot/`, while this README is the durable tracked record. |
-| Plugin | `awesome-copilot@awesome-copilot` | Adds a lightweight discovery layer for re-checking new Awesome Copilot assets later. | Local plugin state only: same local-only durability boundary as `doublecheck`. |
+| Plugin | `awesome-copilot@awesome-copilot` | Adds a lightweight discovery layer for re-checking new Awesome Copilot assets later. | Local plugin state only: the install is reflected in local `config.json` and `installed-plugins/awesome-copilot/`, while this README is the durable tracked record. |
 | Skill | `agent-governance` | Adds reusable governance patterns for tool access, approval gates, audit trails, and fail-closed behavior. | User-scope install under `~/.copilot/skills/agent-governance/` in the live main checkout. |
 | Skill | `agent-supply-chain` | Adds integrity-manifest and verification patterns for reviewing third-party agent/plugin content. | User-scope install under `~/.copilot/skills/agent-supply-chain/` in the live main checkout. |
 | Skill | `acquire-codebase-knowledge` | Adds a durable repo-onboarding / reconnaissance workflow for producing traceable codebase knowledge packs. | User-scope install under `~/.copilot/skills/acquire-codebase-knowledge/` in the live main checkout. |
@@ -202,7 +196,6 @@ Wave 1 adopts the highest-signal additions from [Awesome Copilot](https://github
 ### Install notes
 
 ```bash
-copilot plugin install doublecheck@awesome-copilot
 copilot plugin install awesome-copilot@awesome-copilot
 gh skill install github/awesome-copilot agent-governance --scope user
 gh skill install github/awesome-copilot agent-supply-chain --scope user
@@ -220,7 +213,7 @@ gh skill install github/awesome-copilot acquire-codebase-knowledge --scope user
 | Item | Why it is not in wave 1 | When to revisit |
 | --- | --- | --- |
 | `context-engineering` | Useful, but it overlaps heavily with the local `context-map` skill plus the existing research→plan workflow, so it would duplicate context-mapping behavior rather than add a clearly new surface. | Revisit only if the packaged `/context-map` plugin workflow proves meaningfully better than the local skill + planning flow. |
-| `project-planning` | The repo already has `implementation-planner`, `workflow-contracts`, and plan-review extensions, so another planning plugin would mostly duplicate existing planning/PRD generation surfaces. | Revisit if you want packaged PRD/issue-generation commands beyond the current local planning stack. |
+| `project-planning` | The repo already has `implementation-planner`, `workflow-contracts`, and `plan-review-loop` skill, so another planning plugin would mostly duplicate existing planning/PRD generation surfaces. | Revisit if you want packaged PRD/issue-generation commands beyond the current local planning stack. |
 | `Custom Agent Foundry` | Strong design reference, but the repo already has `skill-authoring`, custom agents, and established authoring patterns; keeping it out of wave 1 avoids duplicating daily authoring workflow. | Revisit as a rubric/reference if custom-agent authoring needs a dedicated external coach later. |
 | `agentic-eval` | Valuable evaluator/optimizer pattern, but it is explicitly deferred so wave 1 can land documentation and the high-signal installs first without turning evaluation loops into a gate. | Consider as a separate follow-on once wave-1 usage is stable and documented. |
 
