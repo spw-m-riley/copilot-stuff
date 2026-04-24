@@ -19,6 +19,110 @@ function getErrorMessage(error) {
   return error instanceof Error ? error.message : String(error);
 }
 
+function stripJsonComments(raw) {
+  const input = typeof raw === "string" ? raw.replace(/^\uFEFF/u, "") : "";
+  let result = "";
+  let inString = false;
+  let escaped = false;
+  let lineComment = false;
+  let blockComment = false;
+
+  for (let index = 0; index < input.length; index++) {
+    const char = input[index];
+    const next = input[index + 1];
+
+    if (lineComment) {
+      if (char === "\n" || char === "\r") {
+        lineComment = false;
+        result += char;
+      }
+      continue;
+    }
+
+    if (blockComment) {
+      if (char === "*" && next === "/") {
+        blockComment = false;
+        index++;
+        continue;
+      }
+      if (char === "\n" || char === "\r") {
+        result += char;
+      }
+      continue;
+    }
+
+    if (inString) {
+      result += char;
+      if (escaped) {
+        escaped = false;
+        continue;
+      }
+      if (char === "\\") {
+        escaped = true;
+        continue;
+      }
+      if (char === "\"") {
+        inString = false;
+      }
+      continue;
+    }
+
+    if (char === "\"") {
+      inString = true;
+      result += char;
+      continue;
+    }
+
+    if (char === "/" && next === "/") {
+      lineComment = true;
+      index++;
+      continue;
+    }
+
+    if (char === "/" && next === "*") {
+      blockComment = true;
+      index++;
+      continue;
+    }
+
+    result += char;
+  }
+
+  return result;
+}
+
+function parseConfigFile(raw, configPath) {
+  try {
+    return JSON.parse(stripJsonComments(raw));
+  } catch (cause) {
+    throw new Error(
+      `Failed to parse "${configPath}": ${getErrorMessage(cause)}`,
+      { cause },
+    );
+  }
+}
+
+function updateSelectionFromParsedConfig(parsed) {
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+    return;
+  }
+
+  if (!selection.modelId && typeof parsed.model === "string") {
+    selection.modelId = parsed.model;
+  }
+  if (
+    !selection.reasoningEffort &&
+    typeof parsed.effortLevel === "string"
+  ) {
+    selection.reasoningEffort = parsed.effortLevel;
+  } else if (
+    !selection.reasoningEffort &&
+    typeof parsed.reasoning_effort === "string"
+  ) {
+    selection.reasoningEffort = parsed.reasoning_effort;
+  }
+}
+
 function updateSelectionFromEvent(selection, event) {
   if (!event || typeof event !== "object" || typeof event.type !== "string") {
     return;
@@ -128,23 +232,35 @@ async function hydrateSelectionFromRuntime() {
 }
 
 async function hydrateSelectionFromConfig() {
-  const configPath = path.join(os.homedir(), ".copilot", "config.json");
-  const raw = await readFile(configPath, "utf8");
-  const parsed = JSON.parse(raw);
+  const configDir = path.join(os.homedir(), ".copilot");
+  const candidatePaths = [
+    path.join(configDir, "settings.json"),
+    path.join(configDir, "config.json"),
+  ];
+  let lastError;
 
-  if (!selection.modelId && typeof parsed.model === "string") {
-    selection.modelId = parsed.model;
+  for (const configPath of candidatePaths) {
+    let raw;
+    try {
+      raw = await readFile(configPath, "utf8");
+    } catch (error) {
+      if (error?.code === "ENOENT") {
+        continue;
+      }
+      lastError = error;
+      continue;
+    }
+
+    const parsed = parseConfigFile(raw, configPath);
+    updateSelectionFromParsedConfig(parsed);
+
+    if (selection.modelId && selection.reasoningEffort) {
+      return;
+    }
   }
-  if (
-    !selection.reasoningEffort &&
-    typeof parsed.effortLevel === "string"
-  ) {
-    selection.reasoningEffort = parsed.effortLevel;
-  } else if (
-    !selection.reasoningEffort &&
-    typeof parsed.reasoning_effort === "string"
-  ) {
-    selection.reasoningEffort = parsed.reasoning_effort;
+
+  if (lastError && !selection.modelId && !selection.reasoningEffort) {
+    throw lastError;
   }
 }
 
