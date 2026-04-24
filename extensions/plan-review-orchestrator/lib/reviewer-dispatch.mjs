@@ -34,7 +34,6 @@ export function generateReviewerContext(orchestrator, round, totalRound, reviewe
     ? [
         `Assigned reviewer role: ${reviewerLabel}.`,
         `Persona guidance: ${reviewerRole.persona}`,
-        `Preferred model hints: ${reviewerRole.preferredModels.join(", ")}`,
         "",
         "Role-specific rubric:",
         ...reviewerRole.rubric.map(
@@ -139,20 +138,6 @@ export function matchReviewerAgent(agentName, reviewerMap) {
 
     if (normalized === idNormalized) {
       return reviewerId;
-    }
-
-    if (
-      (normalized.includes("gpt") && idNormalized.includes("gpt")) ||
-      (normalized.includes("claude") && idNormalized.includes("claude"))
-    ) {
-      const gptMatch =
-        normalized.includes("gpt") && idNormalized.includes("gpt");
-      const claudeMatch =
-        normalized.includes("claude") && idNormalized.includes("claude");
-
-      if (gptMatch || claudeMatch) {
-        return reviewerId;
-      }
     }
   }
 

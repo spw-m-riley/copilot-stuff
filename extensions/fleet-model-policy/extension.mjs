@@ -9,7 +9,7 @@ import {
 
 const FLEET_MODEL_POLICY = [
   "Fleet model steering (prompt-level only):",
-  "- For implementation, coding, and execution subtasks in fleet mode, prefer GPT-5.3-codex.",
+  "- For implementation, coding, and execution subtasks in fleet mode, prefer the implementation-focused default.",
   "- Preserve default built-in behavior for research, review, and configuration tasks unless the user explicitly requests otherwise.",
   "- Respect explicit user model or agent requests over this policy.",
   "- Do not apply session-wide model switches, runtime patching, or custom-agent retagging.",
@@ -17,7 +17,7 @@ const FLEET_MODEL_POLICY = [
 
 const FLEET_CHILD_MODEL_POLICY = [
   "Fleet child delegation policy:",
-  "- This delegated child appears implementation-oriented; prefer GPT-5.3-codex unless the user explicitly requested otherwise.",
+  "- This delegated child appears implementation-oriented; prefer the implementation-focused default unless the user explicitly requested otherwise.",
   "- Respect explicit user model or agent requests over this policy.",
   "- Do not apply session-wide model switches, runtime patching, or custom-agent retagging.",
 ].join("\n");

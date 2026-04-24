@@ -1,0 +1,29 @@
+{
+  "mouse": true,
+  "copyOnSelect": true,
+  "compactPaste": true,
+  "renderMarkdown": true,
+  "stream": true,
+  "updateTerminalTitle": true,
+  "experimental": true,
+  "continueOnAutoMode": true,
+  "includeCoAuthoredBy": false,
+  "showReasoning": true,
+  "extensions": {},
+  "enabledPlugins": {
+    "superpowers@superpowers-marketplace": true,
+    "copilot-sdk@awesome-copilot": true,
+    "doublecheck@awesome-copilot": true,
+    "awesome-copilot@awesome-copilot": true
+  },
+  "footer": {
+    "show_model_effort": true,
+    "show_directory": true,
+    "show_branch": true,
+    "show_context_window": true,
+    "show_quota": true
+  },
+  "model": "gpt-5.4",
+  "effortLevel": "high",
+  "extraKnownMarketplaces": {}
+}

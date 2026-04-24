@@ -173,10 +173,10 @@ Try out the orchestrator with a simple plan to observe the new workflow:
 
 ```
 plan-orchestrator: initialized with 2 reviewers (max 3 rounds)
-plan-orchestrator: injecting reviewer context for gpt-5.3-codex (round 1)
-plan-orchestrator: gpt-5.3-codex → approved
-plan-orchestrator: injecting reviewer context for claude-sonnet-4.6 (round 1)
-plan-orchestrator: claude-sonnet-4.6 → approved
+plan-orchestrator: injecting reviewer context for jason (round 1)
+plan-orchestrator: jason → approved
+plan-orchestrator: injecting reviewer context for freddy (round 1)
+plan-orchestrator: freddy → approved
 plan-orchestrator: ✅ All reviewers approved after 1 round
 ```
 
@@ -333,7 +333,7 @@ This conservative approach ensures you're never blocked—the orchestrator will 
 
 ### Q: Can I choose different reviewers?
 
-**A:** Currently, the orchestrator is hardcoded to Jason (gpt-5.3-codex) and Freddy (claude-sonnet-4.6) to match the plan-review-policy defaults.
+**A:** Currently, the orchestrator is hardcoded to Jason and Freddy to match the plan-review-policy defaults.
 
 **Future versions** will support custom reviewer configuration via config file. For now, contact the Copilot team if you'd like to use different reviewers.
 
@@ -465,11 +465,11 @@ copilot
 **What you'll see:**
 
 ```
-[DEBUG] plan-orchestrator: Initializing with reviewers: gpt-5.3-codex, claude-sonnet-4.6
-[DEBUG] plan-orchestrator: Round 1 state: { gpt-5.3-codex: pending, claude-sonnet-4.6: pending }
-[DEBUG] plan-orchestrator: Parsing response from gpt-5.3-codex: "...full response text..."
+[DEBUG] plan-orchestrator: Initializing with reviewers: jason, freddy
+[DEBUG] plan-orchestrator: Round 1 state: { jason: pending, freddy: pending }
+[DEBUG] plan-orchestrator: Parsing response from jason: "...full response text..."
 [DEBUG] plan-orchestrator: Token found: [PLAN-APPROVED]
-[DEBUG] plan-orchestrator: Round 1 state: { gpt-5.3-codex: approved, claude-sonnet-4.6: pending }
+[DEBUG] plan-orchestrator: Round 1 state: { jason: approved, freddy: pending }
 ```
 
 This helps diagnose token parsing, state transitions, and reviewer detection issues.
@@ -553,8 +553,8 @@ When config file support is added, you'll be able to:
 ```json
 {
   "planReviewOrchestratorReviewers": [
-    "gpt-5.3-codex",
-    "claude-sonnet-4.6",
+    "jason",
+    "freddy",
     "custom-reviewer-id"
   ],
   "planReviewOrchestratorMaxRounds": 5,
@@ -589,4 +589,3 @@ The Plan Review Orchestrator transforms `/plan` from a manual multi-reviewer pro
 ---
 
 **Ready to begin?** Enable the orchestrator and run `/plan` on your next complex decision. Happy planning! 🚀
-

@@ -264,7 +264,7 @@ export function testIsReviewerAgent() {
     "Should detect code-review"
   );
   assert(
-    isReviewerAgent("GPT-5.3-Codex Reviewer Agent"),
+    isReviewerAgent("Jason Reviewer Agent"),
     "Should detect 'Reviewer' keyword"
   );
   assert(
@@ -292,12 +292,12 @@ export function testMatchReviewerAgent() {
     ["freddy", "pending"],
   ]);
 
-  const match1 = matchReviewerAgent("gpt-5.3-codex", reviewerMap);
-  const match2 = matchReviewerAgent("claude-sonnet-4.6", reviewerMap);
+  const match1 = matchReviewerAgent("technical reviewer", reviewerMap);
+  const match2 = matchReviewerAgent("clarity reviewer", reviewerMap);
   const match3 = matchReviewerAgent("unknown-model", reviewerMap);
 
-  assertEqual(match1, "jason", "Should match GPT model to Jason role");
-  assertEqual(match2, "freddy", "Should match Claude model to Freddy role");
+  assertEqual(match1, "jason", "Should match Jason role alias");
+  assertEqual(match2, "freddy", "Should match Freddy role alias");
   assertEqual(match3, null, "Should return null for unknown");
 
   console.log("✓ testMatchReviewerAgent passed");
@@ -312,11 +312,11 @@ export function testMatchReviewerPartial() {
     ["freddy", "pending"],
   ]);
 
-  const match1 = matchReviewerAgent("GPT Review Agent", reviewerMap);
-  const match2 = matchReviewerAgent("Claude Reviewer", reviewerMap);
+  const match1 = matchReviewerAgent("Jason reviewer agent", reviewerMap);
+  const match2 = matchReviewerAgent("Architecture Reviewer", reviewerMap);
 
-  assertEqual(match1, "jason", "Should match partial GPT");
-  assertEqual(match2, "freddy", "Should match partial Claude");
+  assertEqual(match1, "jason", "Should match partial Jason alias");
+  assertEqual(match2, "freddy", "Should match partial Freddy alias");
 
   console.log("✓ testMatchReviewerPartial passed");
 }
@@ -325,7 +325,7 @@ export function testMatchReviewerPartial() {
  * Test: Match reviewer with null map
  */
 export function testMatchReviewerNullMap() {
-  const match = matchReviewerAgent("gpt-5.3-codex", null);
+  const match = matchReviewerAgent("jason", null);
 
   assertEqual(match, null, "Should return null for null map");
 
@@ -552,9 +552,9 @@ export function testMatchReviewerDisplayNames() {
     ["freddy", "pending"],
   ]);
 
-  // Jason is typically used for GPT
+  // Jason is matched by display name
   const match1 = matchReviewerAgent("Jason", reviewerMap);
-  // Freddy is typically used for Claude
+  // Freddy is matched by display name
   const match2 = matchReviewerAgent("Freddy", reviewerMap);
 
   assertEqual(match1, "jason", "Should match Jason display name to role");
@@ -579,8 +579,8 @@ export function testReviewerRoleRegistryContract() {
   assertEqual(jason.id, "jason", "Should preserve stable role id");
   assertEqual(jason.displayName, "Jason", "Should expose display name");
   assert(
-    jason.aliases.includes("gpt-5.3-codex"),
-    "Should include model alias without making it the role id"
+    jason.aliases.includes("technical reviewer"),
+    "Should include role alias without making it the role id"
   );
   assert(
     jason.persona.includes("execution details"),
@@ -590,10 +590,6 @@ export function testReviewerRoleRegistryContract() {
     jason.rubric.length > 0,
     "Should expose rubric guidance"
   );
-  assert(
-    jason.preferredModels.includes("gpt-5.3-codex"),
-    "Should expose preferred model hints"
-  );
 
   console.log("✓ testReviewerRoleRegistryContract passed");
 }
@@ -602,11 +598,11 @@ export function testReviewerRoleRegistryContract() {
  * Test: Resolve reviewer role aliases
  */
 export function testResolveReviewerRoleAlias() {
-  const resolvedJason = resolveReviewerRole(" GPT-5.3-Codex ");
+  const resolvedJason = resolveReviewerRole(" technical reviewer ");
   const resolvedFreddy = resolveReviewerRole("freddy");
   const resolvedUnknown = resolveReviewerRole("unknown-reviewer");
 
-  assertEqual(resolvedJason?.id, "jason", "Should resolve model hint to Jason role");
+  assertEqual(resolvedJason?.id, "jason", "Should resolve role alias to Jason");
   assertEqual(resolvedFreddy?.id, "freddy", "Should resolve display alias to Freddy role");
   assertEqual(resolvedUnknown, null, "Should return null for unknown aliases");
 
