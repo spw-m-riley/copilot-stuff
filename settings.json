@@ -17,13 +17,57 @@
     "awesome-copilot@awesome-copilot": true
   },
   "footer": {
-    "show_model_effort": true,
-    "show_directory": true,
-    "show_branch": true,
-    "show_context_window": true,
-    "show_quota": true
+    "showModelEffort": true,
+    "showDirectory": true,
+    "showBranch": true,
+    "showContextWindow": true,
+    "showQuota": true,
+    "showAgent": true
   },
   "model": "gpt-5.4",
   "effortLevel": "high",
-  "extraKnownMarketplaces": {}
+  "extraKnownMarketplaces": {},
+  "lastLoggedInUser": {
+    "host": "https://github.com",
+    "login": "spw-m-riley"
+  },
+  "alt_screen": true,
+  "ide.auto_connect": true,
+  "ide.open_diff_on_edit": true,
+  "firstLaunchAt": "2026-03-11T00:00:00.000Z",
+  "trustedFolders": [
+    "/Users/matthew.riley/.copilot",
+    "/Users/matthew.riley/work",
+    "/Users/matthew.riley/kilaaks/nvim/.config/nvim",
+    "/Users/matthew.riley/kilaaks"
+  ],
+  "installedPlugins": [
+    {
+      "name": "copilot-sdk",
+      "marketplace": "awesome-copilot",
+      "version": "1.0.0",
+      "installed_at": "2026-04-22T12:56:44.484Z",
+      "enabled": true,
+      "cache_path": "/Users/matthew.riley/.copilot/installed-plugins/awesome-copilot/copilot-sdk"
+    },
+    {
+      "name": "doublecheck",
+      "marketplace": "awesome-copilot",
+      "version": "1.0.0",
+      "installed_at": "2026-04-22T14:16:19.649Z",
+      "enabled": true,
+      "cache_path": "/Users/matthew.riley/.copilot/installed-plugins/awesome-copilot/doublecheck"
+    },
+    {
+      "name": "awesome-copilot",
+      "marketplace": "awesome-copilot",
+      "version": "1.1.0",
+      "installed_at": "2026-04-22T14:16:21.527Z",
+      "enabled": true,
+      "cache_path": "/Users/matthew.riley/.copilot/installed-plugins/awesome-copilot/awesome-copilot"
+    }
+  ],
+  "rollout": {
+    "planReviewOrchestrator": true
+  }
 }
