@@ -4,7 +4,7 @@ description: "Use when user wants to write, refactor, or expand documentation (R
 metadata:
   category: authoring
   audience: general-coding-agent
-  maturity: draft
+  maturity: stable
   kind: task
   reader_testing: required
 ---

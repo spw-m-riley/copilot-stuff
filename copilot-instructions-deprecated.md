@@ -35,6 +35,16 @@ This file contains rules that have been superseded, are no longer applicable, or
 
 **Current guidance:** See Lua Rule 5 — "When validating a Neovim config from a repo checkout or worktree, explicitly point `nvim` at that config with `XDG_CONFIG_HOME`/`NVIM_APPNAME`"
 
+### Rules 34, 37, 44, 45 (Deprecated: Removed without archive)
+
+**Original text:** Not available — these rules were removed from the active ruleset during earlier sessions without a deprecation record being created at the time.
+
+**Reason for deprecation:** Content was either consolidated into other rules, superseded by newer guidance, or captured a one-off correction that did not generalize. Exact text was not preserved.
+
+**Current guidance:** Refer to the active ruleset in `copilot-instructions.md`. The numbering gaps are acknowledged and preserved per the "never delete rules" policy.
+
+---
+
 ## Adding a Deprecated Rule
 
 When a rule becomes obsolete:

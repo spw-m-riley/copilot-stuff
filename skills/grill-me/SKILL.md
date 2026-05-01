@@ -4,7 +4,7 @@ description: "Use when the user wants to be interviewed or stress-tested about a
 metadata:
   category: workflow
   audience: general-coding-agent
-  maturity: draft
+  maturity: stable
   kind: task
 ---
 
