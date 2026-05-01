@@ -113,19 +113,19 @@ Rules specific to file types are documented in dedicated instruction files. This
 
 ## Worktree Audit Cadence
 
-Worktrees in `.worktrees/` are audited **monthly** for orphaned directories (no branch activity in 30 days). Use `mr_worktree_remove <ID>` to clean up inactive or merged worktrees. See [WORKTREE_NAMING.md](WORKTREE_NAMING.md) for naming scheme, lifecycle guidelines, and detailed cleanup procedures.
-
-## Learned Rules
-
-<!-- New Rules appended below this line. Do not edit above this section -->
+Worktrees in `.worktrees/` are audited **monthly** for orphaned directories (no branch activity in 30 days). Use `mr_worktree_remove <ID>` to clean up inactive or merged worktrees.
 
 ## Learned Rules Review Cadence
 
-Learned Rules are reviewed quarterly during checkpoint planning phases. Superseded rules are archived to `.instructions-deprecated-archive.md` in their source file. See the rules consolidation tracking artifact (Phase 2 baseline) for history: `session-state/<sessionId>/rules-consolidation-tracking.json`
+Learned Rules are reviewed quarterly during checkpoint planning phases. Superseded rules are archived to `copilot-instructions-deprecated.md`. See the rules consolidation tracking artifact (Phase 2 baseline) for history.
 
 ## Deprecated Rules
 
 Some rules have been superseded or are no longer applicable. See `copilot-instructions-deprecated.md` for the archive.
+
+## Learned Rules
+
+<!-- New Rules appended below this line. Do not edit above this section -->
 
 1. [GIT] Never bypass GPG signing or 1Password-managed Git auth/signing for commits, tags, or pushes; if that trusted path blocks progress, stop and ask the user to restore or approve it instead - previous behavior tried to work around the user's security setup
 2. [ACTIONS] Always persist applicable learned rules proactively in the same turn you discover the lesson or receive the correction; never wait for the user to ask for a lesson summary or remind you to save it - prior sessions missed recording reusable lessons unless prompted

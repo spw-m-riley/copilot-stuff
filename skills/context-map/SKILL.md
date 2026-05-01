@@ -4,7 +4,7 @@ description: Use when a task may span multiple files, when dependencies or tests
 metadata:
   category: workflow
   audience: general-coding-agent
-  maturity: draft
+  maturity: stable
   kind: reference
 ---
 

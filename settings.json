@@ -11,7 +11,6 @@
   "showReasoning": true,
   "extensions": {},
   "enabledPlugins": {
-    "superpowers@superpowers-marketplace": true,
     "copilot-sdk@awesome-copilot": true,
     "doublecheck@awesome-copilot": true,
     "awesome-copilot@awesome-copilot": true
@@ -66,6 +65,6 @@
     }
   ],
   "rollout": {},
-  "model": "claude-opus-4.6",
+  "model": "gpt-5.4",
   "effortLevel": "high"
 }

@@ -4,7 +4,7 @@ description: "Use when stress-testing a plan against the project's domain model,
 metadata:
   category: workflow
   audience: general-coding-agent
-  maturity: draft
+  maturity: stable
   kind: task
 ---
 
