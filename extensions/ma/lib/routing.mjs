@@ -29,6 +29,12 @@ const UNDERSTANDING_CUES = [
 ];
 
 const PROMPT_DENY_KEYWORDS = [
+  "edit",
+  "fix",
+  "implement",
+  "update",
+  "write",
+  "create",
   "patch",
   "delete",
   "rename",
@@ -154,8 +160,8 @@ export function getMaRecommendationStrength(prompt, { hasLargeFile = false } = {
   // Large file referenced — strong recommendation
   if (hasFileReference && hasLargeFile) return "strong";
 
-  // Any file reference — soft nudge toward read-first
-  if (hasFileReference) return "soft";
+  // File reference without an explicit edit-heavy action — soft nudge toward read-first
+  if (hasFileReference) return hasDenyKeyword ? null : "soft";
 
   return null;
 }

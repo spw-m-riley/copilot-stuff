@@ -30,12 +30,12 @@ describe("ma routing", () => {
       );
     });
 
-    test("returns 'strong' for understanding + file ref without narrow deny keywords", () => {
+    test("returns 'soft' for understanding + file ref with edit-heavy action", () => {
       assert.equal(
         getMaRecommendationStrength(
           "Read auth.ts and fix the login bug.",
         ),
-        "strong",
+        "soft",
       );
     });
 
@@ -58,21 +58,21 @@ describe("ma routing", () => {
       );
     });
 
-    test("returns 'soft' for any file reference even without understanding cues", () => {
+    test("returns null for edit-heavy prompts with file references", () => {
       assert.equal(
         getMaRecommendationStrength(
           "Fix the bug in auth.ts",
         ),
-        "soft",
+        null,
       );
     });
 
-    test("returns 'soft' for action prompts referencing files", () => {
+    test("returns null for implementation prompts referencing files", () => {
       assert.equal(
         getMaRecommendationStrength(
           "Implement the new handler in server.ts",
         ),
-        "soft",
+        null,
       );
     });
 
