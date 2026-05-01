@@ -8,6 +8,7 @@ applyTo: "session-state/**/*.md"
 ## Purpose and Scope
 
 - Applies to `session-state/**/*.md` artifacts in this workspace.
+- This file overrides the broader `markdown.instructions.md` guidance for session-state artifacts.
 - Use these rules for plans, research notes, reviews, and execution handoffs that need to stay concise, structured, and easy to resume.
 
 ## Core Guidance
@@ -32,9 +33,9 @@ applyTo: "session-state/**/*.md"
 
 - Keep `## Learned Rules` as the final section in the file; do not add new sections after it.
 - Append new learned rules without renumbering existing entries; numbering gaps can reflect archived or superseded rules.
-- Use `[OTHER]` for learned rules here unless a narrower artifact-specific category is introduced later.
+- Use `[WORKFLOW]` for learned rules here because these Markdown files are execution artifacts rather than general docs.
 
 ## Learned Rules
 
 <!-- New Rules appended below this line. Do not edit above this section -->
-1. [OTHER] When writing verification commands in session-state plans or handoff artifacts, keep scratch paths inside the target repository rather than `/tmp` or other external locations so the documented workflow respects workspace file-operation constraints
+1. [WORKFLOW] When writing verification commands in session-state plans or handoff artifacts, keep scratch paths inside the target repository rather than `/tmp` or other external locations so the documented workflow respects workspace file-operation constraints

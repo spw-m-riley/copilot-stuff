@@ -12,7 +12,6 @@
   "extensions": {},
   "enabledPlugins": {
     "copilot-sdk@awesome-copilot": true,
-    "doublecheck@awesome-copilot": true,
     "awesome-copilot@awesome-copilot": true
   },
   "footer": {
@@ -46,14 +45,6 @@
       "installed_at": "2026-04-29T13:47:02.383Z",
       "enabled": true,
       "cache_path": "/Users/matthew.riley/.copilot/installed-plugins/awesome-copilot/copilot-sdk"
-    },
-    {
-      "name": "doublecheck",
-      "marketplace": "awesome-copilot",
-      "version": "1.0.0",
-      "installed_at": "2026-04-29T14:00:41.095Z",
-      "enabled": true,
-      "cache_path": "/Users/matthew.riley/.copilot/installed-plugins/awesome-copilot/doublecheck"
     },
     {
       "name": "awesome-copilot",

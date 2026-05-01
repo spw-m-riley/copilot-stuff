@@ -28,10 +28,10 @@ applyTo: "**/*.json,**/*.jsonc,**/*.code-workspace"
 
 - Keep `## Learned Rules` as the final section in the file; do not add new sections after it.
 - Append new learned rules without renumbering existing entries; numbering gaps can reflect archived or superseded rules.
-- Use `[JSON]` for JSON-specific learned rules in this file; `[OTHER]` is also acceptable here for cross-cutting config-policy rules that are anchored to JSON-owned files.
+- Use `[JSON]` for JSON-specific learned rules in this file, including JSON-owned config-policy rules that are anchored to files under this scope.
 
 ## Learned Rules
 
 <!-- New Rules appended below this line. Do not edit above this section -->
-1. [OTHER] When package.json scripts or JSON-owned CI config need CI-aware behavior, never key them off a fake `CIRCLECI` variable; prefer the standard `CI` environment variable or an explicit repo-owned variable with a truthful name - the user explicitly said `CIRCLECI` should not be mentioned for this compatibility case
-2. [OTHER] When editing `~/.copilot/settings.json`, re-read the current on-disk file immediately before patching and make only minimal current-state edits - the live CLI can rewrite this shared settings file during the same session and stale snapshots can produce incorrect diffs
+1. [JSON] When package.json scripts or JSON-owned CI config need CI-aware behavior, never key them off a fake `CIRCLECI` variable; prefer the standard `CI` environment variable or an explicit repo-owned variable with a truthful name - the user explicitly said `CIRCLECI` should not be mentioned for this compatibility case
+2. [JSON] When editing `~/.copilot/settings.json`, re-read the current on-disk file immediately before patching and make only minimal current-state edits - the live CLI can rewrite this shared settings file during the same session and stale snapshots can produce incorrect diffs
