@@ -9,6 +9,7 @@ Your personal Copilot CLI setup — a collection of instructions, agents, skills
 | [Custom Agents](./agents/) | `agents/` | Specialized agents for orchestration and complex workflows |
 | [Skills](./skills/) | `skills/` | Reusable task-specific workflows you can invoke directly |
 | [Extensions](./extensions/) | `extensions/` | Auto-discovered lifecycle hooks and custom tools |          |
+| [RTK Awareness](./RTK.md) | Root | RTK usage notes and the Copilot-side hook behavior |
 
 
 ## Capabilities index
@@ -43,6 +44,7 @@ These live in [`./extensions/`](./extensions/) and are auto-discovered by the Co
 | `post-edit-lint` | Watches `edit`-style tool calls and runs targeted formatting, linting, and validation for JS/TS, JSON, YAML, Terraform, and shell files, feeding results back into the conversation. |
 | `worktree-manager` | Adds `mr_worktree_create`, `mr_worktree_list`, `mr_worktree_status`, and `mr_worktree_remove` tools, plus injects worktree guidance into implementation-style child agents so edits stay isolated. |
 | `copilot-healthcheck` | Adds the `mr_healthcheck_run` tool — a lightweight environment check that reports repo state and key local Copilot files/tools. |
+| `rtk-hook` | Runs `rtk hook copilot` on Bash pre-tool calls so RTK can deny raw commands and steer Copilot CLI toward the token-saving `rtk ...` equivalent. See [`./RTK.md`](./RTK.md). |
 
 ### Child-Agent Context Propagation
 

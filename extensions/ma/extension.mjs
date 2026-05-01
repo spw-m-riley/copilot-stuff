@@ -1,18 +1,10 @@
 import { execFile } from "node:child_process";
-import { readFileSync, statSync } from "node:fs";
+import { lstatSync, readFileSync, realpathSync, statSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { approveAll } from "@github/copilot-sdk";
 import { joinSession } from "@github/copilot-sdk/extension";
-import { normalizePrompt, normalizeSessionId, setBoundedContext } from "../_shared/context-policy.mjs";
-import {
-    buildMaChildContext,
-    buildMaParentContext,
-    buildMaSoftParentContext,
-    getMaRecommendationStrength,
-    hasLargeReferencedFile,
-    shouldInjectMaChildContext,
-} from "./lib/routing.mjs";
+import { createMaHooks, createMaToolHandlers } from "./lib/runtime.mjs";
 
 // Sensitive path components and basenames mirroring internal/detect
 const SENSITIVE_BASENAMES = new Set([
@@ -32,10 +24,34 @@ const dashboardSessionState = {
 const activeContextBySession = new Map();
 
 function isSensitivePath(filePath) {
+    if (typeof filePath !== "string" || filePath.trim() === "") {
+        return false;
+    }
+
     const parts = filePath.split(/[\\/]/);
     const base = parts[parts.length - 1];
     if (SENSITIVE_BASENAMES.has(base)) return true;
     return parts.some((p) => SENSITIVE_COMPONENTS.has(p));
+}
+
+function isSensitivePathResolved(filePath) {
+    if (isSensitivePath(filePath)) {
+        return true;
+    }
+
+    try {
+        return isSensitivePath(realpathSync(filePath));
+    } catch {
+        try {
+            if (lstatSync(filePath).isSymbolicLink()) {
+                return true;
+            }
+        } catch {
+            // Missing file or unreadable path — let ma surface the real error.
+        }
+
+        return false;
+    }
 }
 
 function findMaBinary() {
@@ -64,14 +80,6 @@ function runMaCommand(args, env) {
             }
         });
     });
-}
-
-function rawFallback(filePath) {
-    try {
-        return readFileSync(filePath, "utf-8");
-    } catch (err) {
-        return `Error reading file: ${err.message}`;
-    }
 }
 
 function dashboardRoot() {
@@ -133,6 +141,28 @@ function buildSessionEvent({ kind, runId, startedAt, finishedAt, reason }) {
     };
 }
 
+const toolHandlers = createMaToolHandlers({
+    runMaCommand,
+    isSensitivePathResolved,
+});
+
+let sessionRef = null;
+const hooks = createMaHooks({
+    activeContextBySession,
+    log: async (message, options) => {
+        if (!sessionRef) {
+            return;
+        }
+
+        await sessionRef.log(message, options);
+    },
+    runMaCommand,
+    maxActiveContexts: MAX_ACTIVE_CONTEXTS,
+    publishDashboardEvent,
+    buildSessionEvent,
+    dashboardSessionState,
+});
+
 const session = await joinSession({
     onPermissionRequest: approveAll,
     tools: [
@@ -153,24 +183,7 @@ const session = await joinSession({
                 },
                 required: ["path"],
             },
-            handler: async (args) => {
-                if (isSensitivePath(args.path)) {
-                    return {
-                        textResultForLlm: `Refused: sensitive path ${args.path}`,
-                        resultType: "denied",
-                    };
-                }
-                try {
-                    const output = await runMaCommand(
-                        ["smart-read", args.path, "--json"],
-                        { MA_SOURCE: "extension" },
-                    );
-                    const result = JSON.parse(output);
-                    return result.output || rawFallback(args.path);
-                } catch {
-                    return rawFallback(args.path);
-                }
-            },
+            handler: toolHandlers.smartRead,
         },
         {
             name: "ma_compress",
@@ -188,7 +201,7 @@ const session = await joinSession({
                 required: ["path"],
             },
             handler: async (args) => {
-                if (isSensitivePath(args.path)) {
+                if (isSensitivePathResolved(args.path)) {
                     return {
                         textResultForLlm: `Refused: sensitive path ${args.path}`,
                         resultType: "denied",
@@ -222,7 +235,7 @@ const session = await joinSession({
                 required: ["path"],
             },
             handler: async (args) => {
-                if (isSensitivePath(args.path)) {
+                if (isSensitivePathResolved(args.path)) {
                     return {
                         textResultForLlm: `Refused: sensitive path ${args.path}`,
                         resultType: "denied",
@@ -256,7 +269,7 @@ const session = await joinSession({
                 required: ["path"],
             },
             handler: async (args) => {
-                if (isSensitivePath(args.path)) {
+                if (isSensitivePathResolved(args.path)) {
                     return {
                         textResultForLlm: `Refused: sensitive path ${args.path}`,
                         resultType: "denied",
@@ -293,7 +306,7 @@ const session = await joinSession({
             handler: async (args) => {
                 const paths = args.paths || [];
                 for (const p of paths) {
-                    if (isSensitivePath(p)) {
+                    if (isSensitivePathResolved(p)) {
                         return {
                             textResultForLlm: `Refused: sensitive path ${p}`,
                             resultType: "denied",
@@ -313,96 +326,8 @@ const session = await joinSession({
             },
         },
     ],
-    hooks: {
-        onUserPromptSubmitted: async (input) => {
-            const prompt = normalizePrompt(input?.prompt);
-            const sessionId = normalizeSessionId(input?.sessionId);
-            const cwd = input?.cwd || process.cwd();
-
-            const strength = getMaRecommendationStrength(prompt, {
-                hasLargeFile: hasLargeReferencedFile(prompt, cwd),
-            });
-
-            if (!strength) {
-                // No recommendation — clear matched state
-                if (sessionId && activeContextBySession.has(sessionId)) {
-                    setBoundedContext(
-                        activeContextBySession,
-                        sessionId,
-                        { matched: false },
-                        MAX_ACTIVE_CONTEXTS,
-                        { refreshExisting: true },
-                    );
-                }
-                return;
-            }
-
-            if (sessionId) {
-                setBoundedContext(
-                    activeContextBySession,
-                    sessionId,
-                    { matched: true },
-                    MAX_ACTIVE_CONTEXTS,
-                    { refreshExisting: true },
-                );
-            }
-
-            const guidance = strength === "strong"
-                ? buildMaParentContext()
-                : buildMaSoftParentContext();
-
-            const label = strength === "strong" ? "reduction guidance" : "reduction hint";
-            await session.log(`ma: injected ${label}`, { ephemeral: true });
-            return {
-                modifiedPrompt: `${guidance}\n\n${prompt}`,
-            };
-        },
-        onSubagentStart: async (input) => {
-            const sessionId = normalizeSessionId(input?.sessionId);
-            if (!sessionId) {
-                return;
-            }
-
-            if (!activeContextBySession.get(sessionId)?.matched) {
-                return;
-            }
-
-            if (!shouldInjectMaChildContext(input)) {
-                return;
-            }
-
-            await session.log("ma: injected child guidance", { ephemeral: true });
-            return { additionalContext: buildMaChildContext() };
-        },
-        onSessionStart: async (input, invocation) => {
-            dashboardSessionState.runId = `extension-session-${invocation?.sessionId || `${Date.now()}-${process.pid}`}`;
-            dashboardSessionState.startedAt = new Date().toISOString();
-            await publishDashboardEvent(buildSessionEvent({
-                kind: EVENT_KIND_STARTED,
-                runId: dashboardSessionState.runId,
-                startedAt: dashboardSessionState.startedAt,
-                reason: input?.source,
-            }));
-            await session.log("ma extension loaded — smart-read and reduction tools available");
-        },
-        onSessionEnd: async (input) => {
-            activeContextBySession.delete(normalizeSessionId(input?.sessionId));
-            if (!dashboardSessionState.runId) return;
-
-            const kind = new Set(["error", "abort", "timeout"]).has(input?.reason)
-                ? EVENT_KIND_FAILED
-                : EVENT_KIND_FINISHED;
-
-            await publishDashboardEvent(buildSessionEvent({
-                kind,
-                runId: dashboardSessionState.runId,
-                startedAt: dashboardSessionState.startedAt || new Date().toISOString(),
-                finishedAt: new Date().toISOString(),
-                reason: input?.reason,
-            }));
-
-            dashboardSessionState.runId = null;
-            dashboardSessionState.startedAt = null;
-        },
-    },
+    hooks,
 });
+
+sessionRef = session;
+await session.log("ma extension loaded — smart-read and reduction tools available", { ephemeral: true });

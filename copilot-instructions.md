@@ -35,6 +35,19 @@
 - Use `/compact` after long research or exploration phases, or when accumulated background results have made the active context noisy.
 - Refresh or create a handoff artifact before switching from research or planning into implementation when the next phase would otherwise need to reconstruct state from chat history.
 
+## RTK usage
+
+- Use RTK as the token-saving command layer in this workspace.
+- Run RTK meta commands directly when you need RTK-specific insight or passthrough behavior:
+  - `rtk gain`
+  - `rtk gain --history`
+  - `rtk discover`
+  - `rtk proxy <cmd>`
+- Verify RTK with `rtk --version`, `rtk gain`, and `which rtk`. If `rtk gain` fails unexpectedly, check for the `reachingforthejack/rtk` name collision.
+- The `rtk-hook` extension runs `rtk hook copilot` before Bash tool calls. For normal shell work, follow RTK's steer toward the `rtk ...` equivalent instead of retrying the raw command.
+- In Copilot CLI, RTK currently works as deny-with-suggestion rather than transparent rewrite because the CLI does not honor `updatedInput`.
+- Typical mappings: `git status` -> `rtk git status`, `rg foo .` -> `rtk grep foo .`
+
 ## Self-Correcting Rules Engine
 
 This file will contain a growing ruleset that improves over time. **At session start, read the entire relevant "Learned Rules" section before doing anything.**
@@ -200,3 +213,4 @@ Some rules have been superseded or are no longer applicable. See `copilot-instru
 77. [SHELL] When chaining long bash validation commands, isolate best-effort steps like benchmark diffs in braces or separate commands; a trailing `|| true` can mask earlier failing test or build steps because shell `&&`/`||` precedence is left-associative - this session briefly hid a real Phase 1 test failure during validation
 78. [RESEARCH] When the user asks about Copilot CLI or extension-runtime capabilities, inspect the bundled CLI/SDK source or other authoritative runtime source first instead of inferring behavior from local `~/.copilot` usage examples - this correction flagged that repo-local extension patterns are not the same thing as the runtime contract
 79. [INSTRUCTIONS] In active instruction files, do not use broad catch-all labels like `[ACTIONS]` or `[OTHER]`; use `[GITHUB-ACTIONS]` for workflow rules and prefer narrower cross-cutting or file-scoped categories elsewhere so the main `copilot-instructions.md` stays easier to route and audit - Matt explicitly asked for GitHub Actions-only labeling and more aggressive rule taxonomy cleanup
+80. [INSTRUCTIONS] When Matt asks to add operational guidance "into this repo" so Copilot will actually use it, place the actionable content in `copilot-instructions.md` or the matching `*.instructions.md` file rather than only in a standalone doc like `RTK.md` - standalone Markdown is not auto-read by Copilot CLI, so docs-only placement misses the intent
