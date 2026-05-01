@@ -5,6 +5,12 @@
 - Prefer live repository state, installed versions, and actual config files over stale templates, docs, or assumptions when behavior depends on the environment.
 - When parallel work happens in a Git repository, prefer isolated worktrees with one worktree per agent or task.
 
+## Domain language awareness
+
+- When entering any repository, check for `CONTEXT.md` (or `CONTEXT-MAP.md`) at the repo root. If present, read it and use its vocabulary consistently in code, comments, commit messages, and conversation.
+- Do not add general programming concepts to `CONTEXT.md` — only project-specific domain terms belong there.
+- If `CONTEXT-MAP.md` exists, the repo has multiple bounded contexts; read the map to find the relevant `CONTEXT.md` for the current work.
+
 ## Git signing and 1Password policy
 
 - Never bypass commit, tag, or push-related signing/auth flows that are configured through GPG, SSH signing, or 1Password.
@@ -194,3 +200,8 @@ Some rules have been superseded or are no longer applicable. See `copilot-instru
 71. [OTHER] Never put user-specific absolute paths or `session-state/` artifacts into shared repo skills, docs, or instruction files; use stable repo-relative paths only - Matt explicitly corrected shared skill references that pointed at local machine paths and private session artifacts
 72. [OTHER] In files under `extensions/`, never reference branded model names or specific model IDs unless Matt explicitly asks for them - he explicitly asked to remove names like Sonnet and `GPT-5.3-codex` from that subtree
 73. [ACTIONS] Never present a user-requested plan as complete until the explicit `/plan-review-loop` skill has run and all default reviewers (Jason and Freddy) approve in the same round; use the skill invocation `Use the /plan-review-loop skill to review and refine the current plan` before marking planning complete (supersedes Rule 31's ambient-extension phrasing)
+74. [OTHER] In Mermaid flowcharts intended for GitHub README rendering, prefer quoted node labels and avoid inline edge text when labels contain punctuation or parentheses - GitHub's Mermaid parser is stricter than permissive examples and rejected an unquoted `Response (output tokens)` node plus annotated edge syntax
+75. [OTHER] In Mermaid flowcharts intended for GitHub README rendering, prefer top-down layouts and short labels once a diagram has nested groups or more than a few nodes - GitHub's renderer shrinks wide diagrams aggressively, which made the context-window diagram hard to read until it was simplified and stacked vertically
+76. [OTHER] In Mermaid flowcharts intended for GitHub README rendering, use explicit fill and stroke styling for major groups when category distinctions matter - GitHub's default dark-theme rendering can collapse nested diagrams into low-contrast grey boxes that are harder to read
+77. [ACTIONS] When chaining long bash validation commands, isolate best-effort steps like benchmark diffs in braces or separate commands; a trailing `|| true` can mask earlier failing test or build steps because shell `&&`/`||` precedence is left-associative - this session briefly hid a real Phase 1 test failure during validation
+78. [ACTIONS] When the user asks about Copilot CLI or extension-runtime capabilities, inspect the bundled CLI/SDK source or other authoritative runtime source first instead of inferring behavior from local `~/.copilot` usage examples - this correction flagged that repo-local extension patterns are not the same thing as the runtime contract

@@ -23,6 +23,7 @@ Your personal Copilot CLI setup — a collection of instructions, agents, skills
 | Skill | [`tsc-error-triage`](./skills/tsc-error-triage/SKILL.md) | Fix TypeScript compiler failures in root-cause order before patching leaves. |
 | Agent | [`typescript-api-test-generator`](./agents/typescript-api-test-generator.agent.md) | Add or expand runtime tests for TypeScript APIs, handlers, and Lambda flows. |
 | Skill | [`context-map`](./skills/context-map/SKILL.md) | Map likely files, dependencies, tests, and reference patterns before multi-file planning or implementation. |
+| Skill | [`ma`](./skills/ma/SKILL.md) | Reduce large local files for understanding before deciding whether a full-fidelity read is necessary. |
 
 ## Extensions
 
@@ -35,6 +36,7 @@ These live in [`./extensions/`](./extensions/) and are auto-discovered by the Co
 | Extension | What It Does |
 | --------- | ------------ |
 | `lore` | Local-first memory and continuity for Copilot CLI. Handles session recall, learning from your workflow, and keeping context sharp across sessions. Keep Lore-specific setup, rollout, maintenance, and health docs in [`./extensions/lore`](./extensions/lore). |
+| `ma` | Adds reduced-context file-reading tools (`ma_smart_read`, `ma_skeleton`, `ma_compress`, `ma_minify_schema`, `ma_dedup`) and injects reduction-first guidance for understanding-oriented file reads. |
 | `ci-migration-context` | Detects CI migration requests (e.g., CircleCI→GitHub Actions) and injects extra migration context + checklist into parent turns and delegated child agents. |
 | `fleet-model-policy` | Steers implementation-heavy fleet work toward `GPT-5.3-codex`, then propagates that policy preference into delegated implementation-style child agents. |
 | `gha-url-router` | Detects GitHub Actions run/job URLs in prompts, injects structured routing context, and passes that context into delegated investigation agents. |
@@ -64,15 +66,21 @@ terraform changes, and anything else that will make this smooth.
 ```
 
 ### Step 2: Plan (Get buy-in)
-Use `/plan` to turn research into actionable work. The plan gets reviewed by Jason (`GPT-5.3-codex`) and Freddy (`Claude Sonnet 4.6`) — both reviewers must approve before you move on.
+Use `/plan` to turn research into actionable work. When the draft is ready, run the explicit `plan-review-loop` skill so Jason and Freddy review it — the plan is ready only when both approve in the same round.
 
 ```
 /plan Turn the research into a fully actionable plan suitable for fleet execution. 
-Jason and Freddy should review. The plan is not ready until both reviewers approve it.
+Include all affected workflows, test requirements, and rollback procedures.
+```
+
+Then review the finished plan explicitly:
+
+```
+Use the /plan-review-loop skill to review and refine the current plan
 ```
 
 ### Step 3: Implement (Execute)
-Use `/fleet` or direct agent delegation for implementation. Child agents inherit worktree guidance, model preferences, and fleet policy automatically.
+Once the plan is approved, switch out of plan mode if needed and use that approved plan as the execution contract. Then use `/fleet` or direct agent delegation for implementation. Child agents inherit worktree guidance, model preferences, and fleet policy automatically.
 
 ---
 
@@ -93,13 +101,17 @@ Use `/fleet` or direct agent delegation for implementation. Child agents inherit
 that have already been migrated. Use those as reference implementations. Get deep on the workflow 
 structure, the shared actions, the terraform changes, and anything else that makes the migration smooth.
 ```
-After research approves, plan it:
+Turn that research into a draft plan:
 ```
-/plan Turn this research into a migration timeline with clear phases. 
-Include all affected workflows, test requirements, and rollback procedures. 
-Jason and Freddy should review. Plan is ready only when both approve.
+/plan Turn this research into a migration timeline with clear phases.
+Include all affected workflows, test requirements, and rollback procedures.
 ```
-Then implement with `/fleet` — child agents inherit `ci-migration-context` guidance automatically.
+
+Then review the finished plan explicitly:
+```
+Use the /plan-review-loop skill to review and refine the current plan
+```
+Once Jason and Freddy both approve, switch out of plan mode if needed and implement the approved plan with `/fleet` — child agents inherit `ci-migration-context` guidance automatically.
 
 **Example 2: Type Safety Audit** (Finding and fixing `any` in TypeScript)
 ```
@@ -121,9 +133,9 @@ This lands in the `doc-coauthoring` skill territory.
 
 ## Skills Ecosystem
 
-This setup includes a growing library of reusable agent skills — a production-grade set of workflows that handles everything from TypeScript compile errors and type safety to CI/CD migrations, testing workflows, and git orchestration. Each skill activates only when its specific conditions are met, preventing overlap and ensuring the right tool gets used for each task.
+This setup includes a growing library of reusable agent skills — a production-grade set of workflows that handles everything from TypeScript compile errors and type safety to CI/CD migrations, testing workflows, documentation work, and git orchestration. Each skill activates only when its specific conditions are met, preventing overlap and ensuring the right tool gets used for each task.
 
-The repo-tracked baseline now includes `context-map`, and the live `~/.copilot` profile also carries a wave-1 Awesome Copilot adoption set (`agent-governance`, `agent-supply-chain`, and `acquire-codebase-knowledge`) via user-scope installs into the main `~/.copilot` checkout's `skills/` directory. The category counts below describe the repo-tracked baseline catalog in this worktree; the wave-1 user-scope skills are documented separately because they currently live as local installs in the main `~/.copilot` profile. See [Awesome Copilot Adoption (Wave 1)](#awesome-copilot-adoption-wave-1) for the durable install notes and defer list.
+The categories below describe the current repo-tracked skills in this worktree. The later [Awesome Copilot Adoption (Wave 1)](#awesome-copilot-adoption-wave-1) section is historical adoption context for the initial Awesome Copilot additions, not a complete live inventory of every currently installed marketplace plugin or skill copy.
 
 **Skills are explicit routing decisions**: when you invoke a skill or the CLI recommends one, you're calling out a solution with clear activation boundaries. No guessing. No "hope this works."
 
@@ -147,12 +159,27 @@ The repo-tracked baseline now includes `context-map`, and the live `~/.copilot` 
 - `systematic-debugging` — Hit a wall? Isolate the root cause before guessing at fixes
 - `verification-before-completion` — Don't claim "tests pass" without running them fresh
 
-**Workflow & Planning** — Planning, handoff docs, and task orchestration
+**Workflow & Planning (12 skills)** — Planning, handoff docs, discovery, and decision support
+- `acquire-codebase-knowledge` — Produce traceable codebase knowledge packs for onboarding and repo discovery
 - `context-map` — Map likely files, dependencies, tests, and reference patterns before multi-file work
+- `plan-review-loop` — Run explicit Jason/Freddy plan review rounds after `/plan`
 - `reverse-prompt` — Turn a vague request into an executable task brief (explicit user trigger)
 - `workflow-contracts` — Create versioned markdown handoff artifacts for multi-turn work
 - `finishing-a-development-branch` — Branch is done. Now what? Merge, PR, stash, or discard?
 - `doc-coauthoring` — Write docs collaboratively with context gathering and reader feedback loops
+- `code-tour` — Create a `.tour` walkthrough for onboarding, PR review, or architecture explanation
+- `grill-me` — Stress-test a plan or design through structured interrogation
+- `grill-with-docs` — Stress-test a plan while updating domain docs such as `CONTEXT.md` and ADRs
+- `to-prd` — Turn repository and conversation context into a product requirements document
+- `to-issues` — Split approved work into dependency-aware issue slices
+
+**Optimization & Evaluation (2 skills)** — Iterative improvement and evaluator loops
+- `agentic-eval` — Build evaluator/optimizer loops and rubric-driven refinement pipelines
+- `autoresearch` — Run autonomous experiments to improve a measurable metric
+
+**Governance & Supply Chain (2 skills)** — Agent controls, provenance, and integrity
+- `agent-governance` — Add policy enforcement, trust scoring, audit trails, and tool-access controls to agents
+- `agent-supply-chain` — Generate and verify integrity manifests for agent plugins and tools
 
 **Code Review (1 skill)** — Pull request integration
 - `review-comment-resolution` — Resolve PR review comments and push to completion
@@ -168,32 +195,37 @@ The repo-tracked baseline now includes `context-map`, and the live `~/.copilot` 
 - `git-worktrees` — Create and manage isolated Git worktrees for parallel lanes
 - `worktrunk` — Advanced worktree lifecycle, LLM-generated commits, and coordination
 
+**Utilities (1 skill)** — Context reduction for large local files
+- `ma` — Reduce large local files for understanding before deciding whether a full-fidelity read is necessary
+
 ### Using Skills
 
 Skills activate in three ways:
 
 - **You invoke directly** — When you know your task matches a skill's activation condition, just call it by name
 - **We recommend it** — The CLI watches context and suggests skills when boundaries match
-- **You ask `/help skills`** — List the installed skills or drill into one with `/help <skill-name>`
+- **You ask `/skills`** — Inspect the installed skills, then drill into one with `/help <skill-name>`
 
 Think of skills as specialized tools you grab when you recognize the problem. No guessing. Clear activation rules. Explicit boundaries.
 
 ### Quarterly Skill Review
 
-The skills catalog is reviewed quarterly for new additions, removals, or routing adjustments. Reviews are baked into quarterly planning cycles. See the [Skills Audit](./session-state/skills-audit.md) for the complete inventory.
+The skills catalog is reviewed quarterly for new additions, removals, or routing adjustments. Reviews are baked into quarterly planning cycles. For the current inventory, browse [`./skills/`](./skills/) or use `/skills` in the CLI.
 
 ## Awesome Copilot Adoption (Wave 1)
 
-Wave 1 adopts the highest-signal additions from [Awesome Copilot](https://github.com/github/awesome-copilot) without duplicating the planning, context-mapping, and agent-authoring surfaces this setup already has.
+Wave 1 records the initial adoption of the highest-signal additions from [Awesome Copilot](https://github.com/github/awesome-copilot) without duplicating the planning, context-mapping, and agent-authoring surfaces this setup already had. This section is historical adoption context, not a full live inventory of the current local plugin state.
 
-| Kind | Addition | Why it made wave 1 | Where it lives / durability |
+| Kind | Addition | Why it made wave 1 | Initial landing / durability |
 | --- | --- | --- | --- |
-| Plugin | `awesome-copilot@awesome-copilot` | Adds a lightweight discovery layer for re-checking new Awesome Copilot assets later. | Local plugin state only: the install is reflected in local `config.json` and `installed-plugins/awesome-copilot/`, while this README is the durable tracked record. |
-| Skill | `agent-governance` | Adds reusable governance patterns for tool access, approval gates, audit trails, and fail-closed behavior. | User-scope install under `~/.copilot/skills/agent-governance/` in the live main checkout. |
-| Skill | `agent-supply-chain` | Adds integrity-manifest and verification patterns for reviewing third-party agent/plugin content. | User-scope install under `~/.copilot/skills/agent-supply-chain/` in the live main checkout. |
-| Skill | `acquire-codebase-knowledge` | Adds a durable repo-onboarding / reconnaissance workflow for producing traceable codebase knowledge packs. | User-scope install under `~/.copilot/skills/acquire-codebase-knowledge/` in the live main checkout. |
+| Plugin | `awesome-copilot@awesome-copilot` | Adds a lightweight discovery layer for re-checking new Awesome Copilot assets later. | Historical machine-local install recorded in `config.json` and `installed-plugins/awesome-copilot/`; this README remains the durable tracked record for the adoption decision. |
+| Skill | `agent-governance` | Adds reusable governance patterns for tool access, approval gates, audit trails, and fail-closed behavior. | Initially installed as a user-scope skill in the live main checkout; it is now also tracked in this repository under [`./skills/agent-governance/`](./skills/agent-governance/). |
+| Skill | `agent-supply-chain` | Adds integrity-manifest and verification patterns for reviewing third-party agent/plugin content. | Initially installed as a user-scope skill in the live main checkout; it is now also tracked in this repository under [`./skills/agent-supply-chain/`](./skills/agent-supply-chain/). |
+| Skill | `acquire-codebase-knowledge` | Adds a durable repo-onboarding / reconnaissance workflow for producing traceable codebase knowledge packs. | Initially installed as a user-scope skill in the live main checkout; it is now also tracked in this repository under [`./skills/acquire-codebase-knowledge/`](./skills/acquire-codebase-knowledge/). |
 
 ### Install notes
+
+These commands are preserved as the reproducible install path for the original Wave 1 adoption decision.
 
 ```bash
 copilot plugin install awesome-copilot@awesome-copilot
@@ -204,8 +236,9 @@ gh skill install github/awesome-copilot acquire-codebase-knowledge --scope user
 
 - **Plugins are machine-local state.** In this setup, plugin enablement and marketplace cache details live in local `config.json` plus `installed-plugins/awesome-copilot/`; those are not the durable artifact for wave 1.
 - **The README is the durable artifact.** This file records what was adopted, why it was chosen, and how to reproduce the local install state later.
-- **User-scope skills land in the main `~/.copilot` checkout's `skills/` directory.** For this profile, `gh skill install --scope user` materializes the adopted skills there rather than inside ignored plugin caches.
-- **Those skill copies are currently local install state.** They live in a tracked-looking path, but for this wave the authoritative tracked artifact is the README update in this worktree rather than the live installed copies from the main checkout.
+- **This section is historical, not a live inventory.** Current local Awesome Copilot marketplace plugin state can evolve independently of the initial Wave 1 record.
+- **For live machine-local state, check the local config.** Use `config.json` and `installed-plugins/awesome-copilot/` to inspect the current local marketplace plugins instead of treating this section as a current-state report.
+- **The adopted skills are now also repo-tracked.** The initial user-scope skill installs were later brought into the repository's `./skills/` catalog, so the current repo tree is the best place to browse their present content.
 - **The commands above install the current upstream versions.** If you later need a pinned revision, record that ref explicitly instead of assuming the marketplace default stayed unchanged.
 
 ### Deferred / follow-on items
@@ -258,18 +291,18 @@ For the full naming scheme, conventions, and lifecycle examples, see [`git-workt
 1. Check worktree status: `git -C .worktrees/<CATEGORY>/<ID> status`
 2. Verify no uncommitted changes
 3. Merge or abandon the branch
-4. Remove: `mr_worktree_remove <ID>` or `git worktree remove .worktrees/<CATEGORY>/<ID>`
+4. Remove: `git worktree remove .worktrees/<CATEGORY>/<ID>` for category-scoped paths, or `mr_worktree_remove <ID>` when you are removing an `agent/<ID>` worktree through the helper tool
 5. Optionally delete the branch: `git branch -d agent/<ID>` or `git branch -d task/<ID>`
 
 **Monthly audit**: Run `git worktree list`, check for branches inactive 30+ days, archive orphaned worktrees.
 
-**54 existing worktrees** are being transitioned to this naming scheme. A proof-of-concept batch of 8 high-visibility worktrees has already been renamed. The remaining ~46 flat-pattern worktrees will migrate incrementally as their work completes.
+Older flat-pattern worktrees can be renamed incrementally as they are touched or retired, but the naming scheme above is the default for new worktrees and the migration target for legacy lanes.
 
 ---
 
 ## Custom Agents
 
-Beyond the built-in agents (task, explore, rubber-duck, code-review, general-purpose), this setup includes **4 custom agents** for specialized workflows:
+Beyond the built-in agents currently documented by Copilot CLI (`task`, `explore`, `general-purpose`, and `code-review`), this repository tracks **4 custom agents** for specialized workflows:
 
 | Agent | What It Does | Use When |
 |-------|-------------|----------|

@@ -37,3 +37,4 @@ applyTo: "session-state/**/*.md"
 ## Learned Rules
 
 <!-- New Rules appended below this line. Do not edit above this section -->
+1. [OTHER] When writing verification commands in session-state plans or handoff artifacts, keep scratch paths inside the target repository rather than `/tmp` or other external locations so the documented workflow respects workspace file-operation constraints
