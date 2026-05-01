@@ -1,72 +1,11 @@
 import { execFile } from "node:child_process";
-import { lstatSync, readFileSync, realpathSync, statSync } from "node:fs";
-import { homedir } from "node:os";
-import { join } from "node:path";
-import { approveAll } from "@github/copilot-sdk";
 import { joinSession } from "@github/copilot-sdk/extension";
-import { createMaHooks, createMaToolHandlers } from "./lib/runtime.mjs";
-
-// Sensitive path components and basenames mirroring internal/detect
-const SENSITIVE_BASENAMES = new Set([
-    ".env", ".env.local", "id_rsa", "id_ed25519",
-    "credentials", "known_hosts", "authorized_keys",
-]);
-const SENSITIVE_COMPONENTS = new Set([".ssh", ".aws", ".gnupg", ".kube"]);
-const EVENT_KIND_STARTED = "started";
-const EVENT_KIND_FINISHED = "finished";
-const EVENT_KIND_FAILED = "failed";
-const MAX_ACTIVE_CONTEXTS = 64;
-const sessionStateFileName = "session.json";
-const dashboardSessionState = {
-    runId: null,
-    startedAt: null,
-};
-const activeContextBySession = new Map();
-
-function isSensitivePath(filePath) {
-    if (typeof filePath !== "string" || filePath.trim() === "") {
-        return false;
-    }
-
-    const parts = filePath.split(/[\\/]/);
-    const base = parts[parts.length - 1];
-    if (SENSITIVE_BASENAMES.has(base)) return true;
-    return parts.some((p) => SENSITIVE_COMPONENTS.has(p));
-}
-
-function isSensitivePathResolved(filePath) {
-    if (isSensitivePath(filePath)) {
-        return true;
-    }
-
-    try {
-        return isSensitivePath(realpathSync(filePath));
-    } catch {
-        try {
-            if (lstatSync(filePath).isSymbolicLink()) {
-                return true;
-            }
-        } catch {
-            // Missing file or unreadable path — let ma surface the real error.
-        }
-
-        return false;
-    }
-}
-
-function findMaBinary() {
-    const repoRoot = process.cwd();
-    const candidates = [`${repoRoot}/ma`, `${repoRoot}/cmd/ma/ma`];
-    for (const candidate of candidates) {
-        try {
-            statSync(candidate);
-            return candidate;
-        } catch {
-            // continue
-        }
-    }
-    return "ma";
-}
+import {
+    fallbackForRead,
+    findMaBinary,
+    isSensitivePathResolved,
+    sensitivePathResponse,
+} from "./runtime.mjs";
 
 function runMaCommand(args, env) {
     return new Promise((resolve, reject) => {
@@ -82,89 +21,7 @@ function runMaCommand(args, env) {
     });
 }
 
-function dashboardRoot() {
-    if (process.env.MA_DASHBOARD_STATE_DIR) return process.env.MA_DASHBOARD_STATE_DIR;
-    if (process.platform === "darwin") return join(homedir(), "Library", "Caches", "ma", "dashboard");
-    if (process.platform === "win32") {
-        if (!process.env.LOCALAPPDATA) return null;
-        return join(process.env.LOCALAPPDATA, "ma", "dashboard");
-    }
-    if (process.env.XDG_CACHE_HOME) return join(process.env.XDG_CACHE_HOME, "ma", "dashboard");
-    return join(homedir(), ".cache", "ma", "dashboard");
-}
-
-function readDashboardSession() {
-    const root = dashboardRoot();
-    if (!root) return null;
-
-    try {
-        const payload = JSON.parse(readFileSync(join(root, sessionStateFileName), "utf-8"));
-        if (!payload || typeof payload.address !== "string" || payload.address === "") return null;
-        return payload;
-    } catch {
-        return null;
-    }
-}
-
-async function publishDashboardEvent(event) {
-    const dashboardSession = readDashboardSession();
-    if (!dashboardSession) return false;
-
-    try {
-        const response = await fetch(`http://${dashboardSession.address}/api/events`, {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify(event),
-        });
-        return response.ok;
-    } catch {
-        return false;
-    }
-}
-
-function buildSessionEvent({ kind, runId, startedAt, finishedAt, reason }) {
-    const summaryPrefix = kind === EVENT_KIND_STARTED ? "session started" : "session ended";
-    const summarySuffix = reason ? ` (${reason})` : "";
-
-    return {
-        kind,
-        id: runId,
-        command: "extension-session",
-        source: "extension",
-        startedAt,
-        finishedAt,
-        success: kind !== EVENT_KIND_FAILED,
-        changed: false,
-        payloadStatus: "none",
-        resultSummary: `${summaryPrefix}${summarySuffix}`,
-        error: kind === EVENT_KIND_FAILED ? `session ended (${reason || "error"})` : "",
-    };
-}
-
-const toolHandlers = createMaToolHandlers({
-    runMaCommand,
-    isSensitivePathResolved,
-});
-
-let sessionRef = null;
-const hooks = createMaHooks({
-    activeContextBySession,
-    log: async (message, options) => {
-        if (!sessionRef) {
-            return;
-        }
-
-        await sessionRef.log(message, options);
-    },
-    runMaCommand,
-    maxActiveContexts: MAX_ACTIVE_CONTEXTS,
-    publishDashboardEvent,
-    buildSessionEvent,
-    dashboardSessionState,
-});
-
 const session = await joinSession({
-    onPermissionRequest: approveAll,
     tools: [
         {
             name: "ma_smart_read",
@@ -183,7 +40,21 @@ const session = await joinSession({
                 },
                 required: ["path"],
             },
-            handler: toolHandlers.smartRead,
+            handler: async (args) => {
+                if (isSensitivePathResolved(args.path)) {
+                    return sensitivePathResponse(args.path);
+                }
+                try {
+                    const output = await runMaCommand(
+                        ["smart-read", args.path, "--json"],
+                        { MA_SOURCE: "extension" },
+                    );
+                    const result = JSON.parse(output);
+                    return result.output || fallbackForRead(args.path, new Error("empty smart-read output"));
+                } catch (err) {
+                    return fallbackForRead(args.path, err);
+                }
+            },
         },
         {
             name: "ma_compress",
@@ -202,10 +73,7 @@ const session = await joinSession({
             },
             handler: async (args) => {
                 if (isSensitivePathResolved(args.path)) {
-                    return {
-                        textResultForLlm: `Refused: sensitive path ${args.path}`,
-                        resultType: "denied",
-                    };
+                    return sensitivePathResponse(args.path);
                 }
                 try {
                     const output = await runMaCommand(
@@ -236,10 +104,7 @@ const session = await joinSession({
             },
             handler: async (args) => {
                 if (isSensitivePathResolved(args.path)) {
-                    return {
-                        textResultForLlm: `Refused: sensitive path ${args.path}`,
-                        resultType: "denied",
-                    };
+                    return sensitivePathResponse(args.path);
                 }
                 try {
                     const output = await runMaCommand(
@@ -270,10 +135,7 @@ const session = await joinSession({
             },
             handler: async (args) => {
                 if (isSensitivePathResolved(args.path)) {
-                    return {
-                        textResultForLlm: `Refused: sensitive path ${args.path}`,
-                        resultType: "denied",
-                    };
+                    return sensitivePathResponse(args.path);
                 }
                 try {
                     const output = await runMaCommand(
@@ -307,10 +169,7 @@ const session = await joinSession({
                 const paths = args.paths || [];
                 for (const p of paths) {
                     if (isSensitivePathResolved(p)) {
-                        return {
-                            textResultForLlm: `Refused: sensitive path ${p}`,
-                            resultType: "denied",
-                        };
+                        return sensitivePathResponse(p);
                     }
                 }
                 try {
@@ -326,8 +185,9 @@ const session = await joinSession({
             },
         },
     ],
-    hooks,
+    hooks: {
+        onSessionStart: async () => {
+            await session.log("ma extension loaded — smart-read and reduction tools available");
+        },
+    },
 });
-
-sessionRef = session;
-await session.log("ma extension loaded — smart-read and reduction tools available", { ephemeral: true });
