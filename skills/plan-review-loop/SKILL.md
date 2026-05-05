@@ -1,10 +1,10 @@
 ---
 name: plan-review-loop
-description: Use after `/plan` to run explicit plan review loops with customizable Jason and Freddy reviewers; replace the old ambient extension-based review with an explicit skill-driven workflow.
+description: "Use when a completed /plan needs explicit multi-reviewer approval and refinement before implementation begins."
 metadata:
   category: workflow
   audience: planning-agent
-  maturity: beta
+  maturity: stable
   kind: reference
 ---
 

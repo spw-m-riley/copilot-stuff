@@ -1,6 +1,6 @@
 ---
 name: git-worktrees
-description: Create and manage isolated Git worktrees for parallel branches, agent lanes, and safer cleanup.
+description: "Use when you need isolated Git worktrees for parallel branches, agent lanes, or safer cleanup."
 metadata:
   category: version-control
   audience: general-coding-agent

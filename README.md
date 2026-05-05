@@ -38,21 +38,23 @@ These live in [`./extensions/`](./extensions/) and are auto-discovered by the Co
 | --------- | ------------ |
 | `lore` | Local-first memory and continuity for Copilot CLI. Handles session recall, learning from your workflow, and keeping context sharp across sessions. Keep Lore-specific setup, rollout, maintenance, and health docs in [`./extensions/lore`](./extensions/lore). |
 | `ma` | Adds reduced-context file-reading tools (`ma_smart_read`, `ma_skeleton`, `ma_compress`, `ma_minify_schema`, `ma_dedup`) and injects reduction-first guidance for understanding-oriented file reads. |
-| `ci-migration-context` | Detects CI migration requests (e.g., CircleCI→GitHub Actions) and injects extra migration context + checklist into parent turns and delegated child agents. |
-| `fleet-model-policy` | Steers implementation-heavy fleet work toward `GPT-5.3-codex`, then propagates that policy preference into delegated implementation-style child agents. |
-| `gha-url-router` | Detects GitHub Actions run/job URLs in prompts, injects structured routing context, and passes that context into delegated investigation agents. |
+| `ci-migration-context` | Detects CI migration requests (e.g., CircleCI→GitHub Actions), injects extra migration context into parent turns, and caches the same guidance for child-agent propagation when the runtime supports that hook. |
+| `fleet-model-policy` | Steers implementation-heavy fleet work toward the implementation-focused default, then caches that preference for child-agent propagation when the runtime supports it. |
+| `gha-url-router` | Detects GitHub Actions run/job URLs in prompts, injects structured routing context, and caches that routing data for delegated investigation agents when child-hook support is available. |
 | `post-edit-lint` | Watches `edit`-style tool calls and runs targeted formatting, linting, and validation for JS/TS, JSON, YAML, Terraform, and shell files, feeding results back into the conversation. |
-| `worktree-manager` | Adds `mr_worktree_create`, `mr_worktree_list`, `mr_worktree_status`, and `mr_worktree_remove` tools, plus injects worktree guidance into implementation-style child agents so edits stay isolated. |
+| `worktree-manager` | Adds `mr_worktree_create`, `mr_worktree_list`, `mr_worktree_status`, `mr_worktree_remove`, and `mr_worktree_merge` tools, plus injects worktree guidance into the parent session and prepares the same guidance for child agents when the runtime supports that hook. |
 | `copilot-healthcheck` | Adds the `mr_healthcheck_run` tool — a lightweight environment check that reports repo state and key local Copilot files/tools. |
 | `rtk-hook` | Runs `rtk hook copilot` on Bash pre-tool calls so RTK can deny raw commands and steer Copilot CLI toward the token-saving `rtk ...` equivalent. See [`./RTK.md`](./RTK.md). |
 
 ### Child-Agent Context Propagation
 
-Several extensions inject policy and guidance into delegated child agents:
+Several extensions inject policy and guidance into the parent session today and keep child-agent propagation handlers wired for future runtime support:
 - **fleet-model-policy** → implementation-style child agents (model preference)
 - **ci-migration-context** → CI migration & workflow-debug child agents (migration checklists)
 - **gha-url-router** → GitHub Actions investigation child agents (run/job context)
 - **worktree-manager** → implementation/edit/task child agents (worktree guidance)
+
+In the current bundled Copilot CLI SDK, named `onSubagentStart` hooks are not dispatched, so this child-agent inheritance path is **wired but currently dormant**. Treat it as future-facing behavior until the runtime adds a supported child-interception hook.
 
 ## Workflow: Research → Plan → Implement
 
@@ -82,7 +84,7 @@ Use the /plan-review-loop skill to review and refine the current plan
 ```
 
 ### Step 3: Implement (Execute)
-Once the plan is approved, switch out of plan mode if needed and use that approved plan as the execution contract. Then use `/fleet` or direct agent delegation for implementation. Child agents inherit worktree guidance, model preferences, and fleet policy automatically.
+Once the plan is approved, switch out of plan mode if needed and use that approved plan as the execution contract. Then use `/fleet` or direct agent delegation for implementation. Parent turns receive worktree guidance and fleet policy immediately; the child-agent inheritance path is wired but currently dormant until the runtime supports `onSubagentStart`.
 
 ---
 
@@ -93,7 +95,7 @@ Once the plan is approved, switch out of plan mode if needed and use that approv
 
 - **@ mention files**: Point directly at files you're concerned about, especially for audits or refactors.
 
-- **Model preferences matter**: Some models excel at research (GPT-5.4, Claude Sonnet/Opus), others at implementation (GPT-5.3-codex, Claude Opus). Experiment and find what works for your workflow.
+- **Model preferences matter**: Different models excel at different tasks. Treat model choice as an empirical workflow preference, not a hard-coded rule, and adjust it to the phase of work.
 
 ### Real-World Examples
 
@@ -113,7 +115,7 @@ Then review the finished plan explicitly:
 ```
 Use the /plan-review-loop skill to review and refine the current plan
 ```
-Once Jason and Freddy both approve, switch out of plan mode if needed and implement the approved plan with `/fleet` — child agents inherit `ci-migration-context` guidance automatically.
+Once Jason and Freddy both approve, switch out of plan mode if needed and implement the approved plan with `/fleet` — the parent session receives `ci-migration-context` guidance immediately, and the child-agent inheritance path remains pending runtime hook support.
 
 **Example 2: Type Safety Audit** (Finding and fixing `any` in TypeScript)
 ```
@@ -256,21 +258,21 @@ gh skill install github/awesome-copilot acquire-codebase-knowledge --scope user
 
 ## Model Selection Tips
 
-**All models are not created equal.** Each one has strengths and weak spots.
+**All models are not created equal.** Match the model to the phase of work instead of treating one choice as universally best.
 
 ### Research Phase
-- **Good**: GPT-5.4, Claude Sonnet, Claude Opus, Gemini (good at exploration and pattern synthesis)
-- **Not great**: GPT-5.3-codex (strong at implementation, weaker at research discovery)
+- Prefer models that are strong at exploration, synthesis, and ambiguity reduction.
+- Be skeptical of models that jump straight into implementation before mapping the space.
 
 ### Implementation Phase
-- **Good**: GPT-5.3-codex, GPT-5.4, Claude Opus (fast, reliable, handles detailed edits)
-- **Not great**: Gemini (hit-or-miss on complex implementation)
+- Prefer models that stay grounded in the local codebase and make precise, low-churn edits.
+- Be skeptical of models that over-generalize past the repository's actual patterns.
 
 ### Reasoning Effort
-- Don't assume "max reasoning" is always better. Example: GPT-5.4's default is `medium`, but you might prefer `high`. Experiment. (`xhigh` often introduces more mistakes than it solves.)
+- Don't assume "max reasoning" is always better. Start from the model's default and raise it only when the task genuinely needs deeper search or synthesis.
 
 ### The Sweet Spot
-Find the model and reasoning level that works for *you* and your workflow. No universal answer — it's personal preference + output quality for your use cases.
+Find the model and reasoning level that works for *you* and your workflow. Re-check periodically because the best choice can change as models and tasks shift.
 
 ## Worktree Management
 

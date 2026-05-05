@@ -1,6 +1,6 @@
 ---
 name: project-references-migration
-description: Migrate layered TypeScript workspaces to project references incrementally without breaking package boundaries or editor resolution.
+description: "Use when a layered TypeScript workspace needs an incremental project-references migration without breaking package boundaries or editor resolution."
 metadata:
   category: typescript
   audience: general-coding-agent

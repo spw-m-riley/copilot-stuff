@@ -55,12 +55,12 @@ This file will contain a growing ruleset that improves over time. **At session s
 ### How it works
 
 1. When the user corrects you or you make a mistake, **immediately append a new rule** to the appropriate `## Learned Rules` section before you consider the task complete.
-2. Rules are numbered sequentially and written as clear, imperative instructions.
+2. Rules are numbered sequentially when created and written as clear, imperative instructions. Do not renumber after archival; numbering gaps can reflect archived or superseded rules.
 3. Format: `N. [CATEGORY] Never/Always do X - because Y`
 4. Categories: `[TYPESCRIPT]`, `[JAVASCRIPT]`, `[GO]`, `[TERRAFORM]`, `[YAML]`, `[JSON]`, `[NEOVIM]`, `[MARKDOWN]`, `[GITHUB-ACTIONS]`, `[COMMUNICATION]`, `[DOCS]`, `[EXTENSIONS]`, `[GIT]`, `[INSTRUCTIONS]`, `[MEMORY]`, `[RESEARCH]`, `[REVIEW]`, `[SEARCH]`, `[SECURITY]`, `[SHELL]`, `[WORKFLOW]`, `[WORKTREE]`
 5. Before starting any task, scan all rules below for relevant constraints
 6. If two rules conflict, the higher-numbered (newer) rule wins
-7. Never delete rules. If a rule becomes obsolete, append a new rule that supersedes it.
+7. Never remove a rule from the active file without first archiving its text and rationale in `copilot-instructions-deprecated.md`; if a rule should stay active but change, append a newer rule that supersedes it.
 8. Learned rules should be stored in the most specific applicable instruction file instead of this file when one exists.
 9. If a correction, preference, or mistake applies to files covered by a file in `$HOME/.copilot/instructions/*.instructions.md`, append the rule to that instruction file's `## Learned Rules` section.
 10. Use this file's `## Learned Rules` only for global rules that are not specific to any instruction file.
@@ -91,8 +91,8 @@ This file will contain a growing ruleset that improves over time. **At session s
 
 When a global rule becomes too specialized to a file type or appears in multiple file-type instruction files:
 1. Create the file-type rule in `$HOME/.copilot/instructions/<TYPE>.instructions.md`
-2. Update the global rule with a note: "See <filename> for file-type-specific details"
-3. Do not delete the global rule; keep it as a summary for cross-repo reference
+2. If the root file still needs a routing reminder, replace the old active rule with a brief note pointing to the file-type instruction file
+3. Archive the superseded active-rule text and rationale in `copilot-instructions-deprecated.md` before removing it from the active ruleset
 4. In the file-type instruction file, reference the parent global rule if needed
 
 **Important workflow-category note:** Use `[GITHUB-ACTIONS]` for GitHub Actions workflow patterns. The older `[ACTIONS]` label is retired for new rules because it became overloaded with Copilot CLI execution-flow guidance.
@@ -219,3 +219,4 @@ Some rules have been superseded or are no longer applicable. See `copilot-instru
 83. [EXTENSIONS] When RTK routing matters in this `~/.copilot` workflow, invoke `rtk ...` explicitly instead of assuming the `rtk-hook` extension will block the raw Bash command - this session showed `rtk hook copilot` returning the correct deny-with-suggestion response while the CLI still executed the original `git status`
 84. [WORKFLOW] When a repo-local extension or test surface moves to a new path, update the tracked README and CI/test-command references in the same slice before promotion - this `ma` push found a new `extension/` tree while tracked docs and `ci.yml` still pointed at `.github/extensions/ma`, which would have left automation and documentation stale
 85. [EXTENSIONS] Before implementing a Copilot CLI hook, verify the hook name exists in the shipped SDK docs/types for the current CLI version; issue specs can mention unsupported surfaces like `onSubagentStart`, and unknown hook keys are silently ignored at runtime
+86. [EXTENSIONS] In Copilot CLI session hooks, always normalize `toolArgs` before reading fields like `path`, `view_range`, or `forceReadLargeFiles`; interactive runtime payloads can arrive as JSON strings even when object-shaped args appear elsewhere - this session's MA `onPreToolUse` deny logic silently skipped until stringified args were parsed

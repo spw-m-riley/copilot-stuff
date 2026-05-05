@@ -61,16 +61,17 @@ If the user supplies a focus area (for example: "architecture only" or "testing 
 
 ### Phase 1: Scan and Read Intent
 
-1. Run the scan script from the target project root:
+1. Run the scan script from the target project root using the skill's repo-relative path. In repositories that keep skills at the top level, use:
    ```bash
-   python3 "$SKILL_ROOT/scripts/scan.py" --output docs/codebase/.codebase-scan.txt
+   python3 skills/acquire-codebase-knowledge/scripts/scan.py --output docs/codebase/.codebase-scan.txt
    ```
-   Where `$SKILL_ROOT` is the absolute path to the skill folder. Works on Windows, macOS, and Linux.
 
-   **Quick start:** If you have the path inline:
+   If the repository stores skills under `.github/skills/`, use the equivalent repo-relative path instead:
    ```bash
-   python3 /absolute/path/to/skills/acquire-codebase-knowledge/scripts/scan.py --output docs/codebase/.codebase-scan.txt
+   python3 .github/skills/acquire-codebase-knowledge/scripts/scan.py --output docs/codebase/.codebase-scan.txt
    ```
+
+   Keep the path repo-relative; do not hard-code an absolute machine-local skill path.
 
 2. Search for `PRD`, `TRD`, `README`, `ROADMAP`, `SPEC`, `DESIGN` files and read them.
 3. Summarise the stated project intent before reading any source code.
@@ -150,7 +151,7 @@ Validation pass criteria:
 
 ## Enhanced Scan Output Sections
 
-The `scan.py` script now produce the following sections in addition to the original output:
+The `scan.py` script now produces the following sections in addition to the original output:
 
 - **CODE METRICS** — Total files, lines of code by language, largest files (complexity signals)
 - **CI/CD PIPELINES** — Detected GitHub Actions, GitLab CI, Jenkins, CircleCI, etc.
@@ -180,7 +181,6 @@ Use these sections during Phase 2 to inform investigation questions and identify
 | Asset | When to load |
 |-------|-------------|
 | [`scripts/scan.py`](scripts/scan.py) | Phase 1 — run first, before reading any code (Python 3.8+ required) |
-
 | [`references/inquiry-checkpoints.md`](references/inquiry-checkpoints.md) | Phase 2 — load for per-template investigation questions |
 | [`references/stack-detection.md`](references/stack-detection.md) | Phase 2 — only if stack is ambiguous |
 | [`assets/templates/STACK.md`](assets/templates/STACK.md) | Phase 3 step 1 |

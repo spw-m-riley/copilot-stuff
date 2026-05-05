@@ -1,14 +1,14 @@
 ---
 description: 'Guidance for session-state markdown artifacts in this workspace'
-applyTo: "session-state/**/*.md"
+applyTo: "**/session-state/**/*.md"
 ---
 
 # Session artifact guidance
 
 ## Purpose and Scope
 
-- Applies to `session-state/**/*.md` artifacts in this workspace.
-- This file overrides the broader `markdown.instructions.md` guidance for session-state artifacts.
+- Applies to `**/session-state/**/*.md` artifacts in this workspace.
+- This file adds session-state-specific guidance on top of the broader `markdown.instructions.md` rules.
 - Use these rules for plans, research notes, reviews, and execution handoffs that need to stay concise, structured, and easy to resume.
 
 ## Core Guidance
