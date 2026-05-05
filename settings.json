@@ -9,7 +9,9 @@
   "continueOnAutoMode": true,
   "includeCoAuthoredBy": false,
   "showReasoning": true,
-  "extensions": {},
+  "extensions": {
+    "mode": "load_and_augment"
+  },
   "enabledPlugins": {
     "copilot-sdk@awesome-copilot": true,
     "awesome-copilot@awesome-copilot": true
@@ -23,13 +25,15 @@
     "showAgent": true
   },
   "extraKnownMarketplaces": {},
+  "alt_screen": true,
+  "ide.auto_connect": true,
+  "ide.open_diff_on_edit": true,
+  "model": "gpt-5.4",
+  "effortLevel": "xhigh",
   "lastLoggedInUser": {
     "host": "https://github.com",
     "login": "spw-m-riley"
   },
-  "alt_screen": true,
-  "ide.auto_connect": true,
-  "ide.open_diff_on_edit": true,
   "firstLaunchAt": "2026-03-11T00:00:00.000Z",
   "trustedFolders": [
     "/Users/matthew.riley/.copilot",
@@ -55,7 +59,5 @@
       "cache_path": "/Users/matthew.riley/.copilot/installed-plugins/awesome-copilot/awesome-copilot"
     }
   ],
-  "rollout": {},
-  "model": "gpt-5.4",
-  "effortLevel": "xhigh"
+  "rollout": {}
 }

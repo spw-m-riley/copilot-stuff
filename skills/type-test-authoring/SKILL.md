@@ -1,6 +1,6 @@
 ---
 name: type-test-authoring
-description: Write compile-time TypeScript tests that lock down inference, assignability, and negative cases with the repo's existing pattern.
+description: "Use when compile-time TypeScript tests should lock down inference, assignability, or negative cases using the repo's existing pattern."
 metadata:
   category: typescript
   audience: general-coding-agent

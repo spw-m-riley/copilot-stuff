@@ -1,6 +1,6 @@
 ---
 name: mocha-to-jest-migration
-description: Migrate JavaScript or TypeScript test suites from Mocha, Chai, or Sinon to Jest in small verified batches.
+description: "Use when a JavaScript or TypeScript suite still depends on Mocha, Chai, or Sinon and needs an incremental Jest migration."
 metadata:
   category: migrations
   audience: general-coding-agent

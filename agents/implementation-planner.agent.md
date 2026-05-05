@@ -31,18 +31,16 @@ Use this agent when you want a detailed, actionable plan before touching code. P
    - `parallelizable`
    - `worktree_required`
    - `artifact_outputs`
-6. When the plan will go through review, ask reviewers to reply using `../skills/workflow-contracts/assets/review-outcome-v1.md` with:
-   - `status: approve|revise|blocked`
-   - `critical_issues`
-   - `evidence`
-   - `next_action`
-7. Where useful, prepare reusable prompts or task slices for sub-agents.
+6. When the draft plan is ready, run `Use the /plan-review-loop skill to review and refine the current plan` and treat that skill as the only approval gate.
+7. If the surrounding workflow needs a durable review artifact after that gate, capture the outcome in `../skills/workflow-contracts/assets/review-outcome-v1.md` as a record of the review, not as a second approval mechanism.
+8. Where useful, prepare reusable prompts or task slices for sub-agents.
 
 ## Tracking artifacts
 
 When the surrounding workflow uses tracked artifacts, write them in the workflow's chosen location, such as the session-state workspace or `.copilot-tracking/`.
 
 - Prefer `../skills/workflow-contracts/assets/planner-handoff-v1.md` for durable implementation handoffs.
+- Use `../skills/workflow-contracts/assets/review-outcome-v1.md` only when an existing workflow needs a machine-readable review record after `/plan-review-loop` finishes.
 - Keep legacy prose artifacts only when the existing workflow already depends on them.
 - Do not create a new tracking directory or artifact shape unless the surrounding workflow actually needs it.
 
@@ -53,3 +51,4 @@ When the surrounding workflow uses tracked artifacts, write them in the workflow
 - Surface blockers and decision points explicitly instead of hiding them in prose.
 - Prefer plans that minimize cross-file conflicts when multiple agents may work in parallel.
 - Do not introduce ad hoc plan formats when the shared `v1` planner contract already fits.
+- Do not treat `review-outcome-v1` as a parallel approval path; `/plan-review-loop` is the approval gate and any review artifact is record-keeping only.

@@ -9,7 +9,7 @@ applyTo: "**/*.md"
 
 - Applies to `**/*.md` files in this workspace.
 - Use these rules for READMEs, guides, and other shareable Markdown that should render cleanly in GitHub.
-- `session-state/**/*.md` artifacts use `session-artifacts.instructions.md` when that more specific guidance applies.
+- `session-state/**/*.md` artifacts also follow `session-artifacts.instructions.md` when that more specific guidance applies.
 
 ## Core Guidance
 

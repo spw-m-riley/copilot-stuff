@@ -1,6 +1,6 @@
 ---
 name: worktrunk
-description: Configure and use Worktrunk (wt) for worktree lifecycle management, hooks, LLM commits, and parallel agent workflows.
+description: "Use when a user needs to configure or operate Worktrunk (wt) for worktree lifecycle management, hooks, LLM commits, or parallel agent workflows."
 metadata:
   category: version-control
   audience: general-coding-agent
