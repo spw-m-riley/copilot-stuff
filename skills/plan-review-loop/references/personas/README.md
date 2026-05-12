@@ -109,7 +109,7 @@ To customize the reviewers used by the skill:
 
 1. **Create or edit** persona files in this directory
 2. **Name each file** `<id>.md` (matching the `id` field in the frontmatter)
-3. **Reload skills** — run `/skills reload` in your Copilot session
+3. **Reload skills** — run `/skills reload` in your agent session
 4. **Invoke the skill** — use `/plan-review-loop` to run the new personas
 
 ### Example: Add a "Performance" Reviewer

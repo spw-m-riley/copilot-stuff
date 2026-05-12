@@ -40,16 +40,16 @@ command = "llm -m claude-haiku-4.5"
 command = "aichat -m claude:claude-haiku-4.5"
 ```
 
-### Claude Code `claude -p` — only if Claude Code CLI is installed
+### LLM CLI tools — example configurations
 
-> **Note:** `claude -p` is the Claude Code CLI binary. This only applies if you have Claude Code installed separately from the Copilot CLI.
+> **Note:** The examples below show common LLM CLI tools. Use the configuration that matches your installed agent CLI or LLM tool.
 
 ```toml
 [commit.generation]
 command = "CLAUDECODE= MAX_THINKING_TOKENS=0 claude -p --no-session-persistence --model=haiku --tools='' --disable-slash-commands --setting-sources='' --system-prompt=''"
 ```
 
-- `CLAUDECODE=` unsets the nesting guard so the call works from inside a Claude Code session
+- Unsets any nesting guard so the call works standalone
 - `--no-session-persistence` prevents polluting `claude --continue` history
 
 ## Branch summary setup

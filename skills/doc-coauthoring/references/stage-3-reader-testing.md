@@ -55,7 +55,7 @@ These questions guide your testing approach.
 
 ### Approach 1: Testing with Sub-Agent Access
 
-If you have access to sub-agents (e.g., Claude Code or similar multi-agent environment), you can perform reader testing directly without user involvement.
+If you have access to sub-agents (e.g., any LLM-based agent harness that supports spawning sub-instances), you can perform reader testing directly without user involvement.
 
 **Step 1: Invoke Sub-Agent with Document Only**
 

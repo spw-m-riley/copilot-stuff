@@ -24,6 +24,7 @@ Your personal Copilot CLI setup — a collection of instructions, agents, skills
 | Skill | [`tsc-error-triage`](./skills/tsc-error-triage/SKILL.md) | Fix TypeScript compiler failures in root-cause order before patching leaves. |
 | Agent | [`typescript-api-test-generator`](./agents/typescript-api-test-generator.agent.md) | Add or expand runtime tests for TypeScript APIs, handlers, and Lambda flows. |
 | Skill | [`context-map`](./skills/context-map/SKILL.md) | Map likely files, dependencies, tests, and reference patterns before multi-file planning or implementation. |
+| Skill | [`fallow`](./skills/fallow/SKILL.md) | Audit JS/TS dead code, duplication, boundaries, and cleanup flows with Fallow. |
 | Skill | [`ma`](./skills/ma/SKILL.md) | Reduce large local files for understanding before deciding whether a full-fidelity read is necessary. |
 
 ## Extensions
@@ -188,12 +189,15 @@ The categories below describe the current repo-tracked skills in this worktree. 
 **Code Review (1 skill)** — Pull request integration
 - `review-comment-resolution` — Resolve PR review comments and push to completion
 
-**CI/CD (1 skill)** — GitHub Actions troubleshooting
-- `github-actions-failure-triage` — GitHub Actions broke. Find the root cause and fix it.
+**CI/CD (1 skill)** - GitHub Actions troubleshooting
+- `github-actions-failure-triage` - GitHub Actions broke. Find the root cause and fix it.
 
-**Authoring & Configuration (2 skills)** — Skill creation and setup workflows
-- `skill-authoring` — Write reusable agent skills from scratch with activation conditions
-- `init` — Create or update copilot-instructions.md and per-file instruction files
+**Code Quality (1 skill)** - JS/TS code-health analysis and cleanup guidance
+- `fallow` - Use Fallow for dead code, duplication, complexity, boundary, and cleanup workflows in JS/TS repos
+
+**Authoring & Configuration (2 skills)** - Skill creation and setup workflows
+- `skill-authoring` - Write reusable agent skills from scratch with activation conditions
+- `init` - Create or update copilot-instructions.md and per-file instruction files
 
 **Version Control (2 skills)** — Worktree and branching workflows
 - `git-worktrees` — Create and manage isolated Git worktrees for parallel lanes

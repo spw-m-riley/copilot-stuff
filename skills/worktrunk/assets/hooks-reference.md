@@ -160,7 +160,7 @@ stop = "lsof -ti :{{ branch | hash_port }} -sTCP:LISTEN | xargs kill 2>/dev/null
 
 ## Important: `--no-cd` invocations
 
-When Worktrunk creates a worktree via a subprocess — for example, when the Copilot CLI worktree-manager extension calls `wt switch --create --no-cd` — `post-start` hooks run from the **caller's cwd**, not the new worktree directory.
+When Worktrunk creates a worktree via a subprocess — for example, when an agent harness worktree-manager extension calls `wt switch --create --no-cd` — `post-start` hooks run from the **caller's cwd**, not the new worktree directory.
 
 Hooks that do directory-relative work (e.g. `npm ci`) must use `{{ worktree_path }}` explicitly:
 

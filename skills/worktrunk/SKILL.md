@@ -56,7 +56,7 @@ Use this skill when a user needs to configure `wt`, set up LLM commit messages, 
 
 ## Workflow
 
-1. **Configure worktree path** — set `worktree-path` in user config (inside-repo `.worktrees/` is recommended for Copilot CLI worktree-manager compatibility)
+1. **Configure worktree path** — set `worktree-path` in user config (inside-repo `.worktrees/` is recommended for agent harness worktree-manager compatibility)
 2. **Set up LLM commits** — add `[commit.generation]` block; see [`assets/llm-commits-setup.md`](assets/llm-commits-setup.md)
 3. **Add project hooks** — author `.config/wt.toml` hooks for install, dev server, DB, CI gates; see [`assets/hooks-reference.md`](assets/hooks-reference.md)
 4. **Enable branch summaries** (optional) — `[list] summary = true` in user config
