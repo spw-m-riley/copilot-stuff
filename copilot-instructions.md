@@ -38,6 +38,7 @@
 ## RTK usage
 
 - Use RTK as the token-saving command layer in this workspace.
+- When an RTK equivalent exists for a shell command, run the `rtk ...` form directly instead of the raw command.
 - Run RTK meta commands directly when you need RTK-specific insight or passthrough behavior:
   - `rtk gain`
   - `rtk gain --history`
@@ -223,3 +224,5 @@ Some rules have been superseded or are no longer applicable. See `copilot-instru
 87. [WORKFLOW] When Matt asks to complete a pull request description and `gh` CLI access is available, update the PR description directly instead of only drafting text in chat - this correction explicitly requested execution rather than a copy-paste template
 88. [REVIEW] When Matt confirms a platform is retired for the active repository (for example Sonar in `aws-referral-api-v2`), treat new review comments tied to that platform as cleanup/removal work rather than further integration fixes - this session clarified that remaining Sonar references should be removed, not updated
 89. [WORKFLOW] In `aws-referral-api-v2`, when a local commit is blocked only by the `validate:gitleaks` leg and Matt says gitleaks is not needed for that slice, skip only the gitleaks leg while keeping the rest of the commit hook path intact - this session needed the workflow branch committed without bypassing CircleCI config validation or lint-staged
+90. [EXTENSIONS] Always run RTK directly whenever an equivalent command exists in this `~/.copilot` workflow; do not rely on hook-time deny/suggest behavior for adoption - Matt explicitly wants RTK to run whenever it can be used
+91. [WORKFLOW] Always honor the active `.fallowrc` scope (especially `ignorePatterns`) before choosing analysis targets or remediation plans - this correction clarified that `extensions/lore` is explicitly out of scope for root `fallow health`

@@ -71,49 +71,83 @@ function parseRtkOutput(stdout) {
   }
 }
 
+function extractHookSpecificOutput(parsed) {
+  if (!parsed || typeof parsed.hookSpecificOutput !== "object" || !parsed.hookSpecificOutput) {
+    return null;
+  }
+  return parsed.hookSpecificOutput;
+}
+
+function extractUpdatedInput(hookSpecificOutput) {
+  if (!hookSpecificOutput || typeof hookSpecificOutput.updatedInput !== "object") {
+    return null;
+  }
+  return hookSpecificOutput.updatedInput;
+}
+
+function normalizedToolArgs(toolArgs) {
+  if (toolArgs && typeof toolArgs === "object" && !Array.isArray(toolArgs)) {
+    return toolArgs;
+  }
+  return {};
+}
+
+function assignStringField(target, field, value) {
+  if (typeof value === "string") {
+    target[field] = value;
+  }
+}
+
+function buildModifiedArgs(input, updatedInput) {
+  if (typeof updatedInput?.command !== "string") {
+    return null;
+  }
+
+  return {
+    ...normalizedToolArgs(input.toolArgs),
+    command: updatedInput.command,
+  };
+}
+
 function toPreToolUseOutput(input, parsed) {
-  const hookSpecificOutput =
-    parsed && typeof parsed.hookSpecificOutput === "object" && parsed.hookSpecificOutput
-      ? parsed.hookSpecificOutput
-      : null;
-
-  const updatedInput =
-    hookSpecificOutput && typeof hookSpecificOutput.updatedInput === "object"
-      ? hookSpecificOutput.updatedInput
-      : null;
-
+  const hookSpecificOutput = extractHookSpecificOutput(parsed);
+  const updatedInput = extractUpdatedInput(hookSpecificOutput);
   const output = {};
-
-  if (typeof parsed?.permissionDecision === "string") {
-    output.permissionDecision = parsed.permissionDecision;
-  }
-
-  if (typeof parsed?.permissionDecisionReason === "string") {
-    output.permissionDecisionReason = parsed.permissionDecisionReason;
-  }
-
-  if (typeof updatedInput?.command === "string") {
-    output.modifiedArgs = {
-      ...(input.toolArgs && typeof input.toolArgs === "object" && !Array.isArray(input.toolArgs)
-        ? input.toolArgs
-        : {}),
-      command: updatedInput.command,
-    };
+  assignStringField(output, "permissionDecision", parsed?.permissionDecision);
+  assignStringField(output, "permissionDecisionReason", parsed?.permissionDecisionReason);
+  const modifiedArgs = buildModifiedArgs(input, updatedInput);
+  if (modifiedArgs) {
+    output.modifiedArgs = modifiedArgs;
   }
 
   return Object.keys(output).length > 0 ? output : null;
+}
+
+function shouldHandlePreToolUse(input) {
+  if (input.toolName !== "bash") {
+    return false;
+  }
+
+  const command = commandFromToolArgs(input.toolArgs);
+  return Boolean(command && command.trim());
+}
+
+async function logMissingRtkOnce(session, result) {
+  if (missingRtkLogged) {
+    return;
+  }
+  missingRtkLogged = true;
+  await session.log(`rtk-hook unavailable; failing open: ${result.stderr || "rtk not found"}`, {
+    ephemeral: true,
+    level: "warning",
+  });
 }
 
 const session = await joinSession({
   onPermissionRequest: approveAll,
   hooks: {
     onPreToolUse: async (input) => {
-      if (input.toolName !== "bash") {
-        return;
-      }
-
-      const command = commandFromToolArgs(input.toolArgs);
-      if (!command || !command.trim()) {
+      if (!shouldHandlePreToolUse(input)) {
         return;
       }
 
@@ -122,13 +156,7 @@ const session = await joinSession({
       });
 
       if (!result.ok && !result.stdout.trim()) {
-        if (!missingRtkLogged) {
-          missingRtkLogged = true;
-          await session.log(`rtk-hook unavailable; failing open: ${result.stderr || "rtk not found"}`, {
-            ephemeral: true,
-            level: "warning",
-          });
-        }
+        await logMissingRtkOnce(session, result);
         return;
       }
 

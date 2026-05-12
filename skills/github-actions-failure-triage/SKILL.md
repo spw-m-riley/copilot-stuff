@@ -91,7 +91,7 @@ Do not collect secret values. Only confirm whether the expected names, scopes, a
 5. Apply the smallest justified change only after the evidence supports it.
 6. Validate as narrowly as possible:
    - relevant repository checks for the touched surface
-   - workflow linting such as `actionlint` when available or already expected
+   - workflow linting with `action-validator` (or the repo's established equivalent) when available
    - targeted rerun, check, or workflow verification where practical
 7. Summarize the result using [`assets/triage-summary-template.md`](assets/triage-summary-template.md), including evidence, change made, validation, and any remaining blocker.
 8. If the failure really belongs to migration design, review-comment handling, or admin-only settings, stop and hand off cleanly instead of stretching the skill.
@@ -137,7 +137,7 @@ Use this as the fast path once the failure bucket is known:
 ## Validation
 
 - Run the repository's relevant validation commands for the touched surface.
-- If workflow files changed, run workflow linting such as `actionlint` when available.
+- If workflow files changed, run workflow linting with `action-validator` (or the repo's established equivalent).
 - Re-check the exact failing workflow, job, or check when practical instead of relying only on generic local validation.
 - If the change touches artifact, cache, or output wiring, confirm both the producer and consumer paths before calling the fix complete.
 - If the failure stayed ambiguous after reading the logs, prefer escalation or extra debug evidence over repeated reruns.

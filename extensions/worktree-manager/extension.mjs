@@ -117,6 +117,80 @@ async function branchExists(root, branchName) {
   return result.ok;
 }
 
+function parseWtWorktrees(stdout) {
+  try {
+    const parsed = JSON.parse(stdout);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function findWorktreePathByBranch(worktrees, branchName) {
+  const entry = worktrees.find((worktree) => worktree?.branch === branchName);
+  return entry?.path ?? null;
+}
+
+async function resolveWorktreePath(repoRoot, branchName, fallbackPath) {
+  if (!(await checkWtAvailable())) {
+    return fallbackPath;
+  }
+
+  const listResult = await run("wt", ["-C", repoRoot, "list", "--format=json"]);
+  if (!listResult.ok) {
+    return fallbackPath;
+  }
+
+  const listedPath = findWorktreePathByBranch(parseWtWorktrees(listResult.stdout), branchName);
+  return listedPath || fallbackPath;
+}
+
+function formatCreatedMessage(worktreePath, branchName) {
+  return `Created ${worktreePath} on branch ${branchName}`;
+}
+
+function parseWtCreatedPath(stdout) {
+  try {
+    const parsed = JSON.parse(stdout);
+    return typeof parsed?.path === "string" ? parsed.path : null;
+  } catch {
+    return null;
+  }
+}
+
+async function createWorktreeWithWt(root, branchName, baseRef) {
+  const wtResult = await run("wt", [
+    "-C",
+    root,
+    "switch",
+    "--create",
+    branchName,
+    "--base",
+    baseRef,
+    "--format=json",
+    "--no-cd",
+  ]);
+  if (!wtResult.ok) {
+    return null;
+  }
+
+  return parseWtCreatedPath(wtResult.stdout);
+}
+
+async function createWorktreeWithGit(root, safeId, branchName, baseRef) {
+  const worktreePath = path.join(root, ".worktrees", safeId);
+  const result = await run("git", ["worktree", "add", worktreePath, "-b", branchName, baseRef], {
+    cwd: root,
+  });
+  if (!result.ok) {
+    return {
+      error: result.stderr || result.stdout || `Failed to create worktree ${worktreePath}`,
+    };
+  }
+
+  return { createdPath: worktreePath };
+}
+
 async function toolCreate({ agentId, baseRef = "origin/main" }) {
   const repo = await ensureRepo();
   if (repo.error) {
@@ -131,28 +205,17 @@ async function toolCreate({ agentId, baseRef = "origin/main" }) {
   }
 
   if (await checkWtAvailable()) {
-    const wtResult = await run("wt", ["-C", repo.root, "switch", "--create", branchName, "--base", baseRef, "--format=json", "--no-cd"]);
-    if (wtResult.ok) {
-      try {
-        const parsed = JSON.parse(wtResult.stdout);
-        if (parsed.path) {
-          return `Created ${parsed.path} on branch ${branchName}`;
-        }
-      } catch {}
+    const createdPath = await createWorktreeWithWt(repo.root, branchName, baseRef);
+    if (createdPath) {
+      return formatCreatedMessage(createdPath, branchName);
     }
   }
 
-  // Fallback: raw git
-  const worktreePath = path.join(repo.root, ".worktrees", safeId);
-  const result = await run(
-    "git",
-    ["worktree", "add", worktreePath, "-b", branchName, baseRef],
-    { cwd: repo.root },
-  );
-  if (!result.ok) {
-    return result.stderr || result.stdout || `Failed to create worktree ${worktreePath}`;
+  const gitCreate = await createWorktreeWithGit(repo.root, safeId, branchName, baseRef);
+  if (gitCreate.error) {
+    return gitCreate.error;
   }
-  return `Created ${worktreePath} on branch ${branchName}`;
+  return formatCreatedMessage(gitCreate.createdPath, branchName);
 }
 
 async function toolList() {
@@ -173,22 +236,70 @@ async function toolStatus({ agentId }) {
   if (repo.error) {
     return repo.error;
   }
-  let worktreePath = agentId
-    ? path.join(repo.root, ".worktrees", sanitizeAgentId(agentId))
-    : repo.root;
-  if (agentId && (await checkWtAvailable())) {
-    const branchName = `agent/${sanitizeAgentId(agentId)}`;
-    const listResult = await run("wt", ["-C", repo.root, "list", "--format=json"]);
-    if (listResult.ok) {
-      try {
-        const worktrees = JSON.parse(listResult.stdout);
-        const entry = worktrees.find(w => w.branch === branchName);
-        if (entry?.path) worktreePath = entry.path;
-      } catch {}
-    }
-  }
+  const worktreePath = await resolveStatusWorktreePath(repo.root, agentId);
   const result = await run("git", ["status", "--short", "--branch"], { cwd: worktreePath });
   return result.ok ? result.stdout.trim() : result.stderr || "Failed to read worktree status.";
+}
+
+async function resolveStatusWorktreePath(repoRoot, agentId) {
+  if (!agentId) {
+    return repoRoot;
+  }
+
+  const safeAgentId = sanitizeAgentId(agentId);
+  const branchName = `agent/${safeAgentId}`;
+  const fallbackPath = path.join(repoRoot, ".worktrees", safeAgentId);
+  return resolveWorktreePath(repoRoot, branchName, fallbackPath);
+}
+
+async function ensureCleanWorktree(worktreePath) {
+  const status = await run("git", ["status", "--short"], { cwd: worktreePath });
+  if (!status.ok) {
+    return status.stderr || `Unable to inspect ${worktreePath}`;
+  }
+  if (status.stdout.trim()) {
+    return `Refusing to remove dirty worktree ${worktreePath}`;
+  }
+  return null;
+}
+
+async function deleteBranchIfRequested(root, branchName, deleteBranch) {
+  if (!deleteBranch) {
+    return null;
+  }
+  const deleteResult = await run("git", ["branch", "-D", branchName], { cwd: root });
+  if (deleteResult.ok) {
+    return null;
+  }
+  return deleteResult.stderr || deleteResult.stdout;
+}
+
+function formatRemovedMessage(worktreePath, branchName, deleteBranch) {
+  return `Removed ${worktreePath}${deleteBranch ? ` and deleted ${branchName}` : ""}`;
+}
+
+async function removeWithWt(root, branchName, worktreePath, deleteBranch) {
+  const removeResult = await run("wt", ["-C", root, "remove", branchName, "--yes"]);
+  if (!removeResult.ok) {
+    return removeResult.stderr || `Failed to remove ${worktreePath}`;
+  }
+
+  await deleteBranchIfRequested(root, branchName, deleteBranch);
+  return formatRemovedMessage(worktreePath, branchName, deleteBranch);
+}
+
+async function removeWithGit(root, branchName, worktreePath, deleteBranch) {
+  const removeResult = await run("git", ["worktree", "remove", worktreePath], { cwd: root });
+  if (!removeResult.ok) {
+    return removeResult.stderr || `Failed to remove ${worktreePath}`;
+  }
+
+  const deleteError = await deleteBranchIfRequested(root, branchName, deleteBranch);
+  if (deleteError) {
+    return `Removed worktree ${worktreePath}, but failed to delete ${branchName}: ${deleteError}`;
+  }
+
+  return formatRemovedMessage(worktreePath, branchName, deleteBranch);
 }
 
 async function toolRemove({ agentId, deleteBranch = false }) {
@@ -198,53 +309,20 @@ async function toolRemove({ agentId, deleteBranch = false }) {
   }
   const safeId = sanitizeAgentId(agentId);
   const branchName = `agent/${safeId}`;
-  let worktreePath = path.join(repo.root, ".worktrees", safeId);
-
-  // Look up actual path via wt list before dirty-check so the guard runs against the correct path
+  const fallbackPath = path.join(repo.root, ".worktrees", safeId);
   const wtOk = await checkWtAvailable();
-  if (wtOk) {
-    const listResult = await run("wt", ["-C", repo.root, "list", "--format=json"]);
-    if (listResult.ok) {
-      try {
-        const worktrees = JSON.parse(listResult.stdout);
-        const entry = worktrees.find(w => w.branch === branchName);
-        if (entry?.path) worktreePath = entry.path;
-      } catch {}
-    }
-  }
+  const worktreePath = await resolveWorktreePath(repo.root, branchName, fallbackPath);
 
-  // Dirty-check guard — must run before any removal attempt
-  const status = await run("git", ["status", "--short"], { cwd: worktreePath });
-  if (!status.ok) {
-    return status.stderr || `Unable to inspect ${worktreePath}`;
-  }
-  if (status.stdout.trim()) {
-    return `Refusing to remove dirty worktree ${worktreePath}`;
+  const dirtyError = await ensureCleanWorktree(worktreePath);
+  if (dirtyError) {
+    return dirtyError;
   }
 
   if (wtOk) {
-    const removeResult = await run("wt", ["-C", repo.root, "remove", branchName, "--yes"]);
-    if (!removeResult.ok) {
-      return removeResult.stderr || `Failed to remove ${worktreePath}`;
-    }
-    if (deleteBranch) {
-      await run("git", ["branch", "-D", branchName], { cwd: repo.root });
-    }
-    return `Removed ${worktreePath}${deleteBranch ? ` and deleted ${branchName}` : ""}`;
+    return removeWithWt(repo.root, branchName, worktreePath, deleteBranch);
   }
 
-  // Fallback: raw git
-  const removeResult = await run("git", ["worktree", "remove", worktreePath], { cwd: repo.root });
-  if (!removeResult.ok) {
-    return removeResult.stderr || `Failed to remove ${worktreePath}`;
-  }
-  if (deleteBranch) {
-    const deleteResult = await run("git", ["branch", "-D", branchName], { cwd: repo.root });
-    if (!deleteResult.ok) {
-      return `Removed worktree ${worktreePath}, but failed to delete ${branchName}: ${deleteResult.stderr || deleteResult.stdout}`;
-    }
-  }
-  return `Removed ${worktreePath}${deleteBranch ? ` and deleted ${branchName}` : ""}`;
+  return removeWithGit(repo.root, branchName, worktreePath, deleteBranch);
 }
 
 async function toolMerge({ agentId, target, noSquash = true, noRemove = false }) {
@@ -253,22 +331,34 @@ async function toolMerge({ agentId, target, noSquash = true, noRemove = false })
   if (!(await checkWtAvailable())) return "wt is not installed; cannot use mr_worktree_merge.";
   const safeId = sanitizeAgentId(agentId);
   const branchName = `agent/${safeId}`;
-  // Look up actual worktree path
-  let worktreePath = path.join(repo.root, ".worktrees", safeId);
-  const listResult = await run("wt", ["-C", repo.root, "list", "--format=json"]);
-  if (listResult.ok) {
-    try {
-      const worktrees = JSON.parse(listResult.stdout);
-      const entry = worktrees.find(w => w.branch === branchName);
-      if (entry?.path) worktreePath = entry.path;
-    } catch {}
-  }
-  const args = ["merge", "--format=json", "--yes"];
-  if (target) args.push(target);
-  if (noSquash) args.push("--no-squash");
-  if (noRemove) args.push("--no-remove");
+  const fallbackPath = path.join(repo.root, ".worktrees", safeId);
+  const worktreePath = await resolveWorktreePath(repo.root, branchName, fallbackPath);
+  const args = buildMergeArgs(target, noSquash, noRemove);
   const result = await run("wt", args, { cwd: worktreePath });
   return result.ok ? result.stdout.trim() : result.stderr || "Merge failed.";
+}
+
+function buildMergeArgs(target, noSquash, noRemove) {
+  const args = ["merge", "--format=json", "--yes"];
+  if (target) {
+    args.push(target);
+  }
+  if (noSquash) {
+    args.push("--no-squash");
+  }
+  if (noRemove) {
+    args.push("--no-remove");
+  }
+  return args;
+}
+
+async function maybeSetWtMarker(root) {
+  if (!(await checkWtAvailable())) {
+    return;
+  }
+
+  // Set activity marker (fire-and-forget, never block)
+  run("wt", ["-C", root, "config", "state", "marker", "set", "🤖"]).catch(() => {});
 }
 
 const session = await joinSession({
@@ -296,10 +386,7 @@ const session = await joinSession({
       }
 
       await session.log("worktree-manager: injected child guidance", { ephemeral: true });
-      if (await checkWtAvailable()) {
-        // Set activity marker (fire-and-forget, never block)
-        run("wt", ["-C", root, "config", "state", "marker", "set", "🤖"]).catch(() => {});
-      }
+      await maybeSetWtMarker(root);
       return { additionalContext: WORKTREE_CHILD_GUIDANCE };
     },
   },

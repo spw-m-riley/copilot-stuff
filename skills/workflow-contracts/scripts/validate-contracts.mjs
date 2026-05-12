@@ -176,31 +176,29 @@ function validateHeadings(body, requiredHeadings) {
   return errors;
 }
 
-function validateContract(frontmatter, body) {
-  const errors = [];
+function resolveContractSpec(frontmatter) {
   const contractType = frontmatter.contract_type;
-  const spec = CONTRACT_SPECS[contractType];
-
   if (!contractType) {
-    return ["missing frontmatter key contract_type"];
+    return { errors: ["missing frontmatter key contract_type"] };
   }
 
+  const spec = CONTRACT_SPECS[contractType];
   if (!spec) {
-    return [`unsupported contract_type ${contractType}`];
+    return { errors: [`unsupported contract_type ${contractType}`] };
   }
 
-  for (const key of SHARED_FRONTMATTER) {
+  return { contractType, spec, errors: [] };
+}
+
+function pushMissingKeys(frontmatter, keys, errors) {
+  for (const key of keys) {
     if (!(key in frontmatter)) {
       errors.push(`missing frontmatter key ${key}`);
     }
   }
+}
 
-  for (const key of spec.requiredFrontmatter) {
-    if (!(key in frontmatter)) {
-      errors.push(`missing frontmatter key ${key}`);
-    }
-  }
-
+function validateVersionAndStatus(frontmatter, contractType, spec, errors) {
   if (frontmatter.contract_version !== "v1") {
     errors.push(`invalid contract_version ${frontmatter.contract_version || "<missing>"}`);
   }
@@ -210,7 +208,19 @@ function validateContract(frontmatter, body) {
       `invalid status ${frontmatter.status || "<missing>"} for ${contractType}; expected one of ${Array.from(spec.statusValues).join(", ")}`,
     );
   }
+}
 
+function validateContract(frontmatter, body) {
+  const resolved = resolveContractSpec(frontmatter);
+  if (resolved.errors.length > 0) {
+    return resolved.errors;
+  }
+
+  const { contractType, spec } = resolved;
+  const errors = [];
+  pushMissingKeys(frontmatter, SHARED_FRONTMATTER, errors);
+  pushMissingKeys(frontmatter, spec.requiredFrontmatter, errors);
+  validateVersionAndStatus(frontmatter, contractType, spec, errors);
   errors.push(...validateHeadings(body, spec.requiredHeadings));
   return errors;
 }
@@ -234,14 +244,7 @@ async function validateFile(filePath) {
   };
 }
 
-async function main() {
-  const files = process.argv.slice(2);
-  if (files.length === 0) {
-    console.error("usage: node validate-contracts.mjs <file> [file...]");
-    process.exitCode = 1;
-    return;
-  }
-
+async function collectValidationOutput(files) {
   const messages = [];
   let hasFailure = false;
 
@@ -259,7 +262,18 @@ async function main() {
     }
   }
 
-  const output = messages.join("\n");
+  return { output: messages.join("\n"), hasFailure };
+}
+
+async function main() {
+  const files = process.argv.slice(2);
+  if (files.length === 0) {
+    console.error("usage: node validate-contracts.mjs <file> [file...]");
+    process.exitCode = 1;
+    return;
+  }
+
+  const { output, hasFailure } = await collectValidationOutput(files);
   if (hasFailure) {
     console.error(output);
     process.exitCode = 1;

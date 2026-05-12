@@ -86,42 +86,54 @@ function parseFrontmatter(text) {
     if (!line.trim()) {
       continue;
     }
-
-    const indent = line.length - line.trimStart().length;
-    if (indent === 0) {
-      const separatorIndex = line.indexOf(":");
-      if (separatorIndex === -1) {
-        throw new Error(`invalid frontmatter line: ${line}`);
-      }
-
-      const key = line.slice(0, separatorIndex).trim();
-      const value = line.slice(separatorIndex + 1).trim();
-      if (!value) {
-        currentObject = {};
-        frontmatter[key] = currentObject;
-      } else {
-        frontmatter[key] = parseScalar(value);
-        currentObject = null;
-      }
-      continue;
-    }
-
-    if (!currentObject || indent < 2) {
-      throw new Error(`unexpected frontmatter indentation: ${line}`);
-    }
-
-    const trimmed = line.trim();
-    const separatorIndex = trimmed.indexOf(":");
-    if (separatorIndex === -1) {
-      throw new Error(`invalid nested frontmatter line: ${line}`);
-    }
-
-    const key = trimmed.slice(0, separatorIndex).trim();
-    const value = trimmed.slice(separatorIndex + 1).trim();
-    currentObject[key] = parseScalar(value);
+    currentObject = parseFrontmatterLine(line, frontmatter, currentObject);
   }
 
   return { frontmatter, body };
+}
+
+function parseFrontmatterLine(line, frontmatter, currentObject) {
+  const indent = line.length - line.trimStart().length;
+  if (indent === 0) {
+    return parseTopLevelFrontmatterLine(line, frontmatter);
+  }
+
+  if (!currentObject || indent < 2) {
+    throw new Error(`unexpected frontmatter indentation: ${line}`);
+  }
+
+  parseNestedFrontmatterLine(line, currentObject);
+  return currentObject;
+}
+
+function parseTopLevelFrontmatterLine(line, frontmatter) {
+  const separatorIndex = line.indexOf(":");
+  if (separatorIndex === -1) {
+    throw new Error(`invalid frontmatter line: ${line}`);
+  }
+
+  const key = line.slice(0, separatorIndex).trim();
+  const value = line.slice(separatorIndex + 1).trim();
+  if (!value) {
+    const nestedObject = {};
+    frontmatter[key] = nestedObject;
+    return nestedObject;
+  }
+
+  frontmatter[key] = parseScalar(value);
+  return null;
+}
+
+function parseNestedFrontmatterLine(line, currentObject) {
+  const trimmed = line.trim();
+  const separatorIndex = trimmed.indexOf(":");
+  if (separatorIndex === -1) {
+    throw new Error(`invalid nested frontmatter line: ${line}`);
+  }
+
+  const key = trimmed.slice(0, separatorIndex).trim();
+  const value = trimmed.slice(separatorIndex + 1).trim();
+  currentObject[key] = parseScalar(value);
 }
 
 function parseOpeningFence(line) {
@@ -256,33 +268,50 @@ function collectReferenceTargets(sectionText) {
   const backtickPattern = /`([^`\n]+)`/g;
 
   for (const pattern of [markdownLinkPattern, backtickPattern]) {
-    for (const match of sectionText.matchAll(pattern)) {
-      const rawTarget = match[1].trim();
-      if (!rawTarget) {
-        continue;
-      }
-      if (
-        rawTarget.startsWith("http://") ||
-        rawTarget.startsWith("https://") ||
-        rawTarget.startsWith("mailto:") ||
-        rawTarget.startsWith("#")
-      ) {
-        continue;
-      }
-
-      const cleanedTarget = rawTarget.split("#", 1)[0].split("?", 1)[0].trim();
-      if (
-        cleanedTarget &&
-        (cleanedTarget.startsWith("./") ||
-          cleanedTarget.startsWith("../") ||
-          (cleanedTarget.includes("/") && /\.[A-Za-z0-9]+$/.test(cleanedTarget)))
-      ) {
-        targets.add(cleanedTarget);
-      }
-    }
+    addReferenceTargetsFromPattern(sectionText, pattern, targets);
   }
 
   return targets;
+}
+
+function addReferenceTargetsFromPattern(sectionText, pattern, targets) {
+  for (const match of sectionText.matchAll(pattern)) {
+    const cleanedTarget = normalizeLocalReferenceTarget(match[1]);
+    if (cleanedTarget) {
+      targets.add(cleanedTarget);
+    }
+  }
+}
+
+function normalizeLocalReferenceTarget(rawTargetValue) {
+  const rawTarget = rawTargetValue.trim();
+  if (!rawTarget || isExternalReferenceTarget(rawTarget)) {
+    return null;
+  }
+
+  const cleanedTarget = rawTarget.split("#", 1)[0].split("?", 1)[0].trim();
+  if (!cleanedTarget) {
+    return null;
+  }
+
+  return isLocalReferencePath(cleanedTarget) ? cleanedTarget : null;
+}
+
+function isExternalReferenceTarget(rawTarget) {
+  return (
+    rawTarget.startsWith("http://") ||
+    rawTarget.startsWith("https://") ||
+    rawTarget.startsWith("mailto:") ||
+    rawTarget.startsWith("#")
+  );
+}
+
+function isLocalReferencePath(cleanedTarget) {
+  return (
+    cleanedTarget.startsWith("./") ||
+    cleanedTarget.startsWith("../") ||
+    (cleanedTarget.includes("/") && /\.[A-Za-z0-9]+$/.test(cleanedTarget))
+  );
 }
 
 async function pathExists(targetPath) {
@@ -324,43 +353,73 @@ async function validateSkillContent(filePath, frontmatter, body) {
   const errors = [];
   const skillDir = path.basename(path.dirname(filePath));
 
+  validateSkillName(frontmatter, skillDir, errors);
+  validateSkillDescription(frontmatter, errors);
+  validateTopLevelFrontmatterKeys(frontmatter, errors);
+  validateSkillMetadata(frontmatter.metadata, errors);
+
+  const { searchableBody, errors: fenceErrors } = stripFencedCodeBlocks(body);
+  errors.push(...fenceErrors);
+  validateRequiredHeadings(searchableBody, frontmatter.metadata, errors);
+  const examplesSection = getSectionText(body, "## Examples");
+  if (!sectionHasConcreteContent(examplesSection)) {
+    errors.push("examples section is empty or placeholder-only");
+  }
+
+  const referenceSection = getSectionText(body, "## Reference files");
+  if (!sectionHasConcreteContent(referenceSection)) {
+    errors.push("reference files section is empty or placeholder-only");
+  }
+
+  await validateReferenceTargets(filePath, referenceSection, errors);
+
+  return errors;
+}
+
+function validateSkillName(frontmatter, skillDir, errors) {
   if (!frontmatter.name) {
     errors.push("missing frontmatter key name");
-  } else if (frontmatter.name !== skillDir) {
+    return;
+  }
+
+  if (frontmatter.name !== skillDir) {
     errors.push(
       `frontmatter name ${frontmatter.name} does not match directory ${skillDir}`,
     );
   }
+}
 
+function validateSkillDescription(frontmatter, errors) {
   if (!frontmatter.description || !String(frontmatter.description).trim()) {
     errors.push("missing frontmatter key description");
-  } else {
-    const desc = String(frontmatter.description).trim();
-    // Floor guard: catch truly empty or near-empty placeholders for all maturity levels.
-    if (desc.length < 20) {
-      errors.push("description is too short; provide a meaningful description");
-    }
-    // Trigger-phrase check: descriptions should name concrete trigger situations, not just
-    // label the skill's domain. Enforced only for draft skills so the existing stable
-    // library is not broken. New skills must comply before promotion to stable.
-    // Note: "use when" always contains "when " — it is listed for clarity only.
-    const maturity = frontmatter.metadata?.maturity;
-    if (maturity === "draft") {
-      const descLower = desc.toLowerCase();
-      const hasTriggerPhrase =
-        descLower.includes("when ") ||
-        descLower.includes("use this") ||
-        descLower.includes("use when");
-      if (!hasTriggerPhrase) {
-        errors.push(
-          'description does not include a trigger phrase ("when", "use this", or "use when"); describe when an agent should activate this skill',
-        );
-      }
-    }
+    return;
   }
 
-  // Metadata contract: forbidden top-level keys.
-  // See skills/skill-authoring/references/metadata-contract.md for the full contract.
+  const desc = String(frontmatter.description).trim();
+  if (desc.length < 20) {
+    errors.push("description is too short; provide a meaningful description");
+  }
+
+  if (frontmatter.metadata?.maturity === "draft") {
+    validateDraftDescriptionTriggerPhrase(desc, errors);
+  }
+}
+
+function validateDraftDescriptionTriggerPhrase(desc, errors) {
+  const descLower = desc.toLowerCase();
+  const hasTriggerPhrase =
+    descLower.includes("when ") ||
+    descLower.includes("use this") ||
+    descLower.includes("use when");
+
+  if (!hasTriggerPhrase) {
+    errors.push(
+      'description does not include a trigger phrase ("when", "use this", or "use when"); describe when an agent should activate this skill',
+    );
+  }
+}
+
+function validateTopLevelFrontmatterKeys(frontmatter, errors) {
   for (const key of Object.keys(frontmatter)) {
     if (!ALLOWED_TOP_LEVEL_KEYS.has(key)) {
       errors.push(
@@ -368,52 +427,66 @@ async function validateSkillContent(filePath, frontmatter, body) {
       );
     }
   }
+}
 
-  const metadata = frontmatter.metadata;
-
-  // Metadata contract: forbidden provenance keys inside metadata.
-  if (metadata && typeof metadata === "object") {
-    for (const key of Object.keys(metadata)) {
-      if (FORBIDDEN_METADATA_KEYS.has(key)) {
-        errors.push(
-          `forbidden provenance key metadata.${key}; remove upstream attribution fields from frontmatter — see skills/skill-authoring/references/metadata-contract.md`,
-        );
-      }
-    }
+function validateSkillMetadata(metadata, errors) {
+  if (!metadata || typeof metadata !== "object") {
+    return;
   }
 
-  if (metadata && typeof metadata === "object" && "kind" in metadata) {
-    const kind = metadata.kind;
-    if (!VALID_KINDS.has(kind)) {
-      errors.push(
-        `invalid metadata.kind ${kind || "<missing>"}; expected one of task, reference`,
-      );
-    }
-  }
+  validateForbiddenMetadataKeys(metadata, errors);
+  validateMetadataKind(metadata, errors);
+  validateDraftMetadataKindRequirement(metadata, errors);
+}
 
-  // Metadata contract: metadata.kind is required for draft skills.
-  // New skills must declare their kind before promotion to stable.
-  if (
-    metadata &&
-    typeof metadata === "object" &&
-    metadata.maturity === "draft" &&
-    !("kind" in metadata)
-  ) {
-    errors.push(
-      'metadata.kind is required for draft skills; set to "task" or "reference" — see skills/skill-authoring/references/metadata-contract.md',
-    );
-  }
-
-  const { searchableBody, errors: fenceErrors } = stripFencedCodeBlocks(body);
-  errors.push(...fenceErrors);
-
-  const isReferenceSkill = metadata?.kind === "reference";
-  const lines = searchableBody.split("\n");
-  let previousIndex = -1;
-  for (const heading of REQUIRED_HEADINGS) {
-    if (isReferenceSkill && TASK_ONLY_HEADINGS.has(heading)) {
+function validateForbiddenMetadataKeys(metadata, errors) {
+  for (const key of Object.keys(metadata)) {
+    if (!FORBIDDEN_METADATA_KEYS.has(key)) {
       continue;
     }
+    errors.push(
+      `forbidden provenance key metadata.${key}; remove upstream attribution fields from frontmatter — see skills/skill-authoring/references/metadata-contract.md`,
+    );
+  }
+}
+
+function validateMetadataKind(metadata, errors) {
+  if (!("kind" in metadata) || VALID_KINDS.has(metadata.kind)) {
+    return;
+  }
+
+  errors.push(
+    `invalid metadata.kind ${metadata.kind || "<missing>"}; expected one of task, reference`,
+  );
+}
+
+function validateDraftMetadataKindRequirement(metadata, errors) {
+  if (metadata.maturity !== "draft" || "kind" in metadata) {
+    return;
+  }
+
+  errors.push(
+    'metadata.kind is required for draft skills; set to "task" or "reference" — see skills/skill-authoring/references/metadata-contract.md',
+  );
+}
+
+function validateRequiredHeadings(searchableBody, metadata, errors) {
+  const lines = searchableBody.split("\n");
+  const requiredHeadings = REQUIRED_HEADINGS.filter((heading) =>
+    shouldValidateHeading(heading, metadata),
+  );
+
+  validateHeadingOrder(lines, requiredHeadings, errors);
+  validateTaskOutputsHeading(lines, metadata, errors);
+}
+
+function shouldValidateHeading(heading, metadata) {
+  return !(metadata?.kind === "reference" && TASK_ONLY_HEADINGS.has(heading));
+}
+
+function validateHeadingOrder(lines, requiredHeadings, errors) {
+  let previousIndex = -1;
+  for (const heading of requiredHeadings) {
     const index = findHeadingLineIndex(lines, heading);
     if (index === -1) {
       errors.push(`missing heading ${heading}`);
@@ -425,35 +498,30 @@ async function validateSkillContent(filePath, frontmatter, body) {
     }
     previousIndex = index;
   }
+}
 
-  const outputsSection = findHeadingLineIndex(lines, "## Outputs");
-  if (metadata?.kind === "task" && outputsSection === -1) {
+function validateTaskOutputsHeading(lines, metadata, errors) {
+  if (metadata?.kind !== "task") {
+    return;
+  }
+  if (findHeadingLineIndex(lines, "## Outputs") === -1) {
     errors.push("missing heading ## Outputs for task skill");
   }
+}
 
-  const examplesSection = getSectionText(body, "## Examples");
-  if (!sectionHasConcreteContent(examplesSection)) {
-    errors.push("examples section is empty or placeholder-only");
-  }
-
-  const referenceSection = getSectionText(body, "## Reference files");
-  if (!sectionHasConcreteContent(referenceSection)) {
-    errors.push("reference files section is empty or placeholder-only");
-  }
-
+async function validateReferenceTargets(filePath, referenceSection, errors) {
   const referenceTargets = collectReferenceTargets(referenceSection);
   if (referenceTargets.size === 0) {
     errors.push("reference files section does not list any files");
-  } else {
-    for (const rawTarget of referenceTargets) {
-      const targetPath = path.resolve(path.dirname(filePath), rawTarget);
-      if (!(await pathExists(targetPath))) {
-        errors.push(`missing referenced file ${rawTarget}`);
-      }
-    }
+    return;
   }
 
-  return errors;
+  for (const rawTarget of referenceTargets) {
+    const targetPath = path.resolve(path.dirname(filePath), rawTarget);
+    if (!(await pathExists(targetPath))) {
+      errors.push(`missing referenced file ${rawTarget}`);
+    }
+  }
 }
 
 async function validateFile(filePath) {
@@ -475,14 +543,7 @@ async function validateFile(filePath) {
   };
 }
 
-async function main() {
-  const files = await resolveSkillFiles(process.argv.slice(2));
-  if (files.length === 0) {
-    console.error("no SKILL.md files found");
-    process.exitCode = 1;
-    return;
-  }
-
+async function collectValidationOutput(files) {
   const messages = [];
   let hasFailure = false;
 
@@ -500,7 +561,18 @@ async function main() {
     }
   }
 
-  const output = messages.join("\n");
+  return { output: messages.join("\n"), hasFailure };
+}
+
+async function main() {
+  const files = await resolveSkillFiles(process.argv.slice(2));
+  if (files.length === 0) {
+    console.error("no SKILL.md files found");
+    process.exitCode = 1;
+    return;
+  }
+
+  const { output, hasFailure } = await collectValidationOutput(files);
   if (hasFailure) {
     console.error(output);
     process.exitCode = 1;
