@@ -1,6 +1,11 @@
 {
   "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
-  "entry": ["src/index.{js,jsx,mjs}", "src/main.{js,jsx,mjs}"],
+  "entry": [
+    "src/index.{js,jsx,mjs}",
+    "src/main.{js,jsx,mjs}",
+    "extensions/*/extension.mjs",
+    "skills/*/scripts/*.mjs"
+  ],
   "ignorePatterns": ["extensions/lore/**", "node_modules/**"],
   "rules": {}
 }

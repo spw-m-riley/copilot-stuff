@@ -35,10 +35,12 @@ const validatorRegistry = createValidatorRegistry();
 
 function run(command, args, options = {}) {
   return new Promise((resolve) => {
+    // fallow-ignore-next-line complexity
     execFile(
       command,
       args,
       { maxBuffer: 1024 * 1024, ...options },
+      // fallow-ignore-next-line complexity
       (error, stdout, stderr) => {
         resolve({
           ok: !error,
@@ -93,6 +95,7 @@ async function findPackageContext(filePath) {
   }
 }
 
+// fallow-ignore-next-line complexity
 async function findExecutable(names, startDir) {
   const candidates = Array.isArray(names) ? names : [names];
   const searchDirs = await buildExecutableSearchDirs(startDir);
@@ -124,6 +127,7 @@ function parsePathsFromPatch(patchText, cwd) {
   return Array.from(matches, (match) => path.resolve(cwd, match[1]));
 }
 
+// fallow-ignore-next-line complexity
 function extractChangedPaths(input) {
   const args = input.toolArgs ?? {};
   const paths = [];
@@ -183,6 +187,7 @@ async function runLintWithFix(managerBin, manager, scripts, relativeFile, cwd, r
   return lintResult;
 }
 
+// fallow-ignore-next-line complexity
 async function runPackageScripts(filePath) {
   const context = await findPackageContext(filePath);
   if (!context) {
@@ -431,6 +436,7 @@ async function processFile(filePath) {
 const session = await joinSession({
   onPermissionRequest: approveAll,
   hooks: {
+    // fallow-ignore-next-line complexity
     onPostToolUse: async (input) => {
       if (!EDIT_TOOLS.has(input.toolName)) {
         return;

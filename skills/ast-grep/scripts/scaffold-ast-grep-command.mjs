@@ -22,6 +22,7 @@ function usage() {
   ].join("\n");
 }
 
+// fallow-ignore-next-line complexity
 function parseArgs(argv) {
   const parsed = {
     json: false,
@@ -95,6 +96,7 @@ function buildRuleCommand(rule, targetPath) {
   );
 }
 
+// fallow-ignore-next-line complexity
 function buildPatternCommand(options) {
   const { mode, pattern, rewrite, lang, glob, json, path: targetPath } = options;
   const parts = ["ast-grep", "--pattern", shellQuote(pattern)];

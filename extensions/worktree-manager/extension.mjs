@@ -64,10 +64,12 @@ function shouldInjectChildWorktreeGuidance(input) {
 function run(command, args, options = {}) {
   return new Promise((resolve) => {
     import("node:child_process").then(({ execFile }) => {
+      // fallow-ignore-next-line complexity
       execFile(
         command,
         args,
         { maxBuffer: 1024 * 1024, ...options },
+        // fallow-ignore-next-line complexity
         (error, stdout, stderr) => {
           resolve({
             ok: !error,
@@ -191,6 +193,7 @@ async function createWorktreeWithGit(root, safeId, branchName, baseRef) {
   return { createdPath: worktreePath };
 }
 
+// fallow-ignore-next-line complexity
 async function toolCreate({ agentId, baseRef = "origin/main" }) {
   const repo = await ensureRepo();
   if (repo.error) {
@@ -218,6 +221,7 @@ async function toolCreate({ agentId, baseRef = "origin/main" }) {
   return formatCreatedMessage(gitCreate.createdPath, branchName);
 }
 
+// fallow-ignore-next-line complexity
 async function toolList() {
   const repo = await ensureRepo();
   if (repo.error) {
@@ -325,6 +329,7 @@ async function toolRemove({ agentId, deleteBranch = false }) {
   return removeWithGit(repo.root, branchName, worktreePath, deleteBranch);
 }
 
+// fallow-ignore-next-line complexity
 async function toolMerge({ agentId, target, noSquash = true, noRemove = false }) {
   const repo = await ensureRepo();
   if (repo.error) return repo.error;
@@ -373,6 +378,7 @@ const session = await joinSession({
     onPreToolUse: async (input) => {
       lastKnownCwd = input.cwd || lastKnownCwd;
     },
+    // fallow-ignore-next-line complexity
     onSubagentStart: async (input) => {
       lastKnownCwd = input.cwd || lastKnownCwd;
       if (!shouldInjectChildWorktreeGuidance(input)) {

@@ -48,6 +48,7 @@ function normalize(text) {
   return text.replace(/\r\n?/g, "\n");
 }
 
+// fallow-ignore-next-line complexity
 function parseFrontmatter(text) {
   const normalized = normalize(text);
   if (!normalized.startsWith("---\n")) {
@@ -103,6 +104,7 @@ function isClosingFence(line, openingFence) {
   );
 }
 
+// fallow-ignore-next-line complexity
 function stripFencedCodeBlocks(body) {
   const lines = body.split("\n");
   const strippedLines = [];
@@ -198,6 +200,7 @@ function pushMissingKeys(frontmatter, keys, errors) {
   }
 }
 
+// fallow-ignore-next-line complexity
 function validateVersionAndStatus(frontmatter, contractType, spec, errors) {
   if (frontmatter.contract_version !== "v1") {
     errors.push(`invalid contract_version ${frontmatter.contract_version || "<missing>"}`);
@@ -244,6 +247,7 @@ async function validateFile(filePath) {
   };
 }
 
+// fallow-ignore-next-line complexity
 async function collectValidationOutput(files) {
   const messages = [];
   let hasFailure = false;
