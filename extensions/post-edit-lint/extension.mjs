@@ -95,16 +95,7 @@ async function findPackageContext(filePath) {
 
 async function findExecutable(names, startDir) {
   const candidates = Array.isArray(names) ? names : [names];
-  const localBin = await findUp(startDir, (dir) => path.join(dir, "node_modules", ".bin"));
-  const searchDirs = [];
-  if (localBin) {
-    searchDirs.push(localBin);
-  }
-  for (const segment of String(process.env.PATH || "").split(path.delimiter)) {
-    if (segment) {
-      searchDirs.push(segment);
-    }
-  }
+  const searchDirs = await buildExecutableSearchDirs(startDir);
   for (const dir of searchDirs) {
     for (const name of candidates) {
       const candidate = path.join(dir, name);
@@ -114,6 +105,14 @@ async function findExecutable(names, startDir) {
     }
   }
   return null;
+}
+
+async function buildExecutableSearchDirs(startDir) {
+  const localBin = await findUp(startDir, (dir) => path.join(dir, "node_modules", ".bin"));
+  const pathDirs = String(process.env.PATH || "")
+    .split(path.delimiter)
+    .filter(Boolean);
+  return localBin ? [localBin, ...pathDirs] : pathDirs;
 }
 
 function uniquePaths(paths) {
@@ -158,6 +157,32 @@ function managerArgs(manager, script, files, extraArgs = []) {
   return ["run", "--silent", script, "--", ...files, ...extraArgs];
 }
 
+async function runPackageScript(managerBin, manager, scriptName, relativeFile, cwd) {
+  return run(managerBin, managerArgs(manager, scriptName, [relativeFile]), { cwd });
+}
+
+async function runLintWithFix(managerBin, manager, scripts, relativeFile, cwd, results) {
+  let lintResult = await runPackageScript(managerBin, manager, "lint", relativeFile, cwd);
+  if (lintResult.ok) {
+    return lintResult;
+  }
+
+  if (typeof scripts["lint:fix"] === "string") {
+    const fixResult = await runPackageScript(managerBin, manager, "lint:fix", relativeFile, cwd);
+    results.push(formatSummary(`lint:fix (${relativeFile})`, fixResult));
+  } else {
+    const fixResult = await run(
+      managerBin,
+      managerArgs(manager, "lint", [relativeFile], ["--fix"]),
+      { cwd },
+    );
+    results.push(formatSummary(`lint --fix (${relativeFile})`, fixResult));
+  }
+
+  lintResult = await runPackageScript(managerBin, manager, "lint", relativeFile, cwd);
+  return lintResult;
+}
+
 async function runPackageScripts(filePath) {
   const context = await findPackageContext(filePath);
   if (!context) {
@@ -172,41 +197,49 @@ async function runPackageScripts(filePath) {
     return results;
   }
 
-  if (typeof scripts.format === "string") {
-    const result = await run(managerBin, managerArgs(manager, "format", [relativeFile]), {
-      cwd: context.root,
-    });
-    results.push(formatSummary(`format (${relativeFile})`, result));
-  }
-
-  if (typeof scripts.lint === "string") {
-    let lintResult = await run(managerBin, managerArgs(manager, "lint", [relativeFile]), {
-      cwd: context.root,
-    });
-    if (!lintResult.ok) {
-      if (typeof scripts["lint:fix"] === "string") {
-        const fixResult = await run(
-          managerBin,
-          managerArgs(manager, "lint:fix", [relativeFile]),
-          { cwd: context.root },
-        );
-        results.push(formatSummary(`lint:fix (${relativeFile})`, fixResult));
-      } else {
-        const fixResult = await run(
-          managerBin,
-          managerArgs(manager, "lint", [relativeFile], ["--fix"]),
-          { cwd: context.root },
-        );
-        results.push(formatSummary(`lint --fix (${relativeFile})`, fixResult));
-      }
-      lintResult = await run(managerBin, managerArgs(manager, "lint", [relativeFile]), {
-        cwd: context.root,
-      });
-    }
-    results.push(formatSummary(`lint (${relativeFile})`, lintResult));
-  }
+  await runFormatScriptIfPresent(scripts, managerBin, manager, relativeFile, context.root, results);
+  await runLintScriptIfPresent(scripts, managerBin, manager, relativeFile, context.root, results);
 
   return results;
+}
+
+async function runFormatScriptIfPresent(
+  scripts,
+  managerBin,
+  manager,
+  relativeFile,
+  cwd,
+  results,
+) {
+  if (typeof scripts.format !== "string") {
+    return;
+  }
+
+  const result = await runPackageScript(managerBin, manager, "format", relativeFile, cwd);
+  results.push(formatSummary(`format (${relativeFile})`, result));
+}
+
+async function runLintScriptIfPresent(
+  scripts,
+  managerBin,
+  manager,
+  relativeFile,
+  cwd,
+  results,
+) {
+  if (typeof scripts.lint !== "string") {
+    return;
+  }
+
+  const lintResult = await runLintWithFix(
+    managerBin,
+    manager,
+    scripts,
+    relativeFile,
+    cwd,
+    results,
+  );
+  results.push(formatSummary(`lint (${relativeFile})`, lintResult));
 }
 
 async function formatJson(filePath) {
@@ -279,33 +312,54 @@ async function formatJsTs(filePath) {
   summaries.push(...packageResults);
 
   if (packageResults.length === 0) {
-    const prettier = await findExecutable("prettier", path.dirname(filePath));
-    if (prettier) {
-      const result = await run(prettier, ["--write", filePath]);
-      summaries.push(formatSummary(`prettier (${path.basename(filePath)})`, result));
-    }
-    const oxlint = await findExecutable("oxlint", path.dirname(filePath));
-    if (oxlint) {
-      const result = await run(oxlint, [filePath]);
-      summaries.push(formatSummary(`oxlint (${path.basename(filePath)})`, result));
-    }
-    const eslint = await findExecutable("eslint", path.dirname(filePath));
-    if (eslint) {
-      let result = await run(eslint, [filePath]);
-      if (!result.ok) {
-        const fixResult = await run(eslint, ["--fix", filePath]);
-        summaries.push(formatSummary(`eslint --fix (${path.basename(filePath)})`, fixResult));
-        result = await run(eslint, [filePath]);
-      }
-      summaries.push(formatSummary(`eslint (${path.basename(filePath)})`, result));
-    }
-    const biome = await findExecutable("biome", path.dirname(filePath));
-    if (biome) {
-      const result = await run(biome, ["check", "--write", filePath]);
-      summaries.push(formatSummary(`biome (${path.basename(filePath)})`, result));
-    }
+    summaries.push(...(await runFallbackJsTools(filePath)));
   }
 
+  return summaries;
+}
+
+async function runFallbackJsTools(filePath) {
+  const summaries = [];
+  const fileName = path.basename(filePath);
+  const directory = path.dirname(filePath);
+
+  const prettier = await findExecutable("prettier", directory);
+  if (prettier) {
+    const result = await run(prettier, ["--write", filePath]);
+    summaries.push(formatSummary(`prettier (${fileName})`, result));
+  }
+
+  const oxlint = await findExecutable("oxlint", directory);
+  if (oxlint) {
+    const result = await run(oxlint, [filePath]);
+    summaries.push(formatSummary(`oxlint (${fileName})`, result));
+  }
+
+  summaries.push(...(await runEslintFallback(filePath, directory, fileName)));
+
+  const biome = await findExecutable("biome", directory);
+  if (biome) {
+    const result = await run(biome, ["check", "--write", filePath]);
+    summaries.push(formatSummary(`biome (${fileName})`, result));
+  }
+
+  return summaries;
+}
+
+async function runEslintFallback(filePath, directory, fileName) {
+  const eslint = await findExecutable("eslint", directory);
+  if (!eslint) {
+    return [];
+  }
+
+  let result = await run(eslint, [filePath]);
+  const summaries = [];
+  if (!result.ok) {
+    const fixResult = await run(eslint, ["--fix", filePath]);
+    summaries.push(formatSummary(`eslint --fix (${fileName})`, fixResult));
+    result = await run(eslint, [filePath]);
+  }
+  summaries.push(formatSummary(`eslint (${fileName})`, result));
   return summaries;
 }
 
@@ -345,29 +399,32 @@ async function validateWorkflowContract(filePath) {
   return [formatSummary(`workflow-contract (${path.basename(filePath)})`, result)];
 }
 
+const FILE_PROCESSORS = {
+  ".json": formatJson,
+  ".yaml": formatYaml,
+  ".yml": formatYaml,
+  ".tf": formatTerraform,
+  ".sh": formatShell,
+  ".bash": formatShell,
+  ".zsh": formatShell,
+  [MARKDOWN_EXTENSION]: validateWorkflowContract,
+};
+
 async function processFile(filePath) {
   if (!(await pathExists(filePath))) {
     return [];
   }
+
   const extension = path.extname(filePath).toLowerCase();
   if (JS_TS_EXTENSIONS.has(extension)) {
     return formatJsTs(filePath);
   }
-  if (extension === ".json") {
-    return formatJson(filePath);
+
+  const processor = FILE_PROCESSORS[extension];
+  if (processor) {
+    return processor(filePath);
   }
-  if (extension === ".yaml" || extension === ".yml") {
-    return formatYaml(filePath);
-  }
-  if (extension === ".tf") {
-    return formatTerraform(filePath);
-  }
-  if (extension === ".sh" || extension === ".bash" || extension === ".zsh") {
-    return formatShell(filePath);
-  }
-  if (extension === MARKDOWN_EXTENSION) {
-    return validateWorkflowContract(filePath);
-  }
+
   return [];
 }
 

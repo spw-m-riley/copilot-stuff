@@ -15,18 +15,33 @@ export function readChildMetadata(
   input,
   { extraFields = [], trimValues = false } = {},
 ) {
-  const values = [
-    input?.agentName,
-    input?.agentDisplayName,
-    input?.agentDescription,
-    input?.subagent?.agentName,
-    input?.subagent?.agentDisplayName,
-    input?.subagent?.agentDescription,
-    ...extraFields,
-  ].filter((value) => typeof value === "string" && value.trim().length > 0);
-
-  const pieces = trimValues ? values.map((value) => value.trim()) : values;
+  const values = collectChildMetadataFields(input, extraFields).filter(hasText);
+  const pieces = trimValues ? values.map(trimText) : values;
   return pieces.join(" ").toLowerCase();
+}
+
+function collectChildMetadataFields(input, extraFields) {
+  const source = input && typeof input === "object" ? input : {};
+  const subagent =
+    source.subagent && typeof source.subagent === "object" ? source.subagent : {};
+
+  return [
+    source.agentName,
+    source.agentDisplayName,
+    source.agentDescription,
+    subagent.agentName,
+    subagent.agentDisplayName,
+    subagent.agentDescription,
+    ...extraFields,
+  ];
+}
+
+function hasText(value) {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+function trimText(value) {
+  return value.trim();
 }
 
 export function setBoundedContext(

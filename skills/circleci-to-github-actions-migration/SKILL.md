@@ -77,6 +77,7 @@ metadata:
 ## Validation
 
 - Run repository build/test/lint commands locally where practical before relying on workflow runs.
+- Run `action-validator` on each new or modified GitHub Actions workflow before parity comparison.
 - Compare CircleCI and GitHub Actions outcomes for the same branch or commit range.
 - Confirm required checks, protected branches, and deploy approvals behave as expected.
 - Only remove `.circleci/config.yml` after successful parity and rollout checks.

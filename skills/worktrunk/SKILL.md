@@ -26,6 +26,7 @@ Use this skill when a user needs to configure `wt`, set up LLM commit messages, 
 - `wt --version` fails — Worktrunk is not installed; suggest `brew install worktrunk`
 - A disposable clone is preferred over a worktree
 - The task only needs raw `git worktree` commands — route to the `git-worktrees` skill instead
+- The task is primarily about creating a PR, watching checks, or post-push review flow — route to [`github-cli-pr-workflow`](../github-cli-pr-workflow/SKILL.md)
 
 ## Routing boundary
 
@@ -33,6 +34,7 @@ Use this skill when a user needs to configure `wt`, set up LLM commit messages, 
 | --- | --- | --- |
 | `wt` installed; user wants hooks or config | Yes | — |
 | User wants raw `git worktree add/remove` only | No | `git-worktrees` skill |
+| User needs PR/check workflow after pushing branch | No | `github-cli-pr-workflow` skill |
 | `wt --version` fails | No | Suggest `brew install worktrunk` |
 | Disposable clone, not a worktree | No | `git clone` directly |
 

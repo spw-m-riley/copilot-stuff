@@ -47,6 +47,43 @@ async function repoStatus(cwd) {
   return result.stdout.trim();
 }
 
+async function collectCommandChecks() {
+  const labels = ["git", "gh", "node", "jq"];
+  const values = await Promise.all(labels.map((label) => commandStatus(label)));
+  return labels.map((label, index) => [label, values[index] || "missing"]);
+}
+
+async function collectHomeChecks(home) {
+  const checks = [
+    ["copilot-instructions.md", "copilot-instructions.md"],
+    ["lsp-config.json", "lsp-config.json"],
+    ["extensions/", "extensions"],
+  ];
+
+  const existsResults = await Promise.all(
+    checks.map(([, relativePath]) => pathExists(path.join(home, relativePath))),
+  );
+
+  return checks.map(([label], index) => [label, existsResults[index] ? "present" : "missing"]);
+}
+
+async function runHealthcheck() {
+  const cwd = lastKnownCwd || process.cwd();
+  const repoRoot = await repoStatus(cwd);
+  const home = path.join(process.env.HOME || "", ".copilot");
+  const commandChecks = await collectCommandChecks();
+  const homeChecks = await collectHomeChecks(home);
+
+  const checks = [
+    ["cwd", cwd],
+    ...commandChecks,
+    ["repo", repoRoot || "not inside a git repository"],
+    ...homeChecks,
+  ];
+
+  return checks.map(([label, value]) => `${label}: ${value}`).join("\n");
+}
+
 const session = await joinSession({
   onPermissionRequest: approveAll,
   hooks: {
@@ -70,27 +107,7 @@ const session = await joinSession({
         type: "object",
         properties: {},
       },
-      handler: async () => {
-        const cwd = lastKnownCwd || process.cwd();
-        const repoRoot = await repoStatus(cwd);
-        const home = path.join(process.env.HOME || "", ".copilot");
-        const checks = [
-          ["cwd", cwd],
-          ["git", (await commandStatus("git")) || "missing"],
-          ["gh", (await commandStatus("gh")) || "missing"],
-          ["node", (await commandStatus("node")) || "missing"],
-          ["jq", (await commandStatus("jq")) || "missing"],
-          ["repo", repoRoot || "not inside a git repository"],
-          [
-            "copilot-instructions.md",
-            (await pathExists(path.join(home, "copilot-instructions.md"))) ? "present" : "missing",
-          ],
-          ["lsp-config.json", (await pathExists(path.join(home, "lsp-config.json"))) ? "present" : "missing"],
-          ["extensions/", (await pathExists(path.join(home, "extensions"))) ? "present" : "missing"],
-        ];
-
-        return checks.map(([label, value]) => `${label}: ${value}`).join("\n");
-      },
+      handler: runHealthcheck,
     },
   ],
 });

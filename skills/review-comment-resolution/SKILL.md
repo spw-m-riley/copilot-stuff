@@ -20,6 +20,7 @@ metadata:
 
 - The task is only to summarize or classify review comments without making changes.
 - The comments are actually bug reports, issue triage, or general design questions outside a concrete review surface.
+- The main task is creating/updating a PR and watching checks before review starts; route to [`github-cli-pr-workflow`](../github-cli-pr-workflow/SKILL.md).
 - The real blocker is a failing workflow or check; route that to [`github-actions-failure-triage`](../github-actions-failure-triage/SKILL.md) first.
 - You cannot access the branch, PR, or review comment context needed to judge the concern.
 - The user explicitly instructs you to apply every review comment exactly as written without assessment.
@@ -118,6 +119,7 @@ Do not leave an unresolved comment without a reason. If the concern is real but 
 - Any skill that pushes a branch and creates a PR — route here when the PR receives review feedback
 
 **Pairs with:**
+- [`github-cli-pr-workflow`](../github-cli-pr-workflow/SKILL.md) — use before this skill when the branch still needs PR creation/update or check-watch status
 - [`github-actions-failure-triage`](../github-actions-failure-triage/SKILL.md) — if workflows fail after your push, diagnose those failures before calling the review task complete
 - [`git-worktrees`](../git-worktrees/SKILL.md) — when working in an isolated worktree, keep it alive until the review cycle is done
 - [`workflow-contracts`](../workflow-contracts/SKILL.md) — use a review-outcome contract when the result needs a durable artifact for a downstream phase

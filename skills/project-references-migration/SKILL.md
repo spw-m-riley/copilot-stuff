@@ -100,6 +100,12 @@ Pilot package config:
 - If go-to-definition lands in the wrong emitted folder, verify `rootDir`, `outDir`, `declaration`, and package exports point at the same build layout.
 - If outputs land beside source or in an unexpected subdirectory, inspect the package's `tsconfig` inheritance before widening the reference graph.
 
+## Routing boundary
+
+- Use this skill when a multi-package TypeScript workspace needs a deliberate `composite` / `references` migration path.
+- Route to [`tsconfig-hardening`](../tsconfig-hardening/SKILL.md) when the task is mainly single-package compiler-option cleanup or strictness tuning.
+- Route to [`tsc-error-triage`](../tsc-error-triage/SKILL.md) when the references migration has already landed and remaining work is source-level compiler failure triage.
+
 ## Validation
 
 - Run the repository's referenced build or the nearest equivalent after each migration batch.
