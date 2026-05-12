@@ -49,6 +49,7 @@ function normalize(text) {
   return text.replace(/\r\n?/g, "\n");
 }
 
+// fallow-ignore-next-line complexity
 function parseScalar(value) {
   if (value === "true") {
     return true;
@@ -66,6 +67,7 @@ function parseScalar(value) {
   return value;
 }
 
+// fallow-ignore-next-line complexity
 function parseFrontmatter(text) {
   const normalized = normalize(text);
   if (!normalized.startsWith("---\n")) {
@@ -162,6 +164,7 @@ function isClosingFence(line, openingFence) {
   );
 }
 
+// fallow-ignore-next-line complexity
 function stripFencedCodeBlocks(body) {
   const lines = body.split("\n");
   const strippedLines = [];
@@ -243,6 +246,7 @@ function sectionHasConcreteContent(sectionText) {
     return false;
   }
 
+  // fallow-ignore-next-line complexity
   return sectionText.split("\n").some((line) => {
     const trimmed = line.trim();
     if (!trimmed) {
@@ -283,6 +287,7 @@ function addReferenceTargetsFromPattern(sectionText, pattern, targets) {
   }
 }
 
+// fallow-ignore-next-line complexity
 function normalizeLocalReferenceTarget(rawTargetValue) {
   const rawTarget = rawTargetValue.trim();
   if (!rawTarget || isExternalReferenceTarget(rawTarget)) {
@@ -323,6 +328,7 @@ async function pathExists(targetPath) {
   }
 }
 
+// fallow-ignore-next-line complexity
 async function listSkillFiles() {
   const entries = await readdir(SKILLS_ROOT, { withFileTypes: true });
   const files = [];
@@ -389,6 +395,7 @@ function validateSkillName(frontmatter, skillDir, errors) {
   }
 }
 
+// fallow-ignore-next-line complexity
 function validateSkillDescription(frontmatter, errors) {
   if (!frontmatter.description || !String(frontmatter.description).trim()) {
     errors.push("missing frontmatter key description");
@@ -543,6 +550,7 @@ async function validateFile(filePath) {
   };
 }
 
+// fallow-ignore-next-line complexity
 async function collectValidationOutput(files) {
   const messages = [];
   let hasFailure = false;

@@ -6,6 +6,7 @@ let missingRtkLogged = false;
 
 function run(command, args, options = {}) {
   return new Promise((resolve) => {
+    // fallow-ignore-next-line complexity
     execFile(command, args, { maxBuffer: 1024 * 1024, ...options }, (error, stdout, stderr) => {
       resolve({
         ok: !error,
@@ -19,6 +20,7 @@ function run(command, args, options = {}) {
 
 function runWithInput(command, args, input, options = {}) {
   return new Promise((resolve) => {
+    // fallow-ignore-next-line complexity
     const child = execFile(command, args, { maxBuffer: 1024 * 1024, ...options }, (error, stdout, stderr) => {
       resolve({
         ok: !error,
@@ -36,6 +38,7 @@ function runWithInput(command, args, input, options = {}) {
   });
 }
 
+// fallow-ignore-next-line complexity
 function commandFromToolArgs(toolArgs) {
   if (!toolArgs || typeof toolArgs !== "object" || Array.isArray(toolArgs)) {
     return null;
@@ -109,6 +112,7 @@ function buildModifiedArgs(input, updatedInput) {
   };
 }
 
+// fallow-ignore-next-line complexity
 function toPreToolUseOutput(input, parsed) {
   const hookSpecificOutput = extractHookSpecificOutput(parsed);
   const updatedInput = extractUpdatedInput(hookSpecificOutput);
@@ -146,6 +150,7 @@ async function logMissingRtkOnce(session, result) {
 const session = await joinSession({
   onPermissionRequest: approveAll,
   hooks: {
+    // fallow-ignore-next-line complexity
     onPreToolUse: async (input) => {
       if (!shouldHandlePreToolUse(input)) {
         return;

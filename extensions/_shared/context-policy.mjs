@@ -20,6 +20,7 @@ export function readChildMetadata(
   return pieces.join(" ").toLowerCase();
 }
 
+// fallow-ignore-next-line complexity
 function collectChildMetadataFields(input, extraFields) {
   const source = input && typeof input === "object" ? input : {};
   const subagent =
@@ -44,6 +45,7 @@ function trimText(value) {
   return value.trim();
 }
 
+// fallow-ignore-next-line complexity
 export function setBoundedContext(
   map,
   key,

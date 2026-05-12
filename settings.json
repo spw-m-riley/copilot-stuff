@@ -28,7 +28,6 @@
   "alt_screen": true,
   "ide.auto_connect": true,
   "ide.open_diff_on_edit": true,
-  "model": "auto",
   "lastLoggedInUser": {
     "host": "https://github.com",
     "login": "spw-m-riley"
@@ -58,5 +57,7 @@
       "cache_path": "/Users/matthew.riley/.copilot/installed-plugins/awesome-copilot/awesome-copilot"
     }
   ],
-  "rollout": {}
+  "rollout": {},
+  "effortLevel": "xhigh",
+  "model": "gpt-5.4"
 }

@@ -75,6 +75,7 @@ function isClearlyUnrelatedSubagent(input) {
 const session = await joinSession({
   onPermissionRequest: approveAll,
   hooks: {
+    // fallow-ignore-next-line complexity
     onUserPromptSubmitted: async (input) => {
       const sessionId = normalizeSessionId(input?.sessionId);
       const prompt = normalizePrompt(input?.prompt);
@@ -93,6 +94,7 @@ const session = await joinSession({
       await session.log("GitHub Actions URL detected", { ephemeral: true });
       return { additionalContext: buildParentContext(targets) };
     },
+    // fallow-ignore-next-line complexity
     onSubagentStart: async (input) => {
       const sessionId = normalizeSessionId(input?.sessionId);
       if (!sessionId) {

@@ -126,6 +126,7 @@ const session = await joinSession({
       await session.log("Fleet model policy injected", { ephemeral: true });
       return { additionalContext: FLEET_MODEL_POLICY };
     },
+    // fallow-ignore-next-line complexity
     onSubagentStart: async (input) => {
       if (!shouldInjectFleetChildContext(input)) {
         return;

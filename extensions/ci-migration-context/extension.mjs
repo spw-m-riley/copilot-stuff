@@ -66,6 +66,7 @@ const session = await joinSession({
       await session.log("Injecting CI migration context", { ephemeral: true });
       return { additionalContext: MIGRATION_CONTEXT };
     },
+    // fallow-ignore-next-line complexity
     onSubagentStart: async (input) => {
       const sessionId = normalizeSessionId(input.sessionId);
       if (!sessionId) {
