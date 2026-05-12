@@ -29,7 +29,7 @@ Controls where new worktrees are created. Default: sibling directory.
 # Default — sibling dir (e.g., ~/code/repo.feature-auth):
 worktree-path = "{{ repo_path }}/../{{ repo }}.{{ branch | sanitize }}"
 
-# Inside repo — recommended for Copilot CLI worktree-manager compatibility:
+# Inside repo — recommended for agent harness worktree-manager compatibility:
 worktree-path = "{{ repo_path }}/.worktrees/{{ branch | sanitize }}"
 
 # Centralised (e.g., ~/worktrees/myproject/feature-auth):
@@ -168,12 +168,12 @@ open = "open http://localhost:{{ branch | hash_port }}"
 
 ---
 
-## Minimal recommended config for Copilot CLI users
+## Minimal recommended config for agent harness users
 
 ```toml
 # ~/.config/worktrunk/config.toml
 
-# Keep worktrees inside the repo (matches Copilot CLI worktree-manager convention)
+# Keep worktrees inside the repo (matches agent harness worktree-manager convention)
 worktree-path = "{{ repo_path }}/.worktrees/{{ branch | sanitize }}"
 
 # LLM commit messages — fast, no session pollution

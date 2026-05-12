@@ -1,6 +1,6 @@
 ---
 name: init
-description: "Use when creating or updating copilot-instructions.md, per-path instruction files, or AGENTS.md — especially when instruction files are too long, generic, or stale, or when agents repeatedly make the same avoidable mistakes."
+description: "Use when creating or updating agent instruction files (AGENTS.md for Pi, copilot-instructions.md for Copilot, per-path guides, or AGENTS.md router) — especially when instruction files are too long, generic, or stale, or when agents repeatedly make the same avoidable mistakes."
 metadata:
   category: authoring
   audience: general-coding-agent
@@ -16,7 +16,7 @@ metadata:
 - Instruction files are missing, incomplete, or stale (no recent audit or updates)
 - Agents repeatedly make the same mistake in a repository (e.g., always choosing a tool not suitable for this codebase, using wrong file paths, or using anti-patterns)
 - A file-type or path-specific instruction file does not exist but the codebase has clear conventions (e.g., a TypeScript project with strict tsconfig, or a Terraform repo with specific backend patterns)
-- `copilot-instructions.md` has grown large or overly generic and needs to be split into focused per-path guides
+- Agent instruction files (AGENTS.md for Pi, copilot-instructions.md for Copilot) have grown large or overly generic and need to be split into focused per-path guides
 - You need to document non-obvious operational constraints (signing requirements, security policies, deployment gates, testing procedures, environment setup)
 - A repository has learned rules (lessons from prior corrections) that should be captured proactively
 
@@ -79,8 +79,14 @@ See [discoverability-filter.md](references/discoverability-filter.md) for deeper
 Before starting, clarify:
 
 1. **Scope:** Which instruction files are in scope?
-   - `copilot-instructions.md` in `~/.copilot`, or `.github/copilot-instructions.md` in other repos (root / global guidance)
-   - `instructions/*.instructions.md` in `~/.copilot`, or `.github/instructions/*.instructions.md` in other repos (file-type specific guides; keep both `description` and `applyTo` in YAML frontmatter)
+   - **Pi Coding Agent:**
+     - Global: `~/.pi/agent/AGENTS.md` or `~/.pi/agent/CLAUDE.md`
+     - Project-level: `AGENTS.md` or `CLAUDE.md` in repo root or parent directories (discovered upward from cwd)
+   - **GitHub Copilot CLI:**
+     - Global: `~/.copilot/copilot-instructions.md`
+     - Project-level: `.github/copilot-instructions.md` (repo root)
+     - Per-path guides: `.github/instructions/*.md` (with YAML frontmatter `description` and `applyTo` fields)
+   - **Other harnesses:** Check your harness documentation for instruction file conventions
    - `AGENTS.md` (agent roster and routing)
    - Per-project files (if this is a multi-project workspace)
 

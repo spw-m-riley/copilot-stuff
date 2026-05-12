@@ -102,8 +102,7 @@ To limit what gets copied, add a `.worktreeinclude` file at the repo root with g
 
 ## Activity markers for custom workflows
 
-Set status markers manually for any workflow — same markers the Claude Code / Copilot plugins
-use automatically:
+Set status markers manually for any workflow — same markers that agent harnesses use automatically:
 
 ```sh
 wt config state marker set "🚧"                     # current branch

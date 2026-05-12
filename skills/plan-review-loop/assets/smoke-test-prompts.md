@@ -5,7 +5,7 @@ These are the manual test scenarios for validating the `/plan-review-loop` skill
 ## Test Environment
 
 All tests are **manual and interactive**. They require:
-1. A live Copilot CLI session with the skill loaded
+1. A live agent harness CLI session with the skill loaded
 2. Running `/skills reload` to refresh the skill inventory
 3. Invoking `/skills info plan-review-loop` to confirm discoverability
 4. Running each test scenario by hand and recording the outcomes
@@ -181,7 +181,7 @@ mv references/personas/freddy.md references/personas/freddy.md.bak
 
 ### Reload and Verify
 
-In Copilot CLI:
+In your agent harness CLI:
 
 ```
 /skills reload

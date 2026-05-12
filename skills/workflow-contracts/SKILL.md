@@ -1,6 +1,6 @@
 ---
 name: workflow-contracts
-description: Create and revise versioned markdown handoff artifacts for planning, review, and execution in this Copilot workflow.
+description: Create and revise versioned markdown handoff artifacts for planning, review, and execution in agent-driven workflows.
 metadata:
   category: workflow
   audience: general-coding-agent
