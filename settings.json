@@ -37,7 +37,8 @@
     "/Users/matthew.riley/.copilot",
     "/Users/matthew.riley/work",
     "/Users/matthew.riley/kilaaks/nvim/.config/nvim",
-    "/Users/matthew.riley/kilaaks"
+    "/Users/matthew.riley/kilaaks",
+    "/Users/matthew.riley/.config"
   ],
   "installedPlugins": [
     {
@@ -58,6 +59,77 @@
     }
   ],
   "rollout": {},
-  "effortLevel": "xhigh",
-  "model": "gpt-5.4"
+  "effortLevel": "high",
+  "expAssignmentsCache": {
+    "v1:ca8e8f08d4000f4d0e1ae7f233c8e98b54afa8b7ed220c461bb65d8a0b460041": {
+      "schemaVersion": 1,
+      "retrievedAt": "2026-05-19T09:04:22.975Z",
+      "response": {
+        "Features": [
+          "cli_aa_t",
+          "openai_toolsearch_enabled",
+          "553h5936",
+          "h7c07110",
+          "5bb63a0f",
+          "e974i579",
+          "h0649438",
+          "7ge25706",
+          "i810g980",
+          "ibdi6602",
+          "cjf2j356",
+          "h60hd333",
+          "122j5628",
+          "6ad42530",
+          "cli_aa_monitor_c",
+          "anthropic_tool_search_enabled"
+        ],
+        "Flights": {
+          "9dd4c115-7dcb-c453-d2b5-339c74a1ded6": "cli_aa_t",
+          "b9d1aa5b-9e31-2fdb-90af-f04b67cedbe0": "openai_toolsearch_enabled",
+          "f81660f7-c021-d3ce-e95c-70ba7561213d": "553h5936",
+          "c845d17b-3348-6a8b-6435-e4352da2f268": "h7c07110",
+          "d3b79b1b-40bc-4a61-8fa7-124700aab421": "5bb63a0f",
+          "cdbba11c-53d2-d2f3-6039-88f91f7dbd10": "e974i579",
+          "36115216-e8ea-0eb0-d3a5-0919cf86df38": "h0649438",
+          "82d80fe2-8ba1-9865-7cce-7f1848904284": "7ge25706",
+          "10146615-ae8f-4853-6838-078ac94b4a14": "i810g980",
+          "2033b9f3-b9e1-6d25-898e-5f14c616a72b": "ibdi6602",
+          "117598bf-6eec-9b69-3ebb-8db6bc949bcf": "cjf2j356",
+          "6941fe83-83fe-f2a0-0128-4c4a5cdc393f": "h60hd333",
+          "d5402b0a-d2cf-5fe2-d6a8-4111560c4366": "122j5628",
+          "689292ec-928a-99c4-26af-7fef4bc85bdb": "6ad42530",
+          "535e4d56-d57b-cbea-68e4-6ed90f421902": "cli_aa_monitor_c",
+          "5486e3fa-057c-98a8-08b5-60cc78100391": "anthropic_tool_search_enabled"
+        },
+        "Configs": [
+          {
+            "Id": "default",
+            "Parameters": {
+              "copilot_cli": true,
+              "copilot_cli_anthropic_messages_api": true,
+              "copilot_cli_disable_reasoning_output_gpt": true,
+              "copilot_cli_gh_cli_over_mcp": false,
+              "copilot_cli_gpt_5_4_for_subagents": true,
+              "copilot_cli_gpt_5_4_mini_for_explore": true,
+              "copilot_cli_mcp_allowlist": true,
+              "copilot_cli_mcp_enterprise_allowlist": true,
+              "copilot_cli_number": 1,
+              "copilot_cli_remove_cwd_listing": true,
+              "copilot_cli_remove_parallel_tool_prompt": true,
+              "copilot_cli_replacement_blocks": false,
+              "copilot_cli_string": "t_string",
+              "copilot_cli_tool_search_anthropic": true,
+              "copilot_cli_tool_search_openai": true,
+              "copilot_cli_websocket_responses": true,
+              "enable_memory_voting": true
+            }
+          }
+        ],
+        "ParameterGroups": null,
+        "FlightingVersion": 1528,
+        "ImpressionId": "D56CE65136814C1BAACAA6BEB3295E08",
+        "AssignmentContext": "cli_aa_t:1136622;openai_toolsearch_enabled:1176914;553h5936:1177205;h7c07110:1176015;5bb63a0f:1149772;e974i579:1132406;h0649438:1154840;7ge25706:1176003;i810g980:1160314;ibdi6602:1160340;cjf2j356:1160400;h60hd333:1171747;122j5628:1178748;6ad42530:1173788;cli_aa_monitor_c:1169030;anthropic_tool_search_enabled:1176904;"
+      }
+    }
+  }
 }
