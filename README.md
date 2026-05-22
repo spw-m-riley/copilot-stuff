@@ -46,6 +46,7 @@ These live in [`./extensions/`](./extensions/) and are auto-discovered by the Co
 | `worktree-manager` | Adds `mr_worktree_create`, `mr_worktree_list`, `mr_worktree_status`, `mr_worktree_remove`, and `mr_worktree_merge` tools, plus injects worktree guidance into the parent session and prepares the same guidance for child agents when the runtime supports that hook. |
 | `copilot-healthcheck` | Adds the `mr_healthcheck_run` tool — a lightweight environment check that reports repo state and key local Copilot files/tools. |
 | `rtk-hook` | Runs `rtk hook copilot` on Bash pre-tool calls so RTK can deny raw commands and steer Copilot CLI toward the token-saving `rtk ...` equivalent. See [`./RTK.md`](./RTK.md). |
+| `stabilisation-guard` | Surfaces unresolved `open_loop` and `assistant_goal` Lore memories at session start, then denies the first `edit`/`create`/`apply_patch` call once so pending items are acknowledged before implementation begins. Reads `lore.db` directly; fails open on any error. |
 
 ### Child-Agent Context Propagation
 
@@ -159,10 +160,11 @@ The categories below describe the current repo-tracked skills in this worktree. 
 - `circleci-to-github-actions-migration` — Move from CircleCI → GitHub Actions with parity checking
 - `mocha-to-jest-migration` — Migrate test suites from Mocha/Chai/Sinon → Jest incrementally
 
-**Testing & Development (3 skills)** — Test authoring, debugging, and verification
+**Testing & Development (4 skills)** — Test authoring, debugging, and verification
 - `test-driven-development` — Failing test first. Implementation after. Always.
 - `systematic-debugging` — Hit a wall? Isolate the root cause before guessing at fixes
 - `verification-before-completion` — Don't claim "tests pass" without running them fresh
+- `api-smoke-validation` — Quick, repeatable smoke validation of API endpoints with hurl after changes
 
 **Workflow & Planning (12 skills)** — Planning, handoff docs, discovery, and decision support
 - `acquire-codebase-knowledge` — Produce traceable codebase knowledge packs for onboarding and repo discovery
@@ -182,29 +184,41 @@ The categories below describe the current repo-tracked skills in this worktree. 
 - `agentic-eval` — Build evaluator/optimizer loops and rubric-driven refinement pipelines
 - `autoresearch` — Run autonomous experiments to improve a measurable metric
 
-**Governance & Supply Chain (2 skills)** — Agent controls, provenance, and integrity
+**Governance & Supply Chain (3 skills)** — Agent controls, provenance, and integrity
 - `agent-governance` — Add policy enforcement, trust scoring, audit trails, and tool-access controls to agents
 - `agent-supply-chain` — Generate and verify integrity manifests for agent plugins and tools
+- `secret-scan-triage` — Triage gitleaks findings with containment and false-positive adjudication before merging
 
 **Code Review (1 skill)** — Pull request integration
 - `review-comment-resolution` — Resolve PR review comments and push to completion
 
-**CI/CD (1 skill)** - GitHub Actions troubleshooting
-- `github-actions-failure-triage` - GitHub Actions broke. Find the root cause and fix it.
+**CI/CD (2 skills)** — GitHub Actions troubleshooting and local reproduction
+- `github-actions-failure-triage` — GitHub Actions broke. Find the root cause and fix it.
+- `github-actions-local-repro` — Reproduce a GitHub Actions failure locally with `act` before pushing
 
-**Code Quality (1 skill)** - JS/TS code-health analysis and cleanup guidance
-- `fallow` - Use Fallow for dead code, duplication, complexity, boundary, and cleanup workflows in JS/TS repos
+**Code Quality (2 skills)** — JS/TS code-health analysis, cleanup, and structural search
+- `fallow` — Use Fallow for dead code, duplication, complexity, boundary, and cleanup workflows in JS/TS repos
+- `ast-grep` — Structural code search, linting, and safe codemod rewrites with ast-grep
 
 **Authoring & Configuration (2 skills)** - Skill creation and setup workflows
 - `skill-authoring` - Write reusable agent skills from scratch with activation conditions
 - `init` - Create or update copilot-instructions.md and per-file instruction files
 
-**Version Control (2 skills)** — Worktree and branching workflows
+**Version Control (3 skills)** — Worktree, branching, and PR workflows
 - `git-worktrees` — Create and manage isolated Git worktrees for parallel lanes
 - `worktrunk` — Advanced worktree lifecycle, LLM-generated commits, and coordination
+- `github-cli-pr-workflow` — PR lifecycle with `gh` CLI: create or update a PR, watch checks, prepare review handoff
 
-**Utilities (1 skill)** — Context reduction for large local files
+**Utilities (3 skills)** — Context reduction, code navigation, and web patterns
 - `ma` — Reduce large local files for understanding before deciding whether a full-fidelity read is necessary
+- `code-intelligence` — Navigate and refactor code with the right search tool (LSP, rg, or semantic) and proper degradation fallback
+- `modern-web-guidance` — Write HTML, CSS, JavaScript, forms, and animations without reaching for legacy patterns
+
+**Infrastructure (1 skill)** — Terraform and OpenTofu workflows
+- `terraform-skill` — Write, review, or debug Terraform/OpenTofu — modules, tests, CI/CD, security scans, and state operations
+
+**Memory & Session (1 skill)** — Lore memory management
+- `resolve-open-loops` — Close out active `open_loop` and `assistant_goal` Lore memories when the stabilisation-guard fires or when pending items need explicit resolution
 
 ### Using Skills
 
@@ -256,7 +270,7 @@ gh skill install github/awesome-copilot acquire-codebase-knowledge --scope user
 | `context-engineering` | Useful, but it overlaps heavily with the local `context-map` skill plus the existing research→plan workflow, so it would duplicate context-mapping behavior rather than add a clearly new surface. | Revisit only if the packaged `/context-map` plugin workflow proves meaningfully better than the local skill + planning flow. |
 | `project-planning` | The repo already has `implementation-planner`, `workflow-contracts`, and `plan-review-loop` skill, so another planning plugin would mostly duplicate existing planning/PRD generation surfaces. | Revisit if you want packaged PRD/issue-generation commands beyond the current local planning stack. |
 | `Custom Agent Foundry` | Strong design reference, but the repo already has `skill-authoring`, custom agents, and established authoring patterns; keeping it out of wave 1 avoids duplicating daily authoring workflow. | Revisit as a rubric/reference if custom-agent authoring needs a dedicated external coach later. |
-| `agentic-eval` | Valuable evaluator/optimizer pattern, but it is explicitly deferred so wave 1 can land documentation and the high-signal installs first without turning evaluation loops into a gate. | Consider as a separate follow-on once wave-1 usage is stable and documented. |
+| `agentic-eval` | Deferred from wave 1 to keep scope tight. | **Adopted post-wave-1** — now repo-tracked under [`./skills/agentic-eval/`](./skills/agentic-eval/). |
 
 ---
 
