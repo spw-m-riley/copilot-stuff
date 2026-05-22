@@ -4,7 +4,7 @@ description: "Use when the user wants to turn a plan, spec, PRD, or approved ide
 metadata:
   category: workflow
   audience: general-coding-agent
-  maturity: draft
+  maturity: stable
   kind: task
 ---
 

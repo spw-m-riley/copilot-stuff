@@ -4,7 +4,7 @@ description: "Use when running autonomous iterative experiments to optimize a me
 metadata:
   category: workflow
   audience: general-coding-agent
-  maturity: draft
+  maturity: stable
   kind: task
 ---
 

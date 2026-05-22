@@ -4,7 +4,7 @@ description: "Use when asked to create a .tour walkthrough — onboarding, PR re
 metadata:
   category: workflow
   audience: general-coding-agent
-  maturity: draft
+  maturity: stable
   kind: task
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: skill-authoring
-description: "Author reusable agent skills under skills/<name>/SKILL.md. Use this skill when creating a new skill from scratch, rewriting or improving an existing SKILL.md, deciding whether guidance belongs in a skill vs. global instructions vs. a specialized agent, or reviewing a skill package for structure and activation quality."
+description: "Use when creating or revising a reusable agent skill under skills/<name>/SKILL.md — deciding activation, layering, examples, or validation, or choosing between a skill vs. instructions vs. a specialized agent."
 metadata:
   category: authoring
   audience: general-coding-agent
@@ -127,6 +127,14 @@ The validator will report specific issues and how to fix them.
 - The workflow is so narrow or stateful that it belongs in a specialized agent instead of a reusable skill.
 - The request is a one-off task description with no reuse value.
 
+## Routing boundary
+
+| Situation | Use this skill? | Route instead |
+| --- | --- | --- |
+| Create or revise a reusable skill package | Yes | - |
+| Create or update agent instruction files (copilot-instructions.md, AGENTS.md) | No | [`init`](../init/SKILL.md) |
+| Author collaborative documentation such as READMEs or runbooks | No | [`doc-coauthoring`](../doc-coauthoring/SKILL.md) |
+
 ## Inputs to gather
 
 - The problem the skill should solve and the kinds of requests that should activate it.
@@ -221,4 +229,5 @@ The validator will report specific issues and how to fix them.
 - `references/checklist.md` - final authoring and validation checklist
 - `references/metadata-contract.md` - canonical frontmatter contract: required fields, allowed optional extensions, forbidden keys, and exception policy
 - `references/import-rewrite-contract.md` - shared target shape for rewriting upstream skills into this local library
+- `references/quality-scenarios.md` - skill quality review scenarios and maintenance loop
 - `scripts/validate-skill-library.mjs` - local validator for skill library metadata, examples, and support-file references

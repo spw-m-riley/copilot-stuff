@@ -4,7 +4,7 @@ description: "Use when writing, reviewing, or debugging Terraform/OpenTofu — m
 metadata:
   category: terraform
   audience: general-coding-agent
-  maturity: draft
+  maturity: stable
   kind: task
 ---
 

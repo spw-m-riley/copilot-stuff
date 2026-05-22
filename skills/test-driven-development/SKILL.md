@@ -1,6 +1,6 @@
 ---
 name: test-driven-development
-description: "Use when implementing any new feature, bugfix, or behavior change — requires writing a failing test before any production code is written."
+description: "Use when implementing any new feature, bugfix, or behavior change."
 metadata:
   category: workflow
   audience: general-coding-agent

@@ -73,6 +73,7 @@ See [discoverability-filter.md](references/discoverability-filter.md) for deeper
 | "Update the README" | ✗ | User documentation belongs in README or project docs |
 | "Enforce a linter or rule" | ✗ | Use tsconfig, eslint config, tooling setup (not instructions) |
 | "Change the actual code" | ✗ | Use a coding or debugging skill |
+| "Create or revise a reusable skill package" | ✗ | [`skill-authoring`](../skill-authoring/SKILL.md) |
 
 ## Inputs to gather
 

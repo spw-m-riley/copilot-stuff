@@ -4,7 +4,7 @@ description: "Use when navigating or refactoring code: pick LSP vs rg vs semanti
 metadata:
   category: workflow
   audience: general-coding-agent
-  maturity: draft
+  maturity: stable
   kind: reference
 ---
 

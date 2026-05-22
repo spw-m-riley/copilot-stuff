@@ -4,7 +4,7 @@ description: "Use when designing or implementing an evaluation loop for AI agent
 metadata:
   category: workflow
   audience: general-coding-agent
-  maturity: draft
+  maturity: stable
   kind: reference
 ---
 
