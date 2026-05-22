@@ -4,6 +4,8 @@ import { execFile } from "node:child_process";
 import { access, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
+
+const FALLOW_BASELINE_FILENAME = path.join(".fallow", "baseline.json");
 import { createValidatorRegistry } from "./lib/validator-registry.mjs";
 
 const EDIT_TOOLS = new Set(["apply_patch", "edit", "create"]);
@@ -433,9 +435,56 @@ async function processFile(filePath) {
   return [];
 }
 
+// fallow-ignore-next-line complexity
+async function checkFallowRegression(cwd) {
+  const baselinePath = await findUp(cwd, (dir) =>
+    path.join(dir, FALLOW_BASELINE_FILENAME),
+  );
+  if (!baselinePath) return null;
+
+  const fallow = await findExecutable("fallow", cwd);
+  if (!fallow) return null;
+
+  const result = await run(
+    fallow,
+    ["health", "--complexity", `--baseline=${baselinePath}`, "--format", "json"],
+    { cwd },
+  );
+
+  let parsed;
+  try {
+    parsed = JSON.parse(result.stdout);
+  } catch {
+    return null;
+  }
+
+  const findings = parsed?.findings ?? [];
+  if (findings.length === 0) return null;
+
+  const lines = findings.map(
+    (f) =>
+      `- ${path.relative(cwd, path.resolve(cwd, f.path))}:${f.line} \`${f.name}\` (cyclomatic ${f.cyclomatic}, cognitive ${f.cognitive})`,
+  );
+
+  return [
+    `## ⚠️ fallow: ${findings.length} new complexity regression(s) since baseline`,
+    "",
+    ...lines,
+    "",
+    "Fix or suppress with `// fallow-ignore-next-line complexity`, then run `fallow health --save-baseline=.fallow/baseline.json` to update the baseline.",
+  ].join("\n");
+}
+
 const session = await joinSession({
   onPermissionRequest: approveAll,
   hooks: {
+    onSessionStart: async (input) => {
+      const cwd = input.cwd || process.cwd();
+      const regressionContext = await checkFallowRegression(cwd);
+      if (!regressionContext) return;
+      return { additionalContext: regressionContext };
+    },
+
     // fallow-ignore-next-line complexity
     onPostToolUse: async (input) => {
       if (!EDIT_TOOLS.has(input.toolName)) {
