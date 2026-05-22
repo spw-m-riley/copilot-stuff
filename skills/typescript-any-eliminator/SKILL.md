@@ -89,6 +89,10 @@ Do not force a fake precise type when the right answer is to keep the boundary p
 - Run targeted tests or the nearest equivalent validation command for the touched surface when available.
 - Confirm the final type is more precise than `any`, `object`, `Function`, or another unjustified widening.
 
+- Smoke test:
+  - should trigger: "Replace any in this API helper with a truthful type."
+  - should not trigger: "Add runtime validation for this untrusted JSON input." (→ `schema-boundary-typing`)
+
 ## Examples
 
 - `Before`

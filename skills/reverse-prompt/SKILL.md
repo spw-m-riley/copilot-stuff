@@ -89,6 +89,10 @@ metadata:
   - `Before you start, sharpen my prompt into goal, constraints, deliverables, approval rule, and exact files, then implement it: audit @extensions/`
   - `Improve this prompt only: update the broken workflow in \`.github/workflows/ci.yml\`, but do not touch release jobs or deploy permissions`
 
+- Smoke test:
+  - should trigger: "Sharpen this vague request into a concrete implementation prompt for this repo."
+  - should not trigger: "Grill my already-written migration plan for risks." (→ `grill-me`)
+
 ## Examples
 
 - `Reverse-prompt this request for this repo: fix the failing tests in @skills/workflow-contracts/, but do not touch unrelated refactors.`

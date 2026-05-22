@@ -87,6 +87,10 @@ See [Worktrunk command equivalents](references/worktrunk-commands.md) and the `w
 - Run relevant repository checks from inside the worktree used for changes.
 - Verify pushed branch matches the intended task before merge.
 
+- Smoke test:
+  - should trigger: "Create a parallel worktree for a refactor without touching my main checkout."
+  - should not trigger: "Configure wt hooks and parallel lanes for this repo." (→ `worktrunk`)
+
 ## Examples
 
 - "Create `.worktrees/feature-auth-refactor` from `origin/main` for a migration lane, then keep the main checkout untouched until the branch is ready."

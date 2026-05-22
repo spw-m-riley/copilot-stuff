@@ -77,6 +77,10 @@ Use this skill when `gitleaks` findings need a disciplined triage path so real e
 - Any new allowlist entry is narrow and tied to specific evidence.
 - Repository checks relevant to touched files still pass.
 
+- Smoke test:
+  - should trigger: "Triage these gitleaks hits and narrow any allowlist changes."
+  - should not trigger: "Add secret-handling policy checks to this agent." (→ `agent-governance`)
+
 ## Examples
 
 - "CI is blocked by gitleaks in two files; triage each finding, remediate real exposures, and keep exceptions minimal."

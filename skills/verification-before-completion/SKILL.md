@@ -117,6 +117,10 @@ After verification:
 - [ ] I am ready to state the claim with evidence
 - [ ] If verification failed, I understand why and what to fix next
 
+- Smoke test:
+  - should trigger: "Before I say it's fixed, rerun the failing test and read the output."
+  - should not trigger: "Find out why this failing test breaks only on CI." (→ `systematic-debugging`)
+
 ## Examples
 
 Each example below shows the full Gate in practice — state the claim, identify the command, run it fresh, and verify the output.

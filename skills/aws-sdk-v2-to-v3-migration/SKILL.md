@@ -72,6 +72,10 @@ correct v3 package names and API shapes before writing any code.
 - Confirm no imports still pull from the v2 `aws-sdk` package on the migrated surface.
 - Spot-check real behavior for pagination, streams, uploads, marshalling, and expected error types.
 
+- Smoke test:
+  - should trigger: "Replace new AWS.S3() and .promise() calls with AWS SDK v3."
+  - should not trigger: "Change our Terraform S3 module to add versioning." (→ `terraform-skill`)
+
 ## Examples
 
 - "Migrate a Lambda that does `const s3 = new AWS.S3()` and `s3.upload(...)` to `S3Client` plus `Upload` from `@aws-sdk/lib-storage`, then update the mocks."

@@ -192,6 +192,10 @@ After writing or updating an instruction file:
    - Add a note about next review date (recommend quarterly for large codebases, biannually for small projects)
    - Link to related learned rules or decision records
 
+- Smoke test:
+  - should trigger: "Split stale copilot-instructions.md into focused per-path instruction files."
+  - should not trigger: "Create a reusable skill package for instruction upkeep." (→ `skill-authoring`)
+
 ## Examples
 
 The examples below each pass the 3-Question Check: non-discoverable, accurate, and materially useful to an agent.

@@ -73,6 +73,10 @@ The skill validates successfully when:
 - The round logic enforces a 3-round maximum and unanimous same-round approval requirement
 - This SKILL.md passes the skill-authoring validator: `node skills/skill-authoring/scripts/validate-skill-library.mjs skills/plan-review-loop/SKILL.md`
 
+- Smoke test:
+  - should trigger: "Use Jason and Freddy to review this finished /plan before implementation."
+  - should not trigger: "Stress-test this design and update CONTEXT.md as we go." (→ `grill-with-docs`)
+
 ## Examples
 
 - **Approve path (happy path):**

@@ -153,6 +153,10 @@ Debugging is complete when:
 4. **Tests pass.** The failing test now passes, and no new tests fail.
 5. **Fix is reviewed.** Another person or the user has confirmed the fix makes sense.
 
+- Smoke test:
+  - should trigger: "This test still flakes; find the root cause before we change code."
+  - should not trigger: "Rerun the failing test to confirm the fix worked." (→ `verification-before-completion`)
+
 ## Examples
 
 Select the investigation pattern that best matches the current failure mode:

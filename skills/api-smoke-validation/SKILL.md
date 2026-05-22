@@ -76,6 +76,10 @@ Use this skill when you need fast, scriptable API smoke checks with `hurl` so en
 - Assertions cover changed behavior and core health paths.
 - Relevant repository checks for touched files still pass.
 
+- Smoke test:
+  - should trigger: "Add hurl smoke checks for POST /orders after auth changes."
+  - should not trigger: "Write full behavior tests for the orders API." (→ `test-driven-development`)
+
 ## Examples
 
 - "After auth middleware changes, add hurl smoke checks for unauthenticated vs authenticated responses on `/v1/profile`."

@@ -75,6 +75,10 @@ metadata:
 - Confirm consumers no longer rely on unvalidated `unknown` or ad hoc casts.
 - Keep [`references/boundary-validation-scenarios.md`](references/boundary-validation-scenarios.md) in sync when the repo's error-handling convention, schema library, or transport-to-domain boundary changes.
 
+- Smoke test:
+  - should trigger: "Validate this JSON request body at the API edge and export the safe type."
+  - should not trigger: "Add compile-time tests for this inferred API type." (→ `type-test-authoring`)
+
 ## Examples
 
 - `Before`

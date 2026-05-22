@@ -140,6 +140,10 @@ Stop broadening the config work when any of these happen:
 - Confirm the final config still matches the intended runtime and package layout.
 - Use [`references/hardening-scenarios.md`](references/hardening-scenarios.md) to keep strictness sequencing, stop thresholds, and do-not-widen cases aligned with the maintenance loop.
 
+- Smoke test:
+  - should trigger: "Enable noImplicitAny and clean up this repo's tsconfig chain safely."
+  - should not trigger: "Fix the source errors from the last typecheck run." (→ `tsc-error-triage`)
+
 ## Examples
 
 - `Before`

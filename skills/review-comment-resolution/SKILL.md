@@ -100,6 +100,10 @@ Do not leave an unresolved comment without a reason. If the concern is real but 
 - If any workflow fails, inspect whether the failure was introduced by your changes and address it when it is in scope.
 - Keep the routing and disposition examples in [`references/review-resolution-scenarios.md`](references/review-resolution-scenarios.md) aligned with any change to review-comment handling.
 
+- Smoke test:
+  - should trigger: "Address the open PR review comments, push fixes, and wait for checks."
+  - should not trigger: "Create the PR and watch checks for this branch." (→ `github-cli-pr-workflow`)
+
 ## Examples
 
 - "On PR #214, fix the review thread that shows the null-check bug, leave the style-only nit unresolved if it is not merge-blocking, push the branch, and wait for the rerun to finish."

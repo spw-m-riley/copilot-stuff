@@ -129,6 +129,10 @@ describe("retries", () => {
 - Confirm fake timers, async failures, setup hooks, and mock reset behavior still match intent.
 - Check CI behavior if the migration changes test environment defaults or coverage collection.
 
+- Smoke test:
+  - should trigger: "Migrate this Mocha + Sinon test file to Jest without changing behavior."
+  - should not trigger: "Add a new test to our existing Jest suite for this parser." (→ `test-driven-development`)
+
 ## Examples
 
 - "Convert `user.spec.ts` from `sinon.stub(api, 'fetch')` and `expect(value).to.equal(...)` to `jest.spyOn(api, 'fetch')` and `expect(value).toBe(...)`."

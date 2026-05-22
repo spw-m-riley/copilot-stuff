@@ -344,6 +344,10 @@ After implementing supply chain controls, verify end-to-end integrity:
 - Run `promotion_check()` before any production promotion and confirm all checks (integrity, required files, pinned deps) pass.
 - Run the CI verification step in `references/ci-integration.md` and confirm the workflow exits 0 on a clean plugin.
 
+- Smoke test:
+  - should trigger: "Generate a SHA-256 manifest for this plugin and verify it in CI."
+  - should not trigger: "Add runtime tool allowlists to this agent." (→ `agent-governance`)
+
 ## Examples
 
 - "Lock in the state of `my-agent-plugin/` after code review" → run `generate_manifest("my-agent-plugin/")`, commit `INTEGRITY.json` to the PR.

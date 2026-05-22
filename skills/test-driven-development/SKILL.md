@@ -126,6 +126,10 @@ Before marking work complete:
 3. Check test coverage (if the repo tracks it) to confirm the new code is exercised.
 4. Review the test names to ensure they document the expected behavior.
 
+- Smoke test:
+  - should trigger: "Fix this parser bug by writing a failing test first."
+  - should not trigger: "Rerun the parser tests before claiming the bug is fixed." (→ `verification-before-completion`)
+
 ## Examples
 
 See [`references/tdd-scenarios.md`](./references/tdd-scenarios.md) for practical TypeScript-focused examples:
