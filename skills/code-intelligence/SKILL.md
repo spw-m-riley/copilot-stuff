@@ -1,6 +1,6 @@
 ---
 name: code-intelligence
-description: "Use when navigating or refactoring code: pick LSP vs rg vs semantic search, apply position-anchored LSP calls, the degradation gate, or tool-substitution disclosure."
+description: "Use when navigating or refactoring code — choosing between LSP, rg, or semantic search tools; an LSP call returns empty and you need to know if it failed; or a tool substitution needs disclosure."
 metadata:
   category: workflow
   audience: general-coding-agent

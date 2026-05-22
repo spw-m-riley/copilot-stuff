@@ -205,5 +205,5 @@ Select the investigation pattern that best matches the current failure mode:
 
 ## Reference files
 
-- [Root Cause Tracing Techniques](./references/root-cause-tracing.md) — Deep dive into error analysis, reproduction, and data flow tracing
-- [Defense-in-Depth Debugging Strategies](./references/defense-in-depth.md) — Layered observability and systematic elimination
+- [Root Cause Tracing Techniques](references/root-cause-tracing.md) — Deep dive into error analysis, reproduction, and data flow tracing
+- [Defense-in-Depth Debugging Strategies](references/defense-in-depth.md) — Layered observability and systematic elimination

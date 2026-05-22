@@ -1,6 +1,6 @@
 ---
 name: verification-before-completion
-description: "Use before claiming work is complete, tests pass, a bug is fixed, or a build succeeds."
+description: "Use when about to claim work is complete, tests pass, a bug is fixed, or a build succeeds."
 metadata:
   category: workflow
   audience: general-coding-agent

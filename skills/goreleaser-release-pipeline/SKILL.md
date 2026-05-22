@@ -4,7 +4,7 @@ description: "Use when setting up, debugging, or fixing a GoReleaser v2 release 
 metadata:
   category: ci
   audience: general-coding-agent
-  maturity: draft
+  maturity: stable
   kind: task
 ---
 
@@ -72,9 +72,8 @@ Use this skill when a repository already has, or is adding, a GoReleaser v2 rele
 3. Inspect how the publish job starts. If the workflow relies on a separate `release: published` trigger created by Release Please with the default `GITHUB_TOKEN`, move the publish job into the same workflow and gate it with `${{ steps.release.outputs.release_created }}`.
 4. Pass the release context forward from Release Please, especially `${{ steps.release.outputs.tag_name }}`, so the publish job builds against the exact created release rather than guessing from a later event.
 5. When a release exists but has no binary assets, check whether the GoReleaser job ran at all before changing `.goreleaser.yaml`; missing assets usually mean `release_created` was false, the job condition was wrong, or the job lived behind the wrong trigger.
-6. Run `goreleaser check` before commit so schema or config mistakes are caught before a release workflow reruns.
-7. Preserve defined releases and version numbers when simplifying the pipeline. If the team uses release numbers for Datadog or other correlation, simplify around main-based tags, numbered releases, and immutable artifact promotion rather than removing release granularity.
-8. If the remaining failure is really a runner, permission, or environment problem in GitHub Actions rather than a release-pipeline design issue, stop and hand off to the GitHub Actions triage path.
+6. Preserve defined releases and version numbers when simplifying the pipeline. If the team uses release numbers for Datadog or other correlation, simplify around main-based tags, numbered releases, and immutable artifact promotion rather than removing release granularity.
+7. If the remaining failure is really a runner, permission, or environment problem in GitHub Actions rather than a release-pipeline design issue, stop and hand off to the GitHub Actions triage path.
 
 ## Outputs
 
@@ -90,6 +89,7 @@ Use this skill when a repository already has, or is adding, a GoReleaser v2 rele
 - Do not treat an empty release page as a GoReleaser schema bug until you have confirmed the publish job actually ran.
 - Do not remove defined releases or renumber version history if downstream monitoring depends on those release numbers.
 - Do not absorb generic GitHub Actions runner troubleshooting or PR lifecycle work into this skill.
+- Ensure `actions/checkout` uses `fetch-depth: 0` when GoReleaser generates a changelog; shallow clones silently produce incomplete or missing changelogs.
 
 ## Validation
 
@@ -110,7 +110,8 @@ Use this skill when a repository already has, or is adding, a GoReleaser v2 rele
 
 ## Reference files
 
-- [`github-workflows.instructions.md`](../../instructions/github-workflows.instructions.md) - source rules for Release Please chaining, semver tag shape, and preserving numbered releases
-- [`github-actions-failure-triage`](../github-actions-failure-triage/SKILL.md) - route here when the failure is generic workflow or runner triage instead of release-pipeline design
-- [`finishing-a-development-branch`](../finishing-a-development-branch/SKILL.md) - route here when the question is branch integration rather than release publishing
-- [`github-cli-pr-workflow`](../github-cli-pr-workflow/SKILL.md) - route here when the work is PR lifecycle rather than release pipeline behavior
+- [`references/release-please-goreleaser-config.md`](references/release-please-goreleaser-config.md) — annotated workflow template, `include-component-in-tag` setting, `release_created` job gate, `fetch-depth: 0` note, and `goreleaser check` command
+- [`../../instructions/github-workflows.instructions.md`](../../instructions/github-workflows.instructions.md) — source rules for Release Please chaining, semver tag shape, and preserving numbered releases
+- [`../github-actions-failure-triage/SKILL.md`](../github-actions-failure-triage/SKILL.md) — route here when the failure is generic workflow or runner triage instead of release-pipeline design
+- [`../finishing-a-development-branch/SKILL.md`](../finishing-a-development-branch/SKILL.md) — route here when the question is branch integration rather than release publishing
+- [`../github-cli-pr-workflow/SKILL.md`](../github-cli-pr-workflow/SKILL.md) — route here when the work is PR lifecycle rather than release pipeline behavior

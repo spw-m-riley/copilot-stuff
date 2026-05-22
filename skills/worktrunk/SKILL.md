@@ -80,9 +80,27 @@ wt remove test-wt-check                   # cleans up
 
 ## Examples
 
-- "Set up LLM commit messages for this repo"
-- "Add a post-start hook that runs npm ci and starts the dev server"
-- "Configure parallel agent lanes with unique ports per worktree"
+- **Set up LLM commit messages for this repo:**
+  ```sh
+  wt config show              # inspect current config location
+  # add [commit.generation] block — see assets/llm-commits-setup.md for provider options
+  wt switch --create test-llm-check
+  # make a small change, then `wt merge` to confirm LLM message is generated
+  ```
+
+- **Add a post-start hook that runs `npm ci` and starts the dev server:**
+  ```toml
+  # .config/wt.toml
+  [[hooks.post-start]]
+  command = "npm ci && npm run dev -- --port {{.Port}}"
+  ```
+
+- **Configure parallel agent lanes with unique ports per worktree:**
+  ```sh
+  wt switch --create agent-lane-1 --execute="copilot agent start"
+  wt switch --create agent-lane-2 --execute="copilot agent start"
+  wt list   # shows both lanes with status markers
+  ```
 
 ## Reference files
 
