@@ -4,7 +4,7 @@ description: "Use when you need ast-grep structural search, linting, or safe cod
 metadata:
   category: workflow
   audience: general-coding-agent
-  maturity: draft
+  maturity: stable
   kind: task
 ---
 

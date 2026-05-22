@@ -1,6 +1,6 @@
 ---
 name: workflow-contracts
-description: Create and revise versioned markdown handoff artifacts for planning, review, and execution in agent-driven workflows.
+description: "Use when a task needs a durable handoff artifact for planning, review, or execution in agent-driven workflows — not just a chat summary."
 metadata:
   category: workflow
   audience: general-coding-agent
@@ -32,6 +32,8 @@ Use this skill when a task needs a durable handoff artifact instead of a chat su
 | Create or consume a structured plan, review, or execution artifact in this repo | Yes | - |
 | Create or revise a reusable skill package | No | [`skill-authoring`](../skill-authoring/SKILL.md) |
 | Write global policy that should always apply even when no artifact is produced | No | global instructions or a scoped instruction file |
+| Produce requirements before creating the contract | No | [`to-prd`](../to-prd/SKILL.md) |
+| Break an approved contract into independently trackable tickets | No | [`to-issues`](../to-issues/SKILL.md) |
 
 ## Inputs to gather
 

@@ -4,7 +4,7 @@ description: "Use when auditing JS/TS code health with Fallow - dead code, dupli
 metadata:
   category: code-quality
   audience: general-coding-agent
-  maturity: draft
+  maturity: stable
   kind: reference
 ---
 

@@ -4,7 +4,7 @@ description: "Use when the user wants a PRD synthesized from current repository 
 metadata:
   category: authoring
   audience: general-coding-agent
-  maturity: draft
+  maturity: stable
   kind: task
 ---
 
@@ -35,6 +35,7 @@ Use this skill when the goal is to turn what is already known — repository con
 | Write or refactor a broad shared document with multi-round collaboration | No | [`doc-coauthoring`](../doc-coauthoring/SKILL.md) |
 | Map the repository first because the system is not understood well enough to describe the work | No | [`acquire-codebase-knowledge`](../acquire-codebase-knowledge/SKILL.md) |
 | Rewrite an under-specified ask into a clearer brief before deciding whether a PRD is even needed | No | [`reverse-prompt`](../reverse-prompt/SKILL.md) |
+| Break an approved PRD into independently trackable tickets | No | [`to-issues`](../to-issues/SKILL.md) |
 
 ## Inputs to gather
 

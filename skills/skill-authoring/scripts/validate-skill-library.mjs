@@ -355,6 +355,53 @@ async function resolveSkillFiles(args) {
   return args.map((filePath) => path.resolve(REPO_ROOT, filePath));
 }
 
+async function listSupportFilesInDir(dir) {
+  const files = [];
+  const entries = await readdir(dir, { withFileTypes: true });
+  for (const entry of entries) {
+    if (entry.name.startsWith(".")) {
+      continue;
+    }
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      const subFiles = await listSupportFilesInDir(fullPath);
+      files.push(...subFiles);
+    } else {
+      files.push(fullPath);
+    }
+  }
+  return files;
+}
+
+async function validateOrphanedSupportFiles(filePath, body, errors) {
+  const skillDir = path.dirname(filePath);
+  const allFiles = await listSupportFilesInDir(skillDir);
+  const supportFiles = allFiles.filter(
+    (f) =>
+      path.basename(f) !== "SKILL.md" && path.basename(f) !== "PROVENANCE.md",
+  );
+
+  if (supportFiles.length === 0) {
+    return;
+  }
+
+  const allRefs = collectReferenceTargets(body);
+  const resolvedRefs = new Set(
+    [...allRefs].map((ref) => path.resolve(skillDir, ref)),
+  );
+
+  for (const supportFile of supportFiles) {
+    if (!resolvedRefs.has(supportFile)) {
+      const relPath = path
+        .relative(skillDir, supportFile)
+        .replace(/\\/g, "/");
+      errors.push(
+        `orphaned support file not referenced in SKILL.md: ${relPath}`,
+      );
+    }
+  }
+}
+
 async function validateSkillContent(filePath, frontmatter, body) {
   const errors = [];
   const skillDir = path.basename(path.dirname(filePath));
@@ -378,6 +425,7 @@ async function validateSkillContent(filePath, frontmatter, body) {
   }
 
   await validateReferenceTargets(filePath, referenceSection, errors);
+  await validateOrphanedSupportFiles(filePath, body, errors);
 
   return errors;
 }

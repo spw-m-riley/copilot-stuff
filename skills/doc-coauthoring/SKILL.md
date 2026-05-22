@@ -1,6 +1,6 @@
 ---
 name: doc-coauthoring
-description: "Use when user wants to write, refactor, or expand documentation (README, guides, API docs, runbooks, specification documents). This skill structures collaborative authoring through context gathering, iterative refinement, and reader testing."
+description: "Use when user wants to write, refactor, or expand documentation (README, guides, API docs, runbooks, specification documents)."
 metadata:
   category: authoring
   audience: general-coding-agent
@@ -159,3 +159,5 @@ The skill workflow is complete when:
 - [`references/stage-1-context-gathering.md`](references/stage-1-context-gathering.md) — context gathering checklist and detailed guidance for Stage 1
 - [`references/stage-2-refinement-structure.md`](references/stage-2-refinement-structure.md) — guidance on organizing content and drafting sections in Stage 2
 - [`references/stage-3-reader-testing.md`](references/stage-3-reader-testing.md) — guidance on planning reader sessions and prioritizing changes in Stage 3
+- [`assets/document-scaffold-template.md`](assets/document-scaffold-template.md) — reusable document scaffold template
+- [`assets/feedback-capture-template.md`](assets/feedback-capture-template.md) — reader testing feedback capture template

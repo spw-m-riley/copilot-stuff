@@ -4,7 +4,7 @@ description: "Use when writing HTML, CSS, JavaScript, forms, or web animations â
 metadata:
   category: workflow
   audience: general-coding-agent
-  maturity: draft
+  maturity: stable
   kind: reference
 ---
 
