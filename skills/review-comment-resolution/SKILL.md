@@ -98,7 +98,6 @@ Do not leave an unresolved comment without a reason. If the concern is real but 
 - Confirm the pushed branch matches the branch or PR under review.
 - Wait for workflows or checks on the new head commit to finish.
 - If any workflow fails, inspect whether the failure was introduced by your changes and address it when it is in scope.
-- Keep the routing and disposition examples in [`references/review-resolution-scenarios.md`](references/review-resolution-scenarios.md) aligned with any change to review-comment handling.
 
 - Smoke test:
   - should trigger: "Address the open PR review comments, push fixes, and wait for checks."
@@ -117,13 +116,12 @@ Do not leave an unresolved comment without a reason. If the concern is real but 
 - [`references/push-and-workflow-wait.md`](references/push-and-workflow-wait.md) - how to commit, push, and wait for workflows or checks on the updated branch.
 - [`references/review-resolution-scenarios.md`](references/review-resolution-scenarios.md) - compact routing and handoff scenarios for maintaining the review-resolution workflow.
 
-## Integration
+## Routing boundary
 
-**Called by:**
-- Any skill that pushes a branch and creates a PR — route here when the PR receives review feedback
-
-**Pairs with:**
-- [`github-cli-pr-workflow`](../github-cli-pr-workflow/SKILL.md) — use before this skill when the branch still needs PR creation/update or check-watch status
-- [`github-actions-failure-triage`](../github-actions-failure-triage/SKILL.md) — if workflows fail after your push, diagnose those failures before calling the review task complete
-- [`git-worktrees`](../git-worktrees/SKILL.md) — when working in an isolated worktree, keep it alive until the review cycle is done
-- [`workflow-contracts`](../workflow-contracts/SKILL.md) — use a review-outcome contract when the result needs a durable artifact for a downstream phase
+| Situation | Use this skill? | Route instead |
+| --- | --- | --- |
+| PR has review comments or feedback that needs classification and fixing | Yes | — |
+| The next step is only PR creation, update, or watching checks before review starts | No | [`github-cli-pr-workflow`](../github-cli-pr-workflow/SKILL.md) |
+| A failing workflow is blocking the review cycle | No | [`github-actions-failure-triage`](../github-actions-failure-triage/SKILL.md) first |
+| Working in an isolated worktree during the review cycle | Pairs | [`git-worktrees`](../git-worktrees/SKILL.md) |
+| Review outcome needs a durable artifact for a downstream phase | Pairs | [`workflow-contracts`](../workflow-contracts/SKILL.md) |

@@ -14,16 +14,25 @@ Use this skill to run structured plan reviews after `/plan` completes, with cust
 
 ## Use this skill when
 
-- A `/plan` is complete and you want reviewers (Jason and Freddy by default) to analyze it
-- You need to customize the default reviewers or add new personas for specialized feedback
-- You want explicit control over the review loop timing and termination (after approval or 3 rounds, whichever comes first)
-- You want to iterate on a plan based on reviewer feedback
+- A `/plan` is complete and you want reviewers (Jason and Freddy by default) to analyze it before implementation begins
+- A plan was revised after reviewer feedback and needs another structured approval round
+- You want documented approval gates with explicit verdict tokens before committing to an implementation
+- You need feedback from implementation-risk and architectural-risk perspectives on the same plan
 
 ## Do not use this skill when
 
 - You do not yet have a completed `/plan` to review (use `/plan` first)
 - You need ad-hoc human review outside the structured skill workflow (do that separately)
 - The decision is already made and the plan is final (no review needed)
+
+## Routing boundary
+
+| Situation | Use this skill? | Route instead |
+| --- | --- | --- |
+| A finished plan needs structured multi-reviewer approval before implementation | Yes | — |
+| You want stress-testing of a design and CONTEXT.md updated | No | [`grill-with-docs`](../grill-with-docs/SKILL.md) |
+| You want fast informal critique without a full review loop | No | [`grill-me`](../grill-me/SKILL.md) |
+| The plan is already approved and implementation has started | No | proceed with implementation |
 
 ## Inputs to gather
 
@@ -71,7 +80,6 @@ The skill validates successfully when:
 - All persona files in `references/personas/` conform to the schema documented in `references/personas/README.md`
 - Verdict tokens (`[PLAN-APPROVED]` / `[PLAN-REVISE-NEEDED]`) are preserved unchanged and exactly matched
 - The round logic enforces a 3-round maximum and unanimous same-round approval requirement
-- This SKILL.md passes the skill-authoring validator: `node skills/skill-authoring/scripts/validate-skill-library.mjs skills/plan-review-loop/SKILL.md`
 
 - Smoke test:
   - should trigger: "Use Jason and Freddy to review this finished /plan before implementation."

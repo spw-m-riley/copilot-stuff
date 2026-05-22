@@ -4,7 +4,7 @@ description: "Use when Go build, test, toolchain, or CI parity failures surface 
 metadata:
   category: workflow
   audience: general-coding-agent
-  maturity: draft
+  maturity: stable
   kind: task
 ---
 
@@ -105,6 +105,7 @@ Use this skill when a Go repository is failing to build or test and the next mov
 
 ## Reference files
 
-- [`../../instructions/go.instructions.md`](../../instructions/go.instructions.md) - source rules for toolchain checks, stdlib-first preferences, and Go test isolation.
-- [`../go-error-patterns/SKILL.md`](../go-error-patterns/SKILL.md) - adjacent Go skill for covariance and error-design questions.
-- [`../systematic-debugging/SKILL.md`](../systematic-debugging/SKILL.md) - route here when the failure is too ambiguous for a Go-specific triage workflow.
+- [`references/toolchain-environment-checklist.md`](references/toolchain-environment-checklist.md) — `go env` key matrix, stale-override reset commands, `govulncheck` stdlib-finding triage steps, and CI fixture-file audit
+- [`../../instructions/go.instructions.md`](../../instructions/go.instructions.md) — source rules for toolchain checks, stdlib-first preferences, and Go test isolation
+- [`../go-error-patterns/SKILL.md`](../go-error-patterns/SKILL.md) — adjacent Go skill for covariance and error-design questions
+- [`../systematic-debugging/SKILL.md`](../systematic-debugging/SKILL.md) — route here when the failure is too ambiguous for a Go-specific triage workflow

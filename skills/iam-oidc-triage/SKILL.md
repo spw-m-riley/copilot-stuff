@@ -4,7 +4,7 @@ description: "Use when GitHub Actions or another OIDC caller gets AWS sts:Assume
 metadata:
   category: ci
   audience: general-coding-agent
-  maturity: draft
+  maturity: stable
   kind: task
 ---
 
@@ -32,10 +32,10 @@ Use this skill when an OIDC-federated caller cannot assume an AWS role and the p
 | Situation | Use this skill? | Route instead |
 | --- | --- | --- |
 | OIDC trust-policy, audience, subject, provider, or session-tag issue causing AssumeRole denial | Yes | - |
-| Auth succeeds, but the SAM or CloudFormation stack then fails | No | `sam-cloudformation` |
-| Terraform-managed infrastructure fails during plan/apply after auth | No | `terraform-skill` |
-| The failure is earlier in the workflow or not IAM-related | No | `github-actions-failure-triage` |
-| Lambda packaging or runtime is broken after deployment auth | No | `aws-lambda-go-deployment` |
+| Auth succeeds, but the SAM or CloudFormation stack then fails | No | [`sam-cloudformation`](../sam-cloudformation/SKILL.md) |
+| Terraform-managed infrastructure fails during plan/apply after auth | No | [`terraform-skill`](../terraform-skill/SKILL.md) |
+| The failure is earlier in the workflow or not IAM-related | No | [`github-actions-failure-triage`](../github-actions-failure-triage/SKILL.md) |
+| Lambda packaging or runtime is broken after deployment auth | No | [`aws-lambda-go-deployment`](../aws-lambda-go-deployment/SKILL.md) |
 
 ## Inputs to gather
 

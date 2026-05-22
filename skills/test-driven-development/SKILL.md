@@ -1,6 +1,6 @@
 ---
 name: test-driven-development
-description: "Use when implementing any new feature, bugfix, or behavior change."
+description: "Use when implementing a new feature, fixing a bug, or refactoring existing behavior — proven correct by executable tests written before production code."
 metadata:
   category: workflow
   audience: general-coding-agent
@@ -132,13 +132,17 @@ Before marking work complete:
 
 ## Examples
 
-See [`references/tdd-scenarios.md`](./references/tdd-scenarios.md) for practical TypeScript-focused examples:
+- **Adding a new validator:**
+  Write a failing test: `expect(validateEmail('')).toBe(false)` → implement `validateEmail()` until it passes → add edge-case tests for malformed inputs.
 
-- **New feature:** Adding a `parseUserInput()` function with happy path and edge cases.
-- **Bug fix:** Writing a test that reproduces the bug before implementing the fix.
-- **Refactor:** Adding tests to pin current behavior before safely refactoring.
-- **Edge case:** Testing boundary conditions before implementing handling logic.
+- **Reproducing a bug before fixing it:**
+  Write `expect(parseAmount('£1,000.00')).toBe(1000)` → confirm it fails → fix `parseAmount()` → confirm it passes.
+
+- **Pinning behavior before refactoring:**
+  Capture current return values in a test suite → refactor the implementation → verify all tests still pass.
+
+See [`references/tdd-scenarios.md`](references/tdd-scenarios.md) for full TypeScript-focused walkthroughs.
 
 ## Reference files
 
-- [`references/tdd-scenarios.md`](./references/tdd-scenarios.md) — Scenario walkthroughs with TypeScript code examples (500–800 words).
+- [`references/tdd-scenarios.md`](references/tdd-scenarios.md) — Scenario walkthroughs with TypeScript code examples (500–800 words).

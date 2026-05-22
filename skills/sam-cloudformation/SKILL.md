@@ -4,7 +4,7 @@ description: "Use when AWS SAM templates, CloudFormation stacks, or SAM deploys 
 metadata:
   category: ci
   audience: general-coding-agent
-  maturity: draft
+  maturity: stable
   kind: task
 ---
 
@@ -32,10 +32,10 @@ Use this skill when the failure lives in the SAM template, CloudFormation stack 
 | Situation | Use this skill? | Route instead |
 | --- | --- | --- |
 | SAM template authoring, validation, deploy, or CloudFormation stack-state issues | Yes | - |
-| Lambda binary, runtime, bootstrap, or handler issue | No | `aws-lambda-go-deployment` |
-| OIDC or AssumeRole AccessDenied during deployment auth | No | `iam-oidc-triage` |
-| Infrastructure is owned by Terraform instead of SAM/CloudFormation | No | `terraform-skill` |
-| Generic workflow-run diagnosis before the SAM deploy step is understood | No | `github-actions-failure-triage` |
+| Lambda binary, runtime, bootstrap, or handler issue | No | [`aws-lambda-go-deployment`](../aws-lambda-go-deployment/SKILL.md) |
+| OIDC or AssumeRole AccessDenied during deployment auth | No | [`iam-oidc-triage`](../iam-oidc-triage/SKILL.md) |
+| Infrastructure is owned by Terraform instead of SAM/CloudFormation | No | [`terraform-skill`](../terraform-skill/SKILL.md) |
+| Generic workflow-run diagnosis before the SAM deploy step is understood | No | [`github-actions-failure-triage`](../github-actions-failure-triage/SKILL.md) |
 
 ## Inputs to gather
 

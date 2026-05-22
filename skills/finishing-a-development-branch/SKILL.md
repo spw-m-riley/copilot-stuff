@@ -61,8 +61,6 @@ Then:
 
 ## Workflow
 
-### Four Integration Options
-
 ### Verify tests pass first
 
 Before presenting any option, confirm:

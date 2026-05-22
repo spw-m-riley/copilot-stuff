@@ -4,7 +4,7 @@ description: "Use when deploying or debugging Go-based AWS Lambda packaging, boo
 metadata:
   category: workflow
   audience: general-coding-agent
-  maturity: draft
+  maturity: stable
   kind: task
 ---
 
@@ -32,10 +32,10 @@ Use this skill when a Go Lambda fails because the binary, runtime, package layou
 | Situation | Use this skill? | Route instead |
 | --- | --- | --- |
 | Go Lambda packaging, runtime, bootstrap, or handler problems | Yes | - |
-| SAM template YAML, CloudFormation stack rollback, or IAM resource wiring | No | `sam-cloudformation` |
-| Deploy workflow fails on AssumeRole or OIDC auth | No | `iam-oidc-triage` |
-| Go code does not compile before packaging | No | `go-build-and-test` |
-| CI workflow structure or runner behavior is failing | No | `github-actions-failure-triage` |
+| SAM template YAML, CloudFormation stack rollback, or IAM resource wiring | No | [`sam-cloudformation`](../sam-cloudformation/SKILL.md) |
+| Deploy workflow fails on AssumeRole or OIDC auth | No | [`iam-oidc-triage`](../iam-oidc-triage/SKILL.md) |
+| Go code does not compile before packaging | No | [`go-build-and-test`](../go-build-and-test/SKILL.md) |
+| CI workflow structure or runner behavior is failing | No | [`github-actions-failure-triage`](../github-actions-failure-triage/SKILL.md) |
 
 ## Inputs to gather
 
