@@ -565,6 +565,10 @@ Apply the implementation checklist after wiring governance into an agent:
 - [ ] Test policy composition (most-restrictive-wins)
 ```
 
+- Smoke test:
+  - should trigger: "Add tool allowlists and audit logs to this coding agent."
+  - should not trigger: "Generate a SHA-256 manifest for this plugin bundle." (→ `agent-supply-chain`)
+
 ## Examples
 
 Select the governance controls appropriate for the risk level of the agent:

@@ -148,6 +148,10 @@ The skill workflow is complete when:
 - [ ] The document is published or merged into the repository.
 - [ ] Related documentation is updated with cross-references to the new or updated document.
 
+- Smoke test:
+  - should trigger: "Rewrite our README with reader feedback for new contributors."
+  - should not trigger: "Refresh copilot-instructions.md for this repo's new conventions." (→ `init`)
+
 ## Examples
 
 - "Write a README for my new CLI tool for first-time users" → gather audience, scope, and constraints (Stage 1), draft structure (Stage 2), share with a first-time user for feedback (Stage 3).

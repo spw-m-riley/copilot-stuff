@@ -170,6 +170,10 @@ Use these sections during Phase 2 to inform investigation questions and identify
 - Review the final `[ASK USER]` list — every item should be a real intent ambiguity, not a missing terminal command.
 - Run `scripts/scan.py` again on the target repo and confirm the output is consistent with `STACK.md`.
 
+- Smoke test:
+  - should trigger: "Map this repo's architecture and onboarding path for a new engineer."
+  - should not trigger: "Write a README for this CLI for first-time users." (→ `doc-coauthoring`)
+
 ## Examples
 
 - "Map this repo for a new developer" → run Phase 1 scan, produce all seven `docs/codebase/` files with evidence lists and a numbered `[ASK USER]` block.

@@ -82,6 +82,10 @@ metadata:
 - Confirm required checks, protected branches, and deploy approvals behave as expected.
 - Only remove `.circleci/config.yml` after successful parity and rollout checks.
 
+- Smoke test:
+  - should trigger: "Translate .circleci/config.yml jobs into GitHub Actions with parity checks."
+  - should not trigger: "Diagnose why the deploy workflow fails on ubuntu-latest." (→ `github-actions-failure-triage`)
+
 ## Examples
 
 - "Migrate a `build-and-deploy` CircleCI workflow to GitHub Actions, keep `main` deploys gated, and preserve the existing cache keys."

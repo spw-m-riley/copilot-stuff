@@ -148,6 +148,10 @@ Use this as the fast path once the failure bucket is known:
   - every support file is linked directly from this file
   - the next action is obvious within a few seconds of reading it
 
+- Smoke test:
+  - should trigger: "Diagnose why the deploy job started failing after a workflow edit."
+  - should not trigger: "Reproduce this failing Actions job locally with act." (→ `github-actions-local-repro`)
+
 ## Examples
 
 - "The `deploy` job on PR #182 fails on `Upload artifact` with `Artifact not found`; trace that run, fix the upload path, and do not touch the rest of the workflow."

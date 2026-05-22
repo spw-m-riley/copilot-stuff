@@ -108,6 +108,10 @@ Use this skill when a task needs a durable handoff artifact instead of a chat su
 - Confirm any example artifact in this package uses real-looking filled values instead of placeholder ellipses.
 - Run [`scripts/validate-contracts.mjs`](scripts/validate-contracts.mjs) after changing `assets/`, `references/`, or contract samples so required frontmatter, status values, and headings stay mechanically checked.
 
+- Smoke test:
+  - should trigger: "Turn this approved plan into a v1 execution handoff with blockers."
+  - should not trigger: "Write a PRD for this idea before we create tickets." (→ `to-prd`)
+
 ## Examples
 
 - "Turn this approved plan into a `v1` planner handoff with `status: ready`, `task_id`, validation commands, and a next action the executor can start immediately."

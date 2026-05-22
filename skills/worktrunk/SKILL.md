@@ -74,6 +74,10 @@ wt list                                    # confirms branch with status markers
 wt remove test-wt-check                   # cleans up
 ```
 
+- Smoke test:
+  - should trigger: "Configure wt hooks and parallel lanes for this repo."
+  - should not trigger: "Create a raw git worktree for a one-off fix." (→ `git-worktrees`)
+
 ## Examples
 
 - "Set up LLM commit messages for this repo"

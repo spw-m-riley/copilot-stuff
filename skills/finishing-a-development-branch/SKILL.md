@@ -116,6 +116,10 @@ After presenting and executing an option, validate:
 - **Option 3 validation:** Branch and worktree locations are reported clearly; user acknowledges; no cleanup yet
 - **Option 4 validation:** User typed "discard"; branch is force-deleted; worktree is removed; no residual files
 
+- Smoke test:
+  - should trigger: "Tests pass; help me decide whether to merge, PR, keep, or discard this branch."
+  - should not trigger: "Create a PR and watch checks for this ready branch." (→ `github-cli-pr-workflow`)
+
 ## Examples
 
 Each example below walks through the full decision boundary: verify tests, check worktree cleanliness, present all four options, execute the chosen one.

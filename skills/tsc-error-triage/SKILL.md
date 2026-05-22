@@ -83,6 +83,10 @@ metadata:
 - Run targeted tests for the touched surface when the repository has them.
 - Keep [`references/triage-scenarios.md`](references/triage-scenarios.md) in sync when a new root-cause pattern or noisy downstream failure shape becomes common.
 
+- Smoke test:
+  - should trigger: "Fix the tsc errors that exploded after yesterday's refactor."
+  - should not trigger: "Turn on noImplicitAny across the repo safely." (→ `tsconfig-hardening`)
+
 ## Examples
 
 - `tsc --noEmit` reports:

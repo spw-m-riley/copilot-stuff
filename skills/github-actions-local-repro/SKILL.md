@@ -76,6 +76,10 @@ Use this skill when you need to reproduce a GitHub Actions failure locally with 
 - Run repository checks relevant to changed files.
 - Verify workflow syntax/lint expectations already used in the repo.
 
+- Smoke test:
+  - should trigger: "Reproduce the failing Actions job locally with act before I push again."
+  - should not trigger: "Read the workflow logs and find the root cause first." (→ `github-actions-failure-triage`)
+
 ## Examples
 
 - "Reproduce this `pull_request` failure for job `lint-and-test` with `act` and patch only what breaks in that job."

@@ -121,6 +121,10 @@ Use this skill when working with Terraform or OpenTofu infrastructure code. It d
 - Smoke-test trigger: "Create a Terraform module for an AWS S3 bucket with versioning and encryption" — skill should activate
 - Smoke-test near-miss: "Set up a GitHub Actions workflow for a Node.js project" — skill should not activate
 
+- Smoke test:
+  - should trigger: "Debug this Terraform module and plan failure in our AWS stack."
+  - should not trigger: "Diagnose a failing GitHub Actions job in a non-Terraform repo." (→ `github-actions-failure-triage`)
+
 ## Examples
 
 - "Review this Terraform configuration — it has a public S3 bucket and a security group open to 0.0.0.0/0"

@@ -94,6 +94,10 @@ Use this skill when the main task is the PR lifecycle loop around a pushed branc
 - Confirm reported check status corresponds to the current head SHA.
 - Confirm handoff routing is explicit when transitioning to another workflow.
 
+- Smoke test:
+  - should trigger: "Create a PR from this branch and watch the latest checks."
+  - should not trigger: "Help me choose whether to merge, PR, keep, or discard this branch." (→ `finishing-a-development-branch`)
+
 ## Examples
 
 - "Create a PR from this branch and watch required checks before handoff."

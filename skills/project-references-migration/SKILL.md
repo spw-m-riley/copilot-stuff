@@ -113,6 +113,10 @@ Pilot package config:
 - Run the typecheck workflow that consumes cross-package imports, not just the referenced build.
 - Open a consuming file in the editor when possible, trigger go-to-definition on an imported symbol, and confirm it resolves to the expected referenced package source or fresh declarations rather than stale outputs.
 
+- Smoke test:
+  - should trigger: "Add tsconfig references across our TS packages so tsc -b works."
+  - should not trigger: "Enable noUncheckedIndexedAccess in one package safely." (→ `tsconfig-hardening`)
+
 ## Examples
 
 - `Before`

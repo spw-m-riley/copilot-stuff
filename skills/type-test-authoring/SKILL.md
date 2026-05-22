@@ -97,6 +97,10 @@ If the repository has no established type-test convention:
 - Re-run adjacent runtime tests when the same API surface also changed at runtime.
 - Use [`references/type-test-scenarios.md`](references/type-test-scenarios.md) to choose inline assertions versus fixture/bootstrap patterns, and update it when the local type-test shape changes.
 
+- Smoke test:
+  - should trigger: "Add a compile-time test that locks parseUser inference."
+  - should not trigger: "Add a runtime API test for parseUser invalid input." (→ `test-driven-development`)
+
 ## Examples
 
 - `expectTypeOf`
