@@ -13,8 +13,7 @@
     "mode": "load_and_augment"
   },
   "enabledPlugins": {
-    "copilot-sdk@awesome-copilot": true,
-    "awesome-copilot@awesome-copilot": true
+    "copilot-sdk@awesome-copilot": true
   },
   "footer": {
     "showModelEffort": true,
@@ -29,5 +28,5 @@
   "ide.auto_connect": true,
   "ide.open_diff_on_edit": true,
   "rollout": {},
-  "effortLevel": "high"
+  "model": "auto"
 }
