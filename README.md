@@ -9,23 +9,18 @@ Your personal Copilot CLI setup — a collection of instructions, agents, skills
 | [Custom Agents](./agents/) | `agents/` | Specialized agents for orchestration and complex workflows |
 | [Skills](./skills/) | `skills/` | Reusable task-specific workflows you can invoke directly |
 | [Extensions](./extensions/) | `extensions/` | Auto-discovered lifecycle hooks and custom tools |          |
-| [RTK Awareness](./RTK.md) | Root | RTK usage notes and the Copilot-side hook behavior |
+| [RTK Awareness](./docs/RTK.md) | `docs/` | RTK usage notes and the Copilot-side hook behavior |
 
 
 ## Capabilities index
 
-| Kind | Name | Use when |
-| --- | --- | --- |
-| Skill | [`circleci-to-github-actions-migration`](./skills/circleci-to-github-actions-migration/SKILL.md) | You need single-repo CircleCI→GitHub Actions parity migration work. |
-| Agent | [`ci-migration-orchestrator`](./agents/ci-migration-orchestrator.agent.md) | Migration needs phased rollout or multi-workflow coordination beyond the reusable skill. |
-| Skill | [`typescript-any-eliminator`](./skills/typescript-any-eliminator/SKILL.md) | Remove unsafe `any` and replace with the narrowest truthful types. |
-| Skill | [`schema-boundary-typing`](./skills/schema-boundary-typing/SKILL.md) | Validate untrusted inputs at runtime boundaries and align exported types. |
-| Skill | [`type-test-authoring`](./skills/type-test-authoring/SKILL.md) | Lock compile-time inference/assignability contracts after type surfaces are truthful. |
-| Skill | [`tsc-error-triage`](./skills/tsc-error-triage/SKILL.md) | Fix TypeScript compiler failures in root-cause order before patching leaves. |
-| Agent | [`typescript-api-test-generator`](./agents/typescript-api-test-generator.agent.md) | Add or expand runtime tests for TypeScript APIs, handlers, and Lambda flows. |
-| Skill | [`context-map`](./skills/context-map/SKILL.md) | Map likely files, dependencies, tests, and reference patterns before multi-file planning or implementation. |
-| Skill | [`fallow`](./skills/fallow/SKILL.md) | Audit JS/TS dead code, duplication, boundaries, and cleanup flows with Fallow. |
-| Skill | [`ma`](./skills/ma/SKILL.md) | Reduce large local files for understanding before deciding whether a full-fidelity read is necessary. |
+Full catalogs live with the source of truth — they are surfaced in-session via skill/agent metadata rather than mirrored here:
+
+- **Skills** — browse [`./skills/`](./skills/); each `SKILL.md` declares its own trigger conditions.
+- **Agents** — browse [`./agents/`](./agents/); each `*.agent.md` declares its scope.
+- **Extensions** — see the [Extensions](#extensions) table below.
+
+This avoids the README drifting out of sync as skills/agents are added or renamed.
 
 ## Extensions
 
@@ -45,7 +40,7 @@ These live in [`./extensions/`](./extensions/) and are auto-discovered by the Co
 | `post-edit-lint` | Watches `edit`-style tool calls and runs targeted formatting, linting, and validation for JS/TS, JSON, YAML, Terraform, and shell files, feeding results back into the conversation. |
 | `worktree-manager` | Adds `mr_worktree_create`, `mr_worktree_list`, `mr_worktree_status`, `mr_worktree_remove`, and `mr_worktree_merge` tools, plus injects worktree guidance into the parent session and prepares the same guidance for child agents when the runtime supports that hook. |
 | `copilot-healthcheck` | Adds the `mr_healthcheck_run` tool — a lightweight environment check that reports repo state and key local Copilot files/tools. |
-| `rtk-hook` | Runs `rtk hook copilot` on Bash pre-tool calls so RTK can deny raw commands and steer Copilot CLI toward the token-saving `rtk ...` equivalent. See [`./RTK.md`](./RTK.md). |
+| `rtk-hook` | Runs `rtk hook copilot` on Bash pre-tool calls so RTK can deny raw commands and steer Copilot CLI toward the token-saving `rtk ...` equivalent. See [`./docs/RTK.md`](./docs/RTK.md). |
 | `stabilisation-guard` | Surfaces unresolved `open_loop` and `assistant_goal` Lore memories at session start, then denies the first `edit`/`create`/`apply_patch` call once so pending items are acknowledged before implementation begins. Reads `lore.db` directly; fails open on any error. |
 
 ### Child-Agent Context Propagation

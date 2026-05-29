@@ -152,6 +152,21 @@ This file contains rules that have been superseded, are no longer applicable, or
 
 ---
 
+### Rules 88, 89, 97 (Deprecated: Repo-specific one-offs per Rule 64)
+
+**Original text:**
+```
+88. [REVIEW] When Matt confirms a platform is retired for the active repository (for example Sonar in `aws-referral-api-v2`), treat new review comments tied to that platform as cleanup/removal work rather than further integration fixes - this session clarified that remaining Sonar references should be removed, not updated
+89. [WORKFLOW] In `aws-referral-api-v2`, when a local commit is blocked only by the `validate:gitleaks` leg and Matt says gitleaks is not needed for that slice, skip only the gitleaks leg while keeping the rest of the commit hook path intact - this session needed the workflow branch committed without bypassing CircleCI config validation or lint-staged
+97. [WORKFLOW] In the `software-factories` repo, when generating a relative path from `factories/<repo>/` back to the real target checkout under `~/work/`, use `../../<repo>` rather than `../<repo>` because the factory directory adds one more path segment than the factories root - this session's first `targetRepoPath` pointed back at the generated factory instead of the real sibling repo
+```
+
+**Reason for deprecation:** All three are tied to a single repository's state at a single moment, which Rule 64 explicitly says should not be captured as durable global rules. If the situations recur, the lessons belong in the relevant repo's own `CONTEXT.md` or `.github/copilot-instructions.md`, not in the global `~/.copilot` ledger.
+
+**Current guidance:** Rule 64 — "Never capture a one-off repo-state clarification as a durable learned rule unless it reflects a reusable preference or general practice."
+
+---
+
 ## Adding a Deprecated Rule
 
 When a rule becomes obsolete:
