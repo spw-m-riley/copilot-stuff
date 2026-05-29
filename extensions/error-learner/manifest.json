@@ -1,0 +1,5 @@
+{
+  "name": "error-learner",
+  "description": "Captures tool error patterns into Lore for cross-session learning.",
+  "entrypoint": "extension.mjs"
+}
