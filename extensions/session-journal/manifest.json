@@ -1,0 +1,5 @@
+{
+  "name": "session-journal",
+  "description": "writes structured per-session markdown journals and primes next session with last entry",
+  "entrypoint": "extension.mjs"
+}
