@@ -30,4 +30,4 @@ Examples:
 
 For Copilot CLI specifically, RTK currently returns a deny-with-suggestion response because the CLI does not yet honor transparent `updatedInput` rewrites.
 
-Refer to `README.md` for where the RTK hook lives in this config.
+The `rtk-hook` extension lives in [`../extensions/rtk-hook/`](../extensions/rtk-hook/). The pre-tool hook flow is summarised in the [Extensions table of the root README](../README.md#extensions).

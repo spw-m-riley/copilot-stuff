@@ -4,11 +4,13 @@ Your personal Copilot CLI setup — a collection of instructions, agents, skills
 
 | What | Where | Purpose |
 | --- | --- | --- |
+| [Repo CONTEXT](./CONTEXT.md) | Root | Domain vocabulary and conventions for this repo |
 | [User Copilot Instructions](./copilot-instructions.md) | Root | Core principles and learned rules that apply everywhere |
 | [File-Type Instructions](./instructions/) | `instructions/` | Language-specific guidance (TypeScript, Go, YAML, etc.) |
 | [Custom Agents](./agents/) | `agents/` | Specialized agents for orchestration and complex workflows |
 | [Skills](./skills/) | `skills/` | Reusable task-specific workflows you can invoke directly |
-| [Extensions](./extensions/) | `extensions/` | Auto-discovered lifecycle hooks and custom tools |          |
+| [Extensions](./extensions/) | `extensions/` | Auto-discovered lifecycle hooks and custom tools |
+| [Maintenance scripts](./scripts/) | `scripts/` | Housekeeping utilities (e.g. `prune-session-state.sh`) |
 | [RTK Awareness](./docs/RTK.md) | `docs/` | RTK usage notes and the Copilot-side hook behavior |
 
 
@@ -231,43 +233,8 @@ The skills catalog is reviewed quarterly for new additions, removals, or routing
 
 ## Awesome Copilot Adoption (Wave 1)
 
-Wave 1 records the initial adoption of the highest-signal additions from [Awesome Copilot](https://github.com/github/awesome-copilot) without duplicating the planning, context-mapping, and agent-authoring surfaces this setup already had. This section is historical adoption context, not a full live inventory of the current local plugin state.
+Historical adoption record — see [`docs/awesome-copilot-wave-1.md`](./docs/awesome-copilot-wave-1.md).
 
-| Kind | Addition | Why it made wave 1 | Initial landing / durability |
-| --- | --- | --- | --- |
-| Plugin | `awesome-copilot@awesome-copilot` | Adds a lightweight discovery layer for re-checking new Awesome Copilot assets later. | Historical machine-local install recorded in `config.json` and `installed-plugins/awesome-copilot/`; this README remains the durable tracked record for the adoption decision. |
-| Skill | `agent-governance` | Adds reusable governance patterns for tool access, approval gates, audit trails, and fail-closed behavior. | Initially installed as a user-scope skill in the live main checkout; it is now also tracked in this repository under [`./skills/agent-governance/`](./skills/agent-governance/). |
-| Skill | `agent-supply-chain` | Adds integrity-manifest and verification patterns for reviewing third-party agent/plugin content. | Initially installed as a user-scope skill in the live main checkout; it is now also tracked in this repository under [`./skills/agent-supply-chain/`](./skills/agent-supply-chain/). |
-| Skill | `acquire-codebase-knowledge` | Adds a durable repo-onboarding / reconnaissance workflow for producing traceable codebase knowledge packs. | Initially installed as a user-scope skill in the live main checkout; it is now also tracked in this repository under [`./skills/acquire-codebase-knowledge/`](./skills/acquire-codebase-knowledge/). |
-
-### Install notes
-
-These commands are preserved as the reproducible install path for the original Wave 1 adoption decision.
-
-```bash
-copilot plugin install awesome-copilot@awesome-copilot
-gh skill install github/awesome-copilot agent-governance --scope user
-gh skill install github/awesome-copilot agent-supply-chain --scope user
-gh skill install github/awesome-copilot acquire-codebase-knowledge --scope user
-```
-
-- **Plugins are machine-local state.** In this setup, plugin enablement and marketplace cache details live in local `config.json` plus `installed-plugins/awesome-copilot/`; those are not the durable artifact for wave 1.
-- **The README is the durable artifact.** This file records what was adopted, why it was chosen, and how to reproduce the local install state later.
-- **This section is historical, not a live inventory.** Current local Awesome Copilot marketplace plugin state can evolve independently of the initial Wave 1 record.
-- **For live machine-local state, check the local config.** Use `config.json` and `installed-plugins/awesome-copilot/` to inspect the current local marketplace plugins instead of treating this section as a current-state report.
-- **The adopted skills are now also repo-tracked.** The initial user-scope skill installs were later brought into the repository's `./skills/` catalog, so the current repo tree is the best place to browse their present content.
-- **The commands above install the current upstream versions.** If you later need a pinned revision, record that ref explicitly instead of assuming the marketplace default stayed unchanged.
-
-### Deferred / follow-on items
-
-| Item | Why it is not in wave 1 | When to revisit |
-| --- | --- | --- |
-| `context-engineering` | Useful, but it overlaps heavily with the local `context-map` skill plus the existing research→plan workflow, so it would duplicate context-mapping behavior rather than add a clearly new surface. | Revisit only if the packaged `/context-map` plugin workflow proves meaningfully better than the local skill + planning flow. |
-| `project-planning` | The repo already has `implementation-planner`, `workflow-contracts`, and `plan-review-loop` skill, so another planning plugin would mostly duplicate existing planning/PRD generation surfaces. | Revisit if you want packaged PRD/issue-generation commands beyond the current local planning stack. |
-| `Custom Agent Foundry` | Strong design reference, but the repo already has `skill-authoring`, custom agents, and established authoring patterns; keeping it out of wave 1 avoids duplicating daily authoring workflow. | Revisit as a rubric/reference if custom-agent authoring needs a dedicated external coach later. |
-| `agentic-eval` | Deferred from wave 1 to keep scope tight. | **Adopted post-wave-1** — now repo-tracked under [`./skills/agentic-eval/`](./skills/agentic-eval/). |
-
----
 
 ## Model Selection Tips
 
@@ -314,6 +281,18 @@ For the full naming scheme, conventions, and lifecycle examples, see [`git-workt
 **Monthly audit**: Run `git worktree list`, check for branches inactive 30+ days, archive orphaned worktrees.
 
 Older flat-pattern worktrees can be renamed incrementally as they are touched or retired, but the naming scheme above is the default for new worktrees and the migration target for legacy lanes.
+
+---
+
+## Maintenance
+
+| Concern | How |
+| --- | --- |
+| Stale session state | `scripts/prune-session-state.sh` — dry-run by default; `--apply` deletes; `--days N` overrides the 90-day default. |
+| Worktree audit | Monthly — see [Worktree Management](#worktree-management) above. |
+| Learned-rule review | Quarterly — see `copilot-instructions.md` § *Learned Rules Review Cadence*. |
+| Skill validation | `node skills/skill-authoring/scripts/validate-skill-library.mjs`. |
+| DB compaction | Between sessions, `sqlite3 lore.db 'VACUUM;'` and the same on `session-store.db`. Both DBs are open while Copilot CLI is running. |
 
 ---
 

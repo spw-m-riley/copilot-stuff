@@ -8,6 +8,7 @@
 ## Domain language awareness
 
 - When entering any repository, check for `CONTEXT.md` (or `CONTEXT-MAP.md`) at the repo root. If present, read it and use its vocabulary consistently in code, comments, commit messages, and conversation.
+- This repository's own `CONTEXT.md` lives at `~/.copilot/CONTEXT.md` and defines terms like Lore, Coherence (legacy), `ma`, RTK, skill, agent, extension, instruction file, and learned rule.
 - Do not add general programming concepts to `CONTEXT.md` — only project-specific domain terms belong there.
 - If `CONTEXT-MAP.md` exists, the repo has multiple bounded contexts; read the map to find the relevant `CONTEXT.md` for the current work.
 
@@ -149,6 +150,7 @@ Some rules have been superseded or are no longer applicable. See `copilot-instru
 ## Learned Rules
 
 <!-- New Rules appended below this line. Do not edit above this section -->
+<!-- Active rules: 86. Numbering is append-only; gaps reflect archived rules in `copilot-instructions-deprecated.md`. -->
 
 1. [GIT] Never bypass GPG signing or 1Password-managed Git auth/signing for commits, tags, or pushes; if that trusted path blocks progress, stop and ask the user to restore or approve it instead - previous behavior tried to work around the user's security setup
 2. [INSTRUCTIONS] Always persist applicable learned rules proactively in the same turn you discover the lesson or receive the correction; never wait for the user to ask for a lesson summary or remind you to save it - prior sessions missed recording reusable lessons unless prompted
