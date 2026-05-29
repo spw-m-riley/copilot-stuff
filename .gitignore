@@ -27,3 +27,4 @@
 # Runtime-installed plugins - not tracked
 installed-plugins/
 .fallow/
+permissions-config.json
