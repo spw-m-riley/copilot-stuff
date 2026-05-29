@@ -28,5 +28,5 @@
   "ide.auto_connect": true,
   "ide.open_diff_on_edit": true,
   "rollout": {},
-  "model": "auto"
+  "model": "claude-opus-4.7"
 }
