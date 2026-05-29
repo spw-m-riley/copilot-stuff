@@ -5,6 +5,7 @@ metadata:
   category: authoring
   audience: general-coding-agent
   maturity: stable
+  kind: task
 ---
 
 # Skill authoring
@@ -174,6 +175,13 @@ The validator will report specific issues and how to fix them.
 8. Add scripts only when they remove repeated work and can stay generic, self-contained, and optional.
 9. Link every support file from `SKILL.md` so an agent can discover it without guessing.
 10. Validate the final package for naming, structure, layering, and discoverability.
+
+## Outputs
+
+- A validated `skills/<name>/SKILL.md` package with correct frontmatter, activation boundaries, workflow, outputs, validation, examples, and reference links.
+- Shallow support files under `assets/`, `references/`, or `scripts/` when they reduce lookup-heavy detail in the main skill.
+- A clear kind decision: `task` with explicit handoff artifacts or `reference` with obvious discovery paths.
+- Passing `scripts/validate-skill-library.mjs` output for the changed package or full library.
 
 ## Guardrails
 

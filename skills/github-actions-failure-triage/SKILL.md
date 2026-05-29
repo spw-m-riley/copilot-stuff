@@ -5,6 +5,7 @@ metadata:
   category: ci
   audience: general-coding-agent
   maturity: stable
+  kind: task
 ---
 
 # GitHub Actions failure triage
@@ -112,6 +113,13 @@ Use this as the fast path once the failure bucket is known:
 | Reusable workflow or action interface issues | Inspect both caller and callee contracts together | Align inputs, secrets, outputs, or ref pins | Escalate only if the contract change needs broader coordination |
 | Concurrency, cancellation, or dependency-order issues | Check `needs`, concurrency groups, and skip conditions | Remove the ordering bug or unsafe cancellation rule | Rerun after the dependency graph is corrected |
 | Project, test, deployment, or runtime failures | Confirm the workflow is exposing a real repo bug | Fix the code or config surface that actually failed | Hand off instead of polishing workflow YAML |
+
+## Outputs
+
+- A triage summary using [`assets/triage-summary-template.md`](assets/triage-summary-template.md) with run, job, step, SHA, and evidence.
+- A root-cause classification and decision to fix workflow, fix repository code/config, rerun, explain, escalate, or hand off.
+- The smallest justified change when evidence supports editing.
+- Validation evidence from local checks, workflow linting, reruns, or an explicit blocker.
 
 ## Guardrails
 

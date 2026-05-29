@@ -5,6 +5,7 @@ metadata:
   category: typescript
   audience: general-coding-agent
   maturity: stable
+  kind: task
 ---
 
 # TSC error triage
@@ -61,6 +62,13 @@ metadata:
 4. Apply the smallest truthful fix at the source of the error.
 5. Re-run the typecheck to see which follow-on errors disappear.
 6. Only then fix any remaining leaf errors that still reflect real type problems.
+
+## Outputs
+
+- A grouped compiler-error map by root symbol, module, config boundary, or high-fanout source.
+- The smallest truthful source fix for the causal TypeScript error.
+- A follow-on list of remaining leaf errors that still represent real type problems.
+- Typecheck and targeted-test evidence showing the targeted errors are gone without a new error class.
 
 ## Guardrails
 

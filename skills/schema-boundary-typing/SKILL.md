@@ -5,6 +5,7 @@ metadata:
   category: typescript
   audience: general-coding-agent
   maturity: stable
+  kind: task
 ---
 
 # Schema boundary typing
@@ -51,6 +52,13 @@ metadata:
 5. Keep unvalidated data as `unknown` until it passes validation.
 6. Map into a separate domain type only when the repository already distinguishes transport and domain models.
 7. Update downstream consumers to rely on the validated type instead of re-checking ad hoc.
+
+## Outputs
+
+- Boundary validation code at the first clean rejection point for untrusted input.
+- Exported or derived TypeScript types that correspond to the validated schema or guard.
+- Updated consumers that rely on the validated type instead of casts or repeated ad hoc checks.
+- Tests or typecheck evidence for both valid and invalid boundary inputs.
 
 ## Guardrails
 

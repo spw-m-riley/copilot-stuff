@@ -5,6 +5,7 @@ metadata:
   category: workflow
   audience: general-coding-agent
   maturity: stable
+  kind: task
 ---
 
 # Resolve Open Loops
@@ -103,6 +104,13 @@ memory_save  content="<what was learned>"  type="commitment"  scope="repo"
 ```
 
 Only save when the user agrees — do not create memories speculatively.
+
+## Outputs
+
+- A grouped inventory of active `open_loop` and `assistant_goal` memory items with ids, summaries, and scopes.
+- Per-item disposition decisions: done, superseded, still open, or invalid.
+- Applied `memory_forget` resolutions for confirmed done, superseded, stale, or invalid items.
+- A final guard-status summary showing what remains and why.
 
 ## Guardrails
 

@@ -5,6 +5,7 @@ metadata:
   category: workflow
   audience: general-coding-agent
   maturity: stable
+  kind: task
 ---
 
 # Systematic Debugging
@@ -134,6 +135,13 @@ If you cannot reproduce the issue within two attempts, it may be environment-dep
 | "I see the problem, let me fix it" | Seeing a symptom ≠ understanding root cause. A symptom can have multiple causes. Fixing the symptom leaves the cause. |
 | "Just try this first, then investigate" | First fix sets pattern. Random fixes create new bugs, distract from root cause, and slow handoff to others. |
 | "3 fixes failed, let me try one more" | 3+ failures = architectural problem, not implementation detail. Further guessing is waste. Escalate. |
+
+## Outputs
+
+- The exact reproduced failure output, command, environment notes, and consistency status.
+- A one-sentence verified root cause backed by logs, tests, diffs, traces, or working-case comparison.
+- The minimal fix that addresses the root cause rather than symptoms.
+- Passing validation evidence and any unresolved environmental or intermittent blocker.
 
 ## Guardrails
 

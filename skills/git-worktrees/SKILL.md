@@ -5,6 +5,7 @@ metadata:
   category: version-control
   audience: general-coding-agent
   maturity: stable
+  kind: task
 ---
 
 # Git worktrees
@@ -68,6 +69,13 @@ See [Worktrunk command equivalents](references/worktrunk-commands.md) and the `w
 4. Keep generated files scoped to the worktree.
 5. Push branch and open or update PR as needed.
 6. Clean up completed worktrees using `references/recovery-and-cleanup.md`.
+
+## Outputs
+
+- A dedicated worktree and branch rooted at the intended base ref, or a verified cleanup of a completed worktree.
+- Worktree-scoped commits, tests, and status evidence for the task lane.
+- A merge, PR, or cleanup handoff naming the branch, path, and next owner action.
+- A recovery note when stale, dirty, or orphaned worktrees cannot be removed safely.
 
 ## Guardrails
 

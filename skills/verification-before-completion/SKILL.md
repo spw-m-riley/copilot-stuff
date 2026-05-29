@@ -5,6 +5,7 @@ metadata:
   category: workflow
   audience: general-coding-agent
   maturity: stable
+  kind: task
 ---
 
 # Verification Before Completion
@@ -96,6 +97,12 @@ Before proceeding:
 | **Agent completed** | VCS diff shows actual committed changes or agent output shows execution | Agent log says "success," agent says it ran the command |
 | **Formatting applied** | Formatter command: exit code 0, or git diff shows changes applied | Formatter installed, "should work," no actual check run |
 | **Dependency installed** | `npm list`/`pip list`/`cargo tree` shows version, or import succeeds | `npm install` ran, "should be installed," no verification |
+
+## Outputs
+
+- A verification record naming the claim, proof command, expected success signal, exit code, and relevant output evidence.
+- A clear pass/fail decision that either supports the claim or states the actual status.
+- A failure handoff with the observed blocker and next debugging step when verification does not pass.
 
 ## Guardrails
 
