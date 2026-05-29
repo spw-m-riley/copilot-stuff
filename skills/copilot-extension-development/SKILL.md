@@ -87,6 +87,7 @@ metadata:
 - Follow learned rule 86: normalize `toolArgs` and similar hook payload fields before reading them.
 - Follow learned rule 90: run RTK directly whenever an equivalent command exists in this workspace.
 - Do not reference branded model names or specific model IDs in files under `extensions/` unless the user explicitly asks.
+- Never batch a producer with its consumer; see [`references/parallel-safety.md`](references/parallel-safety.md).
 - Do not bypass extension reload or tests just because code changes look small.
 - Do not use extension code to enforce broad policy that belongs in instructions or a skill.
 
@@ -119,3 +120,4 @@ metadata:
 ## Reference files
 
 - [`copilot-instructions.md`](../../copilot-instructions.md) - learned rules for extension reloads, SDK hooks, payload normalization, and RTK use.
+- [`references/parallel-safety.md`](references/parallel-safety.md) - shared producer/consumer batching guardrail.

@@ -85,6 +85,7 @@ See [Worktrunk command equivalents](references/worktrunk-commands.md) and the `w
 - **Should** keep branch names and worktree paths aligned so the branch name still makes sense if the worktree path is copied or recreated later.
 - **Should** verify the repository root before creating the worktree in monorepos or nested checkouts.
 - **Should** inspect for uncommitted changes before removing any worktree.
+- **Must** never batch a producer with its consumer; see [`references/parallel-safety.md`](references/parallel-safety.md).
 - **May** keep long-lived worktrees for release branches if the team workflow benefits.
 - **Should** use `wt switch --create` / `wt remove` instead of `git worktree add` / `git worktree remove` when Worktrunk is installed, so project hooks fire and worktree lifecycle is tracked.
 
@@ -111,6 +112,7 @@ See [Worktrunk command equivalents](references/worktrunk-commands.md) and the `w
 - [Naming conventions and scheme](references/naming-conventions.md)
 - [Naming defaults and examples](assets/naming-examples.md)
 - [Recovery and cleanup guide](references/recovery-and-cleanup.md)
+- [Parallel safety](references/parallel-safety.md)
 - [Worktrunk command equivalents](references/worktrunk-commands.md)
 
 ## Integration
