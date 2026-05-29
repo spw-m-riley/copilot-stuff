@@ -36,3 +36,5 @@ applyTo: "**/*.ts,**/*.tsx"
 ## Learned Rules
 
 <!-- New Rules appended below this line. Do not edit above this section -->
+
+1. [TYPESCRIPT] Prefer generic parameters like `<T extends RequiredShape>` over broad index signatures when widening function inputs for object literals - index signatures can reject existing DTO interfaces that do not declare arbitrary keys
