@@ -1,0 +1,5 @@
+{
+  "name": "canvas-lore-dashboard",
+  "description": "Dashboard panel showing Lore DB stats and recall counters.",
+  "entrypoint": "extension.mjs"
+}
