@@ -60,6 +60,12 @@ Use this skill before making any completion, pass/fail, readiness, or "fixed" cl
 5. If evidence fails or is ambiguous, report the actual status and route back to debugging or implementation.
 6. If evidence passes, make only the claim the evidence supports.
 
+## PR and review state gate
+
+1. Run `gh pr view --json reviewDecision,reviews` before claiming a pull request is ready or review-complete.
+2. If review state is `APPROVED` but any review text contains concrete defect language, verify the cited path or behavior directly before closing the loop.
+3. When Fallow is installed, run `fallow health --baseline` before claiming a JavaScript or TypeScript PR has no new maintainability regressions.
+
 ## Outputs
 
 - A verification record naming the claim, proof command, success signal, exit code, and relevant output evidence.
