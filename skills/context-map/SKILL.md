@@ -2,10 +2,10 @@
 name: context-map
 description: Use when a task may span multiple files, when dependencies or tests are unclear, or when you need a pre-edit map of likely files and patterns before planning or implementation.
 metadata:
-  category: workflow
+  category: planning
   audience: general-coding-agent
   maturity: stable
-  kind: reference
+  kind: task
 ---
 
 # Context map
@@ -65,6 +65,11 @@ Use this skill when the next step is figuring out what to read or touch before c
 3. Distinguish confirmed files from likely follow-up files instead of flattening everything into one undifferentiated list.
 4. Name the nearby tests and reference patterns that should guide any later implementation.
 5. Stop once the next action is obvious: read a specific set of files, route to planning, or proceed with a tightly scoped implementation.
+
+## Outputs
+
+- A concise context map listing confirmed files, likely follow-up files, nearby tests, reference patterns, and unresolved risks.
+- A recommended next action: read specific files, route to planning, or proceed with a tightly scoped implementation.
 
 ## Guardrails
 

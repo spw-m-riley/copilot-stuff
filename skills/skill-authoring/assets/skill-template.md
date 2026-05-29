@@ -7,7 +7,7 @@ Keep the package shape predictable when it fits the workflow so future authoring
 ```md
 ---
 name: my-skill-name
-description: "What this skill does. Use it when [trigger phrase 1], [trigger phrase 2], or [trigger phrase 3]. Prefer over-triggering to under — include a scope boundary if similar skills exist (e.g. but not when X is more appropriate)."
+description: "Use when [trigger phrase 1], [trigger phrase 2], or [trigger phrase 3]. Include a scope boundary when similar skills exist."
 metadata:
   category: workflow
   audience: general-coding-agent
@@ -82,4 +82,4 @@ Use `metadata.kind: task` for multi-step playbooks with explicit outputs and val
 
 Use `metadata.kind: reference` for lookup-heavy guidance where the main value is navigation, conventions, or examples.
 
-`metadata.kind` is **required** for all `draft` skills and must be set before promotion to `stable`. See `skills/skill-authoring/references/metadata-contract.md` for the full frontmatter contract, including forbidden top-level keys and forbidden provenance fields.
+Descriptions must be single-line YAML strings with trigger conditions, not workflow summaries. `metadata.kind` is **required** for all `draft` skills and must be set before promotion to `stable`. See `skills/skill-authoring/references/metadata-contract.md` for the full frontmatter contract, including forbidden top-level keys and forbidden provenance fields.

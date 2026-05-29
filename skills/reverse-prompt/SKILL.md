@@ -2,7 +2,7 @@
 name: reverse-prompt
 description: Use when a request is under-specified, ambiguous, or needs sharpening before research, planning, or implementation begins — or when the user explicitly asks to improve, rewrite, or reverse-prompt their ask.
 metadata:
-  category: workflow
+  category: planning
   audience: general-coding-agent
   maturity: stable
   kind: task

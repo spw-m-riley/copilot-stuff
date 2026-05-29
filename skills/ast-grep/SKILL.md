@@ -2,7 +2,7 @@
 name: ast-grep
 description: "Use when you need ast-grep structural search, linting, or safe codemod rewrites, especially for requests that mention ast-grep, sg, codemod, rule files, or syntax-aware edits instead of plain-text search."
 metadata:
-  category: workflow
+  category: tooling
   audience: general-coding-agent
   maturity: stable
   kind: task

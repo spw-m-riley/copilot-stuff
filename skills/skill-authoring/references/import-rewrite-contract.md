@@ -66,7 +66,7 @@ Replace `## Inputs to gather`, `## First move`, `## Workflow`, and `## Outputs` 
 | Field | Required | Valid values / rules |
 | --- | --- | --- |
 | `name` | Yes | Lowercase kebab-case. Must match the skill directory name exactly. No spaces, uppercase, or special characters. |
-| `description` | Yes | 50–120 characters. Must start with a trigger phrase ("Use when", "Use this when", or equivalent). Never a domain label alone. Never a workflow summary. |
+| `description` | Yes | Minimum 20 characters. Must start with a trigger phrase ("Use when", "Use this when", or equivalent). Never a domain label alone. Never a workflow summary. |
 | `metadata.category` | Recommended | `authoring`, `ci`, `migrations`, `typescript`, `version-control`, `workflow`, or a concise domain label. |
 | `metadata.audience` | Recommended | `general-coding-agent` unless the skill is narrowly specialized. |
 | `metadata.maturity` | Recommended | `draft` for new imports; `stable` only after smoke-test validation and live use. |
@@ -74,7 +74,7 @@ Replace `## Inputs to gather`, `## First move`, `## Workflow`, and `## Outputs` 
 
 **Do not add** `license`, `compatibility`, `author`, `inspired-by`, or any other top-level keys not listed above.
 
-**Multiline description blocks with embedded bullet lists are not valid.** Keep the description as a single quoted string. If the trigger conditions are complex, put them in `## Use this skill when` instead.
+**Multiline description blocks with embedded bullet lists are not valid.** Keep the description as a single-line YAML string. Quote it when punctuation could confuse YAML parsing. If the trigger conditions are complex, put them in `## Use this skill when` instead.
 
 ## Section and heading expectations
 

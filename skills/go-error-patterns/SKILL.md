@@ -2,7 +2,7 @@
 name: go-error-patterns
 description: "Use when Go error-handling design or function-type mismatches surface — including `func(string) error` vs concrete constructors, package-local type aliases, or concrete-vs-interface error choices, but not when the immediate task is a build or test failure."
 metadata:
-  category: workflow
+  category: go
   audience: general-coding-agent
   maturity: stable
   kind: task

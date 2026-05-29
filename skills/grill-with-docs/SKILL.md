@@ -2,7 +2,7 @@
 name: grill-with-docs
 description: "Use when stress-testing a plan against the project's domain model, when domain terminology is fuzzy or inconsistent, or when the user says 'grill me' about a design that should produce or update CONTEXT.md and ADRs."
 metadata:
-  category: workflow
+  category: planning
   audience: general-coding-agent
   maturity: stable
   kind: task

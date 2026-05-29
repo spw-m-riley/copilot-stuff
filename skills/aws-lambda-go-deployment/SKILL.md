@@ -2,7 +2,7 @@
 name: aws-lambda-go-deployment
 description: "Use when deploying or debugging Go-based AWS Lambda packaging, bootstrap, runtime, or handler issues — not when the main failure is SAM stack wiring, IAM OIDC auth, or a generic GitHub Actions run failure."
 metadata:
-  category: workflow
+  category: deployment
   audience: general-coding-agent
   maturity: stable
   kind: task
