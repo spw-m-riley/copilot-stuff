@@ -28,3 +28,9 @@
 installed-plugins/
 .fallow/
 permissions-config.json
+
+# Runtime scratch and Copilot CLI state directories
+.tmp/
+restart/
+ide/
+plugin-data/
