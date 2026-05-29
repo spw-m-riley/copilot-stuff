@@ -1,9 +1,14 @@
+import { isInstructionTrigger, validateInstructionFile } from "./instruction-validator.mjs";
 import { isLoreSchemaTrigger, validateLoreSchema } from "./lore-validator.mjs";
 
 const DEFAULT_VALIDATORS = [
   {
     matches: isLoreSchemaTrigger,
     validate: validateLoreSchema,
+  },
+  {
+    matches: isInstructionTrigger,
+    validate: validateInstructionFile,
   },
 ];
 
