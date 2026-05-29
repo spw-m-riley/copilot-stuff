@@ -2,11 +2,17 @@ function normalizedToolArgs(toolArgs) {
   if (toolArgs && typeof toolArgs === "object" && !Array.isArray(toolArgs)) {
     return toolArgs;
   }
+  if (typeof toolArgs === "string") {
+    try {
+      const parsed = JSON.parse(toolArgs);
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+        return parsed;
+      }
+    } catch {
+      return {};
+    }
+  }
   return {};
-}
-
-function isToolArgsObject(toolArgs) {
-  return Boolean(toolArgs) && typeof toolArgs === "object" && !Array.isArray(toolArgs);
 }
 
 function hasStringCommand(toolArgs) {
@@ -14,11 +20,12 @@ function hasStringCommand(toolArgs) {
 }
 
 export function commandFromToolArgs(toolArgs) {
-  if (!isToolArgsObject(toolArgs)) {
-    return null;
-  }
+  const normalized = normalizedToolArgs(toolArgs);
+  return hasStringCommand(normalized) ? normalized.command : null;
+}
 
-  return hasStringCommand(toolArgs) ? toolArgs.command : null;
+export function buildSessionStartContext() {
+  return "RTK reminder: use `rtk <cmd>` directly when an equivalent exists instead of relying on hook-time rewrites.";
 }
 
 export function buildRtkPayload(input) {
@@ -52,6 +59,21 @@ export function buildModifiedArgs(input, updatedInput) {
     ...normalizedToolArgs(input.toolArgs),
     command: updatedInput.command,
   };
+}
+
+function shouldLogRtkViolation(parsed) {
+  return parsed?.permissionDecision === "deny"
+    || typeof parsed?.hookSpecificOutput?.updatedInput?.command === "string";
+}
+
+export function buildRtkViolationMessage(parsed) {
+  if (!shouldLogRtkViolation(parsed)) {
+    return null;
+  }
+  const reason = typeof parsed.permissionDecisionReason === "string"
+    ? parsed.permissionDecisionReason
+    : "use the suggested RTK command directly";
+  return `rtk-hook violation: ${reason}`;
 }
 
 function collectStringEntries(parsed) {
@@ -103,13 +125,21 @@ export function createMissingRtkLogger(log) {
   };
 }
 
-export function createOnPreToolUseHandler({ runWithInput, logMissingRtkOnce }) {
+export function createOnPreToolUseHandler({
+  runWithInput,
+  logMissingRtkOnce,
+  logRtkViolation = async () => {},
+}) {
   if (typeof runWithInput !== "function") {
     throw new TypeError("runWithInput must be a function");
   }
 
   if (typeof logMissingRtkOnce !== "function") {
     throw new TypeError("logMissingRtkOnce must be a function");
+  }
+
+  if (typeof logRtkViolation !== "function") {
+    throw new TypeError("logRtkViolation must be a function");
   }
 
   return async (input) => {
@@ -121,16 +151,25 @@ export function createOnPreToolUseHandler({ runWithInput, logMissingRtkOnce }) {
       cwd: input.cwd || process.cwd(),
     });
 
-    return handleRtkResult(input, result, logMissingRtkOnce);
+    return handleRtkResult(input, result, logMissingRtkOnce, logRtkViolation);
   };
 }
 
-async function handleRtkResult(input, result, logMissingRtkOnce) {
+async function handleRtkResult(input, result, logMissingRtkOnce, logRtkViolation) {
   if (!result.ok && !result.stdout.trim()) {
     await logMissingRtkOnce(result);
     return;
   }
 
   const parsed = parseRtkOutput(result.stdout);
-  return parsed ? toPreToolUseOutput(input, parsed) : undefined;
+  if (!parsed) {
+    return undefined;
+  }
+
+  const violationMessage = buildRtkViolationMessage(parsed);
+  if (violationMessage) {
+    await logRtkViolation(violationMessage);
+  }
+
+  return toPreToolUseOutput(input, parsed);
 }

@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import {
   buildModifiedArgs,
   buildRtkPayload,
+  buildRtkViolationMessage,
+  buildSessionStartContext,
   commandFromToolArgs,
   createMissingRtkLogger,
   createOnPreToolUseHandler,
@@ -42,6 +44,7 @@ describe("hook logic", () => {
 
   test("commandFromToolArgs and shouldHandlePreToolUse gate bash commands", () => {
     assert.equal(commandFromToolArgs({ command: "  echo hi  " }), "  echo hi  ");
+    assert.equal(commandFromToolArgs('{"command":"rtk git status"}'), "rtk git status");
     assert.equal(commandFromToolArgs({}), null);
     assert.equal(shouldHandlePreToolUse({ toolName: "git", toolArgs: { command: "status" } }), false);
     assert.equal(shouldHandlePreToolUse({ toolName: "bash", toolArgs: { command: "  " } }), false);
@@ -67,6 +70,25 @@ describe("hook logic", () => {
     assert.deepStrictEqual(
       buildModifiedArgs({ toolArgs: { command: "echo hi" } }, { command: "printf hi" }),
       { command: "printf hi" },
+    );
+  });
+
+  test("buildSessionStartContext reminds agents to invoke RTK directly", () => {
+    assert.match(buildSessionStartContext(), /use `rtk <cmd>` directly/);
+  });
+
+  test("buildRtkViolationMessage describes denied or rewritten commands", () => {
+    assert.equal(buildRtkViolationMessage({ permissionDecision: "allow" }), null);
+    assert.equal(
+      buildRtkViolationMessage({
+        permissionDecision: "deny",
+        permissionDecisionReason: "Use rtk git status instead.",
+      }),
+      "rtk-hook violation: Use rtk git status instead.",
+    );
+    assert.match(
+      buildRtkViolationMessage({ hookSpecificOutput: { updatedInput: { command: "rtk git status" } } }),
+      /use the suggested RTK command directly/,
     );
   });
 
@@ -115,6 +137,7 @@ describe("hook logic", () => {
   });
 
   test("createOnPreToolUseHandler still parses output when rtk exits non-zero", async () => {
+    const violationMessages = [];
     const handler = createOnPreToolUseHandler({
       runWithInput: async () => ({
         ok: false,
@@ -124,6 +147,9 @@ describe("hook logic", () => {
       }),
       logMissingRtkOnce: async () => {
         throw new Error("should not log missing rtk");
+      },
+      logRtkViolation: async (message) => {
+        violationMessages.push(message);
       },
     });
 
@@ -137,5 +163,8 @@ describe("hook logic", () => {
       permissionDecision: "allow",
       modifiedArgs: { command: "printf hi" },
     });
+    assert.deepStrictEqual(violationMessages, [
+      "rtk-hook violation: use the suggested RTK command directly",
+    ]);
   });
 });
