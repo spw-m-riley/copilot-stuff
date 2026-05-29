@@ -1,0 +1,5 @@
+{
+  "name": "skill-forge",
+  "description": "Interactive scaffolder for new SKILL.md files via slash command and elicitation.",
+  "entrypoint": "extension.mjs"
+}
