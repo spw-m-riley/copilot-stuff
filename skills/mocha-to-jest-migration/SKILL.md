@@ -5,6 +5,7 @@ metadata:
   category: migrations
   audience: general-coding-agent
   maturity: stable
+  kind: task
 ---
 
 # Mocha to Jest migration
@@ -113,6 +114,13 @@ describe("retries", () => {
   });
 });
 ```
+
+## Outputs
+
+- Migrated Jest test files for each completed Mocha, Chai, or Sinon batch.
+- Updated test setup, utilities, or config required to preserve behavior under Jest.
+- Passing targeted Jest results for the migrated batch.
+- A remaining-pattern inventory for Mocha, Chai, Sinon, fake timers, or shared setup still to migrate.
 
 ## Guardrails
 

@@ -5,6 +5,7 @@ metadata:
   category: migrations
   audience: general-coding-agent
   maturity: stable
+  kind: task
 ---
 
 # CircleCI to GitHub Actions migration
@@ -59,6 +60,13 @@ metadata:
 4. Recreate branch/path filters, matrix strategy, caches, artifacts, and environment protections intentionally.
 5. Keep deployment stages explicit instead of collapsing distinct environments into one opaque job.
 6. Run a staged rollout using `assets/rollout-checklist.md` before deleting CircleCI configuration.
+
+## Outputs
+
+- GitHub Actions workflow files that preserve the mapped CircleCI jobs, triggers, filters, caches, artifacts, and runner choices.
+- A secrets, contexts, permissions, and environment-protection mapping for each migrated job.
+- A staged rollout or parity checklist showing what matched CircleCI and what remains before removing `.circleci/config.yml`.
+- A clear retention or removal decision for the CircleCI configuration.
 
 ## Guardrails
 

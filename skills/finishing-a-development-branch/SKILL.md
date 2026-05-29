@@ -5,6 +5,7 @@ metadata:
   category: workflow
   audience: general-coding-agent
   maturity: stable
+  kind: task
 ---
 
 # finishing-a-development-branch
@@ -86,6 +87,13 @@ If tests are not passing or cannot be run → stop, fix the failure, and report 
 - **Option 2 (Push and create PR):** Keep worktree active for follow-up review cycles or user iteration
 - **Option 3 (Keep as-is):** Keep worktree as-is; report location and remind user of cleanup task
 - **Option 4 (Discard):** Clean up worktree immediately after confirmation
+
+## Outputs
+
+- A validated integration decision: merge locally, push and create PR, keep as-is, or discard.
+- The resulting branch, PR, merge, or cleanup state with the relevant location or link.
+- A test result summary proving the chosen option was safe to execute.
+- Any remaining handoff notes for preserved worktrees, follow-up review, or user-confirmed discard.
 
 ## Guardrails
 

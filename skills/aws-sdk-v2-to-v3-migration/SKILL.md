@@ -5,6 +5,7 @@ metadata:
   category: migrations
   audience: general-coding-agent
   maturity: stable
+  kind: task
 ---
 
 # AWS SDK v2 to v3 migration
@@ -58,6 +59,13 @@ correct v3 package names and API shapes before writing any code.
 7. Replace method calls with `client.send(new Command(...))`, preserving input shapes and response handling.
 8. Update helpers, mocks, and tests to fit the v3 client-and-command model using the testing mocks reference.
 9. Validate pagination, streaming, document marshalling, retries, and error handling where used.
+
+## Outputs
+
+- Migrated AWS SDK v3 imports, client construction, command calls, and helper code for each completed service surface.
+- Updated dependency manifests with the required modular `@aws-sdk/*` packages.
+- Updated tests, mocks, and edge-case notes for pagination, streams, uploads, marshalling, retries, or error handling touched by the migration.
+- A remaining-v2 inventory or explicit handoff for service surfaces not yet migrated.
 
 ## Guardrails
 

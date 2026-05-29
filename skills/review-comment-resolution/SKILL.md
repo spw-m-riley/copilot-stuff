@@ -5,6 +5,7 @@ metadata:
   category: code-review
   audience: general-coding-agent
   maturity: stable
+  kind: task
 ---
 
 # Review comment resolution
@@ -80,6 +81,13 @@ When a comment is deliberately left unresolved, report it with a small, explicit
 ```
 
 Do not leave an unresolved comment without a reason. If the concern is real but out of scope, say that directly.
+
+## Outputs
+
+- A comment disposition map for each in-scope thread: valid, partially valid, not valid, superseded, or not actionable yet.
+- Focused fixes for accepted review comments, committed and pushed to the reviewed branch.
+- Rationale entries for comments intentionally left unresolved using the documented output shape.
+- Validation and workflow-check status for the new head commit, plus any remaining blocker.
 
 ## Guardrails
 

@@ -5,6 +5,7 @@ metadata:
   category: typescript
   audience: general-coding-agent
   maturity: stable
+  kind: task
 ---
 
 # TypeScript any eliminator
@@ -65,6 +66,13 @@ Do not force a fake precise type when the right answer is to keep the boundary p
 5. Update adjacent call sites only when needed to keep the typed surface coherent.
 6. Preserve runtime behavior while tightening the types.
 7. Re-run the typecheck and targeted tests after the change.
+
+## Outputs
+
+- Replaced targeted `any` annotations with existing domain types, constrained generics, explicit unions, or `unknown` plus narrowing.
+- Updated adjacent call sites only where needed to keep the typed surface coherent.
+- An honest-boundary note when permissive input must remain guarded instead of falsely precise.
+- Typecheck and targeted-test evidence proving runtime behavior stayed intact.
 
 ## Guardrails
 

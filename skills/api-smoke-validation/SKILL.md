@@ -5,6 +5,7 @@ metadata:
   category: workflow
   audience: general-coding-agent
   maturity: stable
+  kind: task
 ---
 
 # API smoke validation

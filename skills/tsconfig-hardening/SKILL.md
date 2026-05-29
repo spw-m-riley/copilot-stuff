@@ -5,6 +5,7 @@ metadata:
   category: typescript
   audience: general-coding-agent
   maturity: stable
+  kind: task
 ---
 
 # Tsconfig hardening
@@ -100,6 +101,13 @@ Use a per-package override like this only to defer a base flag temporarily when 
 5. When a config change creates a burst of compiler errors, stop changing config further and switch to `skills/tsc-error-triage/SKILL.md` to work the failures in root-cause order.
 6. Re-run typecheck, build, and targeted tests after each meaningful config change.
 7. Stop widening the config change once the next flag would mix strictness work with emit, module, or package-layout churn.
+
+## Outputs
+
+- A narrowed `tsconfig` diff that changes one coherent strictness, resolution, module, or emit concern at a time.
+- Updated base or package override configs with any deferred flags called out explicitly.
+- A stop-or-route decision when compiler errors require `tsc-error-triage` before more hardening.
+- Typecheck, build, and targeted-test evidence for each meaningful config batch.
 
 ## Guardrails
 

@@ -5,6 +5,7 @@ metadata:
   category: workflow
   audience: general-coding-agent
   maturity: stable
+  kind: task
 ---
 
 # Test-Driven Development
@@ -84,6 +85,13 @@ The test failure is your proof that the feature does not exist yet. This is the 
 If production code was written before a test, **delete it**. Do not "adapt" it while writing tests afterward. Delete means delete.
 
 Unverified code is not a time-saving shortcut; it is technical debt. Keeping it forces you to reverse-engineer what it was supposed to do, which takes longer than rewriting it test-first.
+
+## Outputs
+
+- A failing test that proved the requested behavior or bug fix was absent before implementation.
+- Minimal production code that makes the test pass without unrelated behavior changes.
+- Refactored code kept green through each step of the RED-GREEN-REFACTOR loop.
+- Passing targeted or module test results showing the new behavior is covered.
 
 ## Guardrails
 

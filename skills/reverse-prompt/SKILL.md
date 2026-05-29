@@ -5,6 +5,7 @@ metadata:
   category: workflow
   audience: general-coding-agent
   maturity: stable
+  kind: task
 ---
 
 # Reverse prompt
@@ -67,6 +68,13 @@ metadata:
 6. If the request is `rewrite-and-return`, return the improved brief plus assumptions or blockers and the recommended next phase.
 7. If the request is `rewrite-and-proceed`, use the improved brief internally and continue into the appropriate next phase.
 8. If a blocking ambiguity remains after rewriting, stop at the brief and blocker instead of forcing execution.
+
+## Outputs
+
+- A rewritten brief using [`references/brief-template.md`](references/brief-template.md) with goal, scope, constraints, deliverables, and completion signal.
+- Explicit assumptions, blockers, and exact `@` file or directory mentions when known.
+- A `Must See`, `Should See`, `Already Have`, and `Uncertainties` context-needs summary when repository context is missing.
+- A mode decision to return the improved prompt, proceed with it, or stop on a blocking ambiguity.
 
 ## Guardrails
 

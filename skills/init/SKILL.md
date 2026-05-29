@@ -5,6 +5,7 @@ metadata:
   category: authoring
   audience: general-coding-agent
   maturity: stable
+  kind: task
 ---
 
 # init Skill
@@ -159,6 +160,13 @@ For each line in the instruction file:
    - If NO (nice-to-know but not mission-critical): consider archiving it or moving to docs.
 
 **Delete the line if any answer is NO.**
+
+## Outputs
+
+- Updated agent instruction files with the correct frontmatter, scope, examples, and learned-rule placement.
+- A keep, archive, or move-to-docs decision for stale or discoverable instruction content.
+- Verified repository-specific paths, commands, and links used by the instructions.
+- A review cadence or handoff note for future instruction maintenance.
 
 ## Guardrails
 

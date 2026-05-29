@@ -5,6 +5,7 @@ metadata:
   category: typescript
   audience: general-coding-agent
   maturity: stable
+  kind: task
 ---
 
 # Project references migration
@@ -84,6 +85,13 @@ Pilot package config:
 5. Migrate packages incrementally from leaves upward.
 6. Switch scripts to `tsc -b` or the repository's equivalent only after the referenced graph is coherent.
 7. If a cycle appears, stop widening and split the dependency before adding more references.
+
+## Outputs
+
+- Updated solution and package `tsconfig` files with coherent `references`, `composite`, declaration, root, and output settings.
+- A migrated package graph or pilot package record showing dependency direction and any blocked cycles.
+- Updated build or typecheck scripts when the referenced graph is ready for `tsc -b`.
+- Validation evidence for emitted declarations, consuming imports, and editor or typecheck resolution.
 
 ## Guardrails
 

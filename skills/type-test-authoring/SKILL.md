@@ -5,6 +5,7 @@ metadata:
   category: typescript
   audience: general-coding-agent
   maturity: stable
+  kind: task
 ---
 
 # Type test authoring
@@ -68,6 +69,13 @@ If the repository has no established type-test convention:
 4. Prefer small focused assertions over giant fixture files.
 5. Add a regression case for the bug or edge case that motivated the work.
 6. Run the repository's type-test or fixture command and confirm both positive and negative cases behave as intended.
+
+## Outputs
+
+- Type-test fixtures or inline assertions that match the repository's existing pattern.
+- Positive and negative cases that lock the intended inference, assignability, or regression contract.
+- A bootstrap pattern only when no existing type-test convention is available.
+- Type-test or fixture typecheck output showing expected passes and intended negative failures.
 
 ## Guardrails
 
