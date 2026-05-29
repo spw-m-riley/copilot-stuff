@@ -64,6 +64,7 @@ Use this skill when a user needs to configure `wt`, set up LLM commit messages, 
 3. **Add project hooks** — author `.config/wt.toml` hooks for install, dev server, DB, CI gates; see [`assets/hooks-reference.md`](assets/hooks-reference.md)
 4. **Enable branch summaries** (optional) — `[list] summary = true` in user config
 5. **Run parallel agents** (optional) — use `wt switch --create --execute=<agent>`; see [`assets/parallel-agents-recipes.md`](assets/parallel-agents-recipes.md)
+6. **Gate done claims in assigned worktrees** — before marking a worktree-assigned task done or claiming completion, run `mr_worktree_commit_gate({ agentId })` and proceed only when it returns `CLEAN: <path>`.
 
 ## Outputs
 
@@ -115,3 +116,7 @@ wt remove test-wt-check                   # cleans up
 - [`assets/llm-commits-setup.md`](assets/llm-commits-setup.md) — LLM commit generation config for Claude Code, Codex, llm CLI, aichat
 - [`assets/parallel-agents-recipes.md`](assets/parallel-agents-recipes.md) — one-shot alias pattern, dev server per worktree, DB per worktree, cold-start elimination
 - [`references/config-reference.md`](references/config-reference.md) — complete config key reference with defaults
+
+## Learned Rules
+
+<!-- New Rules appended below this line. Do not edit above this section -->

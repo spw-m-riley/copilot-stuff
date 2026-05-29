@@ -128,9 +128,107 @@ function parseWtWorktrees(stdout) {
   }
 }
 
+function normalizeBranchName(branch) {
+  if (typeof branch !== "string") {
+    return null;
+  }
+  return branch.startsWith("refs/heads/") ? branch.slice("refs/heads/".length) : branch;
+}
+
 function findWorktreePathByBranch(worktrees, branchName) {
-  const entry = worktrees.find((worktree) => worktree?.branch === branchName);
+  const entry = worktrees.find((worktree) => normalizeBranchName(worktree?.branch) === branchName);
   return entry?.path ?? null;
+}
+
+function parseGitWorktrees(stdout) {
+  const entries = [];
+  let current = null;
+  for (const line of stdout.split("\n")) {
+    if (!line.trim()) {
+      if (current) entries.push(current);
+      current = null;
+      continue;
+    }
+
+    const [key, ...valueParts] = line.split(" ");
+    const value = valueParts.join(" ");
+    if (key === "worktree") {
+      if (current) entries.push(current);
+      current = { path: value, branch: null };
+    } else if (key === "branch" && current) {
+      current.branch = normalizeBranchName(value);
+    }
+  }
+  if (current) entries.push(current);
+  return entries;
+}
+
+function normalizeWtWorktrees(worktrees) {
+  return worktrees
+    .map((worktree) => ({
+      path: typeof worktree?.path === "string" ? worktree.path : null,
+      branch: normalizeBranchName(worktree?.branch),
+    }))
+    .filter((worktree) => worktree.path);
+}
+
+async function listWorktreeEntries(repoRoot) {
+  if (await checkWtAvailable()) {
+    const wtResult = await run("wt", ["-C", repoRoot, "list", "--format=json"]);
+    if (wtResult.ok) {
+      return normalizeWtWorktrees(parseWtWorktrees(wtResult.stdout));
+    }
+  }
+
+  const gitResult = await run("git", ["worktree", "list", "--porcelain"], { cwd: repoRoot });
+  return gitResult.ok ? parseGitWorktrees(gitResult.stdout) : [];
+}
+
+function agentIdForWorktree(worktree) {
+  const branch = normalizeBranchName(worktree.branch);
+  if (branch?.startsWith("agent/")) {
+    return branch.slice("agent/".length);
+  }
+
+  const parts = worktree.path.split(path.sep);
+  return parts.includes(".worktrees") ? path.basename(worktree.path) : null;
+}
+
+async function resolveAssignedWorktreePath(repoRoot, agentId) {
+  const safeAgentId = sanitizeAgentId(agentId);
+  const branchName = `agent/${safeAgentId}`;
+  const entries = await listWorktreeEntries(repoRoot);
+  const byBranch = entries.find((worktree) => normalizeBranchName(worktree.branch) === branchName);
+  if (byBranch?.path) {
+    return { path: byBranch.path };
+  }
+
+  const byDirectory = entries.find((worktree) => agentIdForWorktree(worktree) === safeAgentId);
+  if (byDirectory?.path) {
+    return { path: byDirectory.path };
+  }
+
+  return {
+    error: `No assigned worktree found for agentId ${safeAgentId}. Run mr_worktree_list to see active worktrees.`,
+  };
+}
+
+async function formatActiveWorktreeContext(repoRoot) {
+  const entries = await listWorktreeEntries(repoRoot);
+  const assignments = entries
+    .map((worktree) => ({ ...worktree, agentId: agentIdForWorktree(worktree) }))
+    .filter((worktree) => worktree.agentId);
+
+  if (!assignments.length) {
+    return "Active worktree assignments:\n- none";
+  }
+
+  return [
+    "Active worktree assignments:",
+    ...assignments.map((worktree) =>
+      `- ${worktree.agentId}: ${worktree.path} (${worktree.branch || "unknown branch"})`,
+    ),
+  ].join("\n");
 }
 
 async function resolveWorktreePath(repoRoot, branchName, fallbackPath) {
@@ -243,6 +341,35 @@ async function toolStatus({ agentId }) {
   const worktreePath = await resolveStatusWorktreePath(repo.root, agentId);
   const result = await run("git", ["status", "--short", "--branch"], { cwd: worktreePath });
   return result.ok ? result.stdout.trim() : result.stderr || "Failed to read worktree status.";
+}
+
+async function toolCommitGate({ agentId }) {
+  if (!agentId) {
+    return "agentId is required for mr_worktree_commit_gate.";
+  }
+
+  const repo = await ensureRepo();
+  if (repo.error) {
+    return repo.error;
+  }
+
+  let assignment;
+  try {
+    assignment = await resolveAssignedWorktreePath(repo.root, agentId);
+  } catch (error) {
+    return error.message;
+  }
+  if (assignment.error) {
+    return assignment.error;
+  }
+
+  const status = await run("git", ["status", "--short"], { cwd: assignment.path });
+  if (!status.ok) {
+    return status.stderr || `Unable to inspect ${assignment.path}`;
+  }
+
+  const output = status.stdout.trimEnd();
+  return output ? `DIRTY: ${assignment.path}\n${output}` : `CLEAN: ${assignment.path}`;
 }
 
 async function resolveStatusWorktreePath(repoRoot, agentId) {
@@ -371,6 +498,15 @@ const session = await joinSession({
   hooks: {
     onSessionStart: async (input) => {
       lastKnownCwd = input.cwd || lastKnownCwd;
+      const cwd = input.cwd || lastKnownCwd || process.cwd();
+      const root = await repoRoot(cwd);
+      if (!root) {
+        return;
+      }
+
+      await maybeSetWtMarker(root);
+      const additionalContext = await formatActiveWorktreeContext(root);
+      return { additionalContext };
     },
     onUserPromptSubmitted: async (input) => {
       lastKnownCwd = input.cwd || lastKnownCwd;
@@ -429,6 +565,19 @@ const session = await joinSession({
         },
       },
       handler: toolStatus,
+    },
+    {
+      name: "mr_worktree_commit_gate",
+      description:
+        "Check whether the assigned worktree for an agentId is clean before claiming completion.",
+      parameters: {
+        type: "object",
+        properties: {
+          agentId: { type: "string", description: "Agent id of the assigned worktree to check." },
+        },
+        required: ["agentId"],
+      },
+      handler: toolCommitGate,
     },
     {
       name: "mr_worktree_remove",

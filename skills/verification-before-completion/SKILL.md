@@ -55,10 +55,11 @@ Use this skill before making any completion, pass/fail, readiness, or "fixed" cl
 
 1. Pause before claiming success, readiness, pass/fail, or completion.
 2. Run the fresh proof command described in [`references/verification-gate.md`](references/verification-gate.md).
-3. Read exit code, stdout, stderr, pass/fail counts, warnings, and generated artifacts.
-4. Compare the evidence against the exact claim.
-5. If evidence fails or is ambiguous, report the actual status and route back to debugging or implementation.
-6. If evidence passes, make only the claim the evidence supports.
+3. If the task is assigned to a worktree, run `mr_worktree_commit_gate({ agentId })` before marking done or claiming completion; continue only on `CLEAN: <path>`.
+4. Read exit code, stdout, stderr, pass/fail counts, warnings, generated artifacts, and commit-gate output.
+5. Compare the evidence against the exact claim.
+6. If evidence fails or is ambiguous, report the actual status and route back to debugging or implementation.
+7. If evidence passes, make only the claim the evidence supports.
 
 ## Outputs
 
@@ -81,6 +82,7 @@ Use this skill before making any completion, pass/fail, readiness, or "fixed" cl
 - Confirm you read complete stdout, stderr, and exit status.
 - Confirm the output matches or contradicts the exact claim.
 - Confirm any narrower scope is stated clearly.
+- Confirm `mr_worktree_commit_gate({ agentId })` returned `CLEAN: <path>` before marking a worktree-assigned task done.
 - Smoke test:
   - should trigger: "Before I say it's fixed, rerun the failing test and read the output."
   - should not trigger: "Find out why this failing test breaks only on CI." (-> `systematic-debugging`)
@@ -96,3 +98,7 @@ Use this skill before making any completion, pass/fail, readiness, or "fixed" cl
 - [`references/verification-gate.md`](references/verification-gate.md) - proof-command checklist, common false claims, and example verification records
 - [`systematic-debugging`](../systematic-debugging/SKILL.md) - use when root-cause investigation is needed before verifying a fix
 - [`test-driven-development`](../test-driven-development/SKILL.md) - use when writing tests to prove behavior before claiming correctness
+
+## Learned Rules
+
+<!-- New Rules appended below this line. Do not edit above this section -->
