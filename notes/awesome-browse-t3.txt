@@ -1,0 +1,3 @@
+Failed to browse marketplace: Failed to fetch GitHub marketplace github/awesome-copilot: Error: Command stalled — no output for 60s: git clone --depth 1 --progress --branch marketplace https://github.com/github/awesome-copilot.git /Users/matthew.riley/Library/Caches/copilot/marketplaces/github-awesome-copilot
+Cloning into '/Users/matthew.riley/Library/Caches/copilot/marketplaces/github-awesome-copilot'...
+
