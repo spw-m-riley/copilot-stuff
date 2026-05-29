@@ -2,7 +2,7 @@
 name: resolve-open-loops
 description: "Use when the stabilisation-guard blocks the session because of active open_loop or assistant_goal memories, or when the user explicitly asks to review and close out pending items in Lore."
 metadata:
-  category: workflow
+  category: memory
   audience: general-coding-agent
   maturity: stable
   kind: task

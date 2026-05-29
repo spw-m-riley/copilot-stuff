@@ -2,7 +2,7 @@
 name: neovim-config
 description: "Use when editing, debugging, or validating a Neovim Lua configuration — including plugin management (vim.pack, lazy.nvim), LSP/completion wiring, treesitter, statusline, or startup behavior."
 metadata:
-  category: workflow
+  category: neovim
   audience: general-coding-agent
   maturity: stable
   kind: task

@@ -5,7 +5,7 @@ metadata:
   category: version-control
   audience: general-coding-agent
   maturity: stable
-  kind: reference
+  kind: task
 ---
 
 # Worktrunk
@@ -64,6 +64,12 @@ Use this skill when a user needs to configure `wt`, set up LLM commit messages, 
 3. **Add project hooks** — author `.config/wt.toml` hooks for install, dev server, DB, CI gates; see [`assets/hooks-reference.md`](assets/hooks-reference.md)
 4. **Enable branch summaries** (optional) — `[list] summary = true` in user config
 5. **Run parallel agents** (optional) — use `wt switch --create --execute=<agent>`; see [`assets/parallel-agents-recipes.md`](assets/parallel-agents-recipes.md)
+
+## Outputs
+
+- A loaded user or project Worktrunk config with the requested worktree path, hooks, commit generation, or list settings.
+- A validated worktree lifecycle command sequence for creating, listing, merging, or removing `wt` worktrees.
+- A parallel-agent lane recipe when the request involves isolated agent execution.
 
 ## Validation
 

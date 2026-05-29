@@ -2,7 +2,7 @@
 name: test-driven-development
 description: "Use when implementing a new feature, fixing a bug, or refactoring existing behavior — proven correct by executable tests written before production code."
 metadata:
-  category: workflow
+  category: testing
   audience: general-coding-agent
   maturity: stable
   kind: task

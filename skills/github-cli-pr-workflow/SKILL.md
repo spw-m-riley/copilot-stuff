@@ -2,7 +2,7 @@
 name: github-cli-pr-workflow
 description: "Use when a branch needs GitHub CLI PR lifecycle work, like creating or updating a PR, watching checks for a pushed head SHA, or preparing PR handoff before review."
 metadata:
-  category: workflow
+  category: version-control
   audience: general-coding-agent
   maturity: stable
   kind: task
@@ -108,4 +108,3 @@ Use this skill when the main task is the PR lifecycle loop around a pushed branc
 
 - [`references/pr-lifecycle-commands.md`](references/pr-lifecycle-commands.md) - focused `gh` command sequence for create, update, and check-watch flows.
 - [`references/routing-scenarios.md`](references/routing-scenarios.md) - route-to and route-away scenarios to avoid overlap with adjacent skills.
-

@@ -2,10 +2,10 @@
 name: plan-review-loop
 description: "Use when a completed /plan needs explicit multi-reviewer approval and refinement before implementation begins."
 metadata:
-  category: workflow
+  category: planning
   audience: planning-agent
   maturity: stable
-  kind: reference
+  kind: task
 ---
 
 # Plan review loop
@@ -64,6 +64,12 @@ Use this skill to run structured plan reviews after `/plan` completes, with cust
    - At least one returns `[PLAN-REVISE-NEEDED]` → ❌ plan needs revision; update it and request another review
    - Round 3 completes without unanimous approval → ⏱️ max rounds reached; you decide next steps
 5. **Customize (optional):** Edit or create `references/personas/*.md` to replace or add reviewers
+
+## Outputs
+
+- A same-round approval decision with exact reviewer verdict tokens.
+- A revised plan request when any reviewer returns `[PLAN-REVISE-NEEDED]`.
+- A max-rounds handoff when three review rounds complete without unanimous approval.
 
 ## Guardrails
 

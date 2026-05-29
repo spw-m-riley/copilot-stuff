@@ -2,7 +2,7 @@
 name: modern-web-guidance
 description: "Use when writing HTML, CSS, JavaScript, forms, or web animations — prevents legacy patterns."
 metadata:
-  category: workflow
+  category: web
   audience: general-coding-agent
   maturity: stable
   kind: reference

@@ -2,7 +2,7 @@
 name: go-build-and-test
 description: "Use when Go build, test, toolchain, or CI parity failures surface — including stale GOROOT overrides, govulncheck stdlib patch findings, or TempDir race flakes, but not when the real issue is Go error-pattern design."
 metadata:
-  category: workflow
+  category: go
   audience: general-coding-agent
   maturity: stable
   kind: task

@@ -2,7 +2,7 @@
 name: code-tour
 description: "Use when asked to create a .tour walkthrough — onboarding, PR review, RCA, architecture, or any persona-targeted step-by-step code narrative. Not for codebase exploration without a .tour file output."
 metadata:
-  category: workflow
+  category: documentation
   audience: general-coding-agent
   maturity: stable
   kind: task

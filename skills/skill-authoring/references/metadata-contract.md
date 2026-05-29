@@ -9,7 +9,7 @@ Only three top-level keys are valid in a skill frontmatter block:
 | Key | Status | Notes |
 | --- | --- | --- |
 | `name` | **Required** | Kebab-case, matches the directory name exactly. |
-| `description` | **Required** | Single-line quoted string. 50–120 characters. Trigger-phrase required. |
+| `description` | **Required** | Single-line YAML string. Minimum 20 characters. Trigger-phrase required. |
 | `metadata` | **Required** (block) | Contains all skill lifecycle and classification fields. |
 
 **Any other top-level key is forbidden.** The following keys are explicitly banned because they belong elsewhere:
@@ -66,21 +66,11 @@ The following `metadata` keys are explicitly banned because they carry upstream 
 
 ## Special-case decisions
 
-### `acquire-codebase-knowledge`
+### Imported skills
 
-This skill was imported directly from the upstream `awesome-copilot` repository and retains several non-local frontmatter patterns:
-- Top-level `argument-hint`, `compatibility`, and `license` keys
-- A `metadata` block with only provenance fields (`github-path`, `github-ref`, `github-repo`, `github-tree-sha`, `version`, `enhancements`)
+Imported skills must follow the same local frontmatter contract as native skills before they are considered complete. There are no active exceptions for upstream provenance keys, extra top-level keys, or multiline descriptions.
 
-**Resolution:** All of these are scheduled for bulk normalization in the wave 2 normalization pass. The skill should adopt local `metadata.category`, `metadata.audience`, `metadata.maturity`, and `metadata.kind` fields, and all forbidden keys should be removed. The `argument-hint` content moves to `## Inputs to gather`; the `compatibility` content moves to a `references/` file or guardrail; `license` and provenance fields move to a `PROVENANCE.md`.
-
-These fields are **not added to the local contract** — they are documented here as exceptions pending normalization.
-
-### `agent-governance` and `agent-supply-chain`
-
-Both skills were imported from the upstream `awesome-copilot` repository. Their `metadata` blocks contain only upstream provenance fields and their descriptions use the multiline YAML block scalar form (`|-`).
-
-**Resolution:** Both are scheduled for bulk normalization. They should adopt local `category`, `audience`, `maturity`, and `kind` fields; the provenance fields should be removed.
+**Resolution pattern:** Adopt local `metadata.category`, `metadata.audience`, `metadata.maturity`, and `metadata.kind`; remove forbidden keys; move reusable operational detail into `references/` or `assets/`; preserve provenance outside frontmatter only when explicitly needed.
 
 ### `doc-coauthoring`
 
@@ -90,7 +80,7 @@ This skill uses `metadata.reader_testing: required` as a skill-specific behavior
 
 ## Multiline description policy
 
-The description field must be a single quoted YAML string. Multiline block scalars (`|-`, `|`, `>-`, `>`) are **not valid** for skill descriptions. Complex trigger conditions that do not fit on one line belong in `## Use this skill when`, not in the `description` field.
+The description field must be a single-line YAML string. Quoting is recommended when the text contains punctuation that can confuse YAML parsing, but unquoted plain scalars are valid when they parse cleanly. Multiline block scalars (`|-`, `|`, `>-`, `>`) are **not valid** for skill descriptions. Complex trigger conditions that do not fit comfortably on one line belong in `## Use this skill when`, not in the `description` field.
 
 ## Frontmatter shape reference
 
@@ -149,3 +139,4 @@ The validator (`scripts/validate-skill-library.mjs`) currently enforces:
 | **Forbidden top-level keys** | All skills | **Error** (added wave 2) |
 | **Forbidden provenance keys in `metadata`** | All skills | **Error** (added wave 2) |
 | **`metadata.kind` required for `draft` skills** | Draft skills | **Error** (added wave 2) |
+| Required headings and support-file links | All skills | Error |
