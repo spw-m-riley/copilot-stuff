@@ -1,32 +1,51 @@
 {
-  "mouse": true,
-  "copyOnSelect": true,
+  "alt_screen": true,
   "compactPaste": true,
-  "renderMarkdown": true,
-  "stream": true,
-  "updateTerminalTitle": true,
-  "experimental": true,
   "continueOnAutoMode": true,
-  "includeCoAuthoredBy": false,
-  "showReasoning": true,
-  "extensions": {
-    "mode": "load_and_augment"
-  },
+  "copyOnSelect": true,
   "enabledPlugins": {
     "copilot-sdk@awesome-copilot": true
   },
+  "experimental": true,
+  "extensions": {
+    "mode": "load_and_augment"
+  },
+  "extraKnownMarketplaces": {
+    "lucky-hat": {
+      "source": {
+        "repo": "matt-riley/lucky-hat",
+        "source": "github"
+      }
+    }
+  },
   "footer": {
-    "showModelEffort": true,
-    "showDirectory": true,
+    "showAgent": true,
     "showBranch": true,
     "showContextWindow": true,
-    "showQuota": true,
-    "showAgent": true
+    "showDirectory": true,
+    "showModelEffort": true,
+    "showQuota": true
   },
-  "extraKnownMarketplaces": {},
-  "alt_screen": true,
+  "hooks": {
+    "SessionStart": [
+      {
+        "bash": "bash '/Users/matthew.riley/.copilot/hooks/herdr-agent-state.sh'",
+        "timeoutSec": 10,
+        "type": "command"
+      }
+    ]
+  },
   "ide.auto_connect": true,
   "ide.open_diff_on_edit": true,
+  "includeCoAuthoredBy": false,
+  "mouse": true,
+  "renderMarkdown": true,
   "rollout": {},
-  "model": "claude-opus-4.7"
+  "showReasoning": false,
+  "stream": true,
+  "updateTerminalTitle": true,
+  "voice": {
+    "enabled": true,
+    "selectedModel": "nemotron-speech-streaming-en-0.6b-generic-cpu:3"
+  }
 }

@@ -16,6 +16,7 @@ metadata:
 - The user asks to modify an extension hook, tool, registration, or runtime behavior.
 - Prompts include "this extension hook isn't firing", "register a new extension tool", or "modify the lore extension hook".
 - The task requires verifying the Copilot CLI extension SDK contract before implementing behavior.
+- An extension or hook imports `@github/copilot-sdk` and needs runtime validation, hook-name verification, or payload normalization guidance.
 
 ## Do not use this skill when
 
@@ -53,6 +54,7 @@ metadata:
 - Unknown hook names; verify against shipped SDK docs or types before coding.
 - Hook payloads that may arrive stringified; inspect and normalize before reading fields.
 - Extension reload or tool-availability changes; sequence validation carefully.
+- Raw `node import()` failures for `@github/copilot-sdk`; the SDK is runtime-provided and plain Node cannot resolve it — use syntax checks, extension reload, and targeted invocation instead.
 
 ## First move
 
@@ -119,3 +121,4 @@ metadata:
 ## Reference files
 
 - [`copilot-instructions.md`](../../copilot-instructions.md) - learned rules for extension reloads, SDK hooks, payload normalization, and RTK use.
+- [`../copilot-sdk/references/runtime-validation.md`](../copilot-sdk/references/runtime-validation.md) - validation patterns for runtime-provided `@github/copilot-sdk` imports.

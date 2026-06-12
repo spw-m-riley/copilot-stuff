@@ -34,3 +34,4 @@ permissions-config.json
 restart/
 ide/
 plugin-data/
+updater/
