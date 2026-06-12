@@ -13,25 +13,25 @@
   "extraKnownMarketplaces": {
     "lucky-hat": {
       "source": {
-        "repo": "matt-riley/lucky-hat",
-        "source": "github"
+        "source": "github",
+        "repo": "matt-riley/lucky-hat"
       }
     }
   },
   "footer": {
-    "showAgent": true,
+    "showModelEffort": true,
+    "showDirectory": true,
     "showBranch": true,
     "showContextWindow": true,
-    "showDirectory": true,
-    "showModelEffort": true,
-    "showQuota": true
+    "showQuota": true,
+    "showAgent": true
   },
   "hooks": {
-    "SessionStart": [
+    "sessionStart": [
       {
+        "type": "command",
         "bash": "bash '/Users/matthew.riley/.copilot/hooks/herdr-agent-state.sh'",
-        "timeoutSec": 10,
-        "type": "command"
+        "timeoutSec": 10
       }
     ]
   },
@@ -47,5 +47,6 @@
   "voice": {
     "enabled": true,
     "selectedModel": "nemotron-speech-streaming-en-0.6b-generic-cpu:3"
-  }
+  },
+  "model": "auto"
 }

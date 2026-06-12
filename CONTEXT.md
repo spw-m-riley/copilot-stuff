@@ -18,6 +18,10 @@ This is Matt's user-level Copilot CLI config repo. It is the **one special repo*
 | **Worktrunk** | Worktree-per-task workflow; see `skills/worktrunk/` and `skills/git-worktrees/`. Local worktrees live under `.worktrees/` and are never committed. |
 | **Session state** | `session-state/<sessionId>/` holds per-session artifacts (plan.md, checkpoints, files). Gitignored. Pruned via `scripts/prune-session-state.sh`. |
 | **Stabilisation guard** | The `stabilisation-guard` extension that surfaces unresolved `open_loop` / `assistant_goal` Lore memories at session start. Resolved via the `resolve-open-loops` skill. |
+| **Waffle** | Multi-role orchestrator agent that delegates work to role-specific subagents (security, devops, test, documentation, architecture) and runs integrated + post-review adversarial challenges to refine proposals. |
+| **Subagent** | A role-specific skill or agent invoked by Waffle to contribute domain expertise to a proposal; discovered via skill registry and rotated through by Waffle based on task context. |
+| **Rotating adversary** | An evaluation persona within Waffle's workflow that adapts its critical lens based on proposal context (e.g., "what would a security lead flag?" vs "what would devops struggle with?") and auto-loops conflicts back to orchestration. |
+| **Role-specific agent/skill** | A skill (in `skills/<role>/SKILL.md`) or agent (in `agents/<role>.agent.md`) that embodies expertise in a single domain (security, devops, test, documentation, cloud architecture) for Waffle's hybrid-orchestration pattern. |
 
 ## Layout
 
