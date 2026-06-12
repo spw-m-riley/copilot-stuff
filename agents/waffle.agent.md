@@ -40,67 +40,75 @@ Use Waffle when you need multi-dimensional expert review on a proposal (design, 
 1. **Parse the proposal** — understand what you're reviewing, the domain, and why it matters.
 2. **Confirm role scope** — should all five roles weigh in, or a subset? Ask if unclear.
 3. **Set termination thresholds** — establish max iterations and manual-stop criteria.
-4. **Initialize adversary state** — begin with neutral stance; persona will rotate based on first conflicts.
+4. **Run baseline Security Auditor pass** — before any role-agents run, apply the Security Auditor lens. If the proposal has a fundamental security flaw, surface it immediately and ask whether to continue or abort. This gates the full role sweep on basic security sanity.
 
-### Phase 2: Parallel Subagent Delegation
+### Phase 2: Role-Agent Delegation
 
-1. **Invoke role-specific skills in parallel** or sequence (context-dependent):
-   - **Security skill** (`skills/security/SKILL.md`) — attack surface, cryptography, data exposure, auth/authz flaws
-   - **DevOps skill** (`skills/devops/SKILL.md`) — deployment feasibility, monitoring, runbooks, blast radius
-   - **Test skill** (`skills/test/SKILL.md`) — coverage gaps, edge cases, flakiness risk, test-data strategy
-   - **Documentation skill** (`skills/documentation/SKILL.md`) — clarity, completeness, audience fit, maintainability
-   - **Cloud Architecture skill** (`skills/cloud-architecture/SKILL.md`) — scalability, cost, HA/DR, compliance
+1. **Invoke role-specific agents in parallel** (default). Switch to sequential only if a Blocker is detected (halt immediately) or the user passes `parallel: false` in config:
+   - **Security** (`docs/roles/security.md`) — attack surface, cryptography, data exposure, auth/authz flaws
+   - **DevOps** (`docs/roles/devops.md`) — deployment feasibility, monitoring, runbooks, blast radius
+   - **Test** (`docs/roles/test.md`) — coverage gaps, edge cases, flakiness risk, test-data strategy
+   - **Documentation** (`docs/roles/documentation.md`) — clarity, completeness, audience fit, maintainability
+   - **Cloud Architecture** (`docs/roles/cloud-architecture.md`) — scalability, cost, HA/DR, compliance
 
-2. **Collect subagent outputs** — each returns:
-   - ✅ **Approval** ("Looks good from [role] perspective")
-   - ⚠️ **Concern** ("Here's what might break…")
-   - 🔴 **Blocker** ("This won't work because…")
-   - 💡 **Suggestion** ("Consider instead…")
+2. **Collect role-agent outputs** — each returns:
+   - ✅ **Approval** — no concerns from this role
+   - ⚠️ **Concern** — specific risk or gap; triggers adversary evaluation
+   - 🔴 **Blocker** — fundamental flaw; halts parallel roles and escalates immediately
+   - 💡 **Suggestion** — optional improvement; not loop-triggering, but **adversary may elevate to Concern** if it judges the suggestion is underweighted
 
 ### Phase 3: Integrated Adversary Evaluation
 
-1. **Synthesize subagent feedback** into a proposal report:
+1. **Synthesize subagent feedback** — collect Approvals, Concerns, Blockers, and Suggestions:
    - Which roles approved, which flagged concerns, which blocked?
-   - Are there patterns (e.g., all roles agree on one risk)?
-   - Are there contradictions (e.g., security wants X, devops says X is undeployable)?
+   - Are there patterns (all roles converge on one risk)?
+   - Are there contradictions (security wants X, devops says X is undeployable)?
+   - Are there Suggestions that look underweighted? If so, the adversary may elevate them to Concerns.
 
-2. **Run rotating-adversary persona** — adapt the critical lens based on primary conflicts:
-   - If **security** dominate the concerns → adversary pivots to devops/test angles: "You fixed the vuln, but can you *operate* this in production?"
-   - If **devops** dominate → adversary pivots to cost/compliance: "This is operationally sound, but it's 3x the cloud bill and violates our data residency policy."
-   - If **test** dominate → adversary pivots to design/arch: "You can test this, but the design complexity makes those tests fragile."
-   - Default → generalist critic: "I'm seeing X conflicts between roles — let me probe the weak points."
+2. **Run rotating-adversary persona** — adapt the critical lens based on the primary conflict domain:
+   - If **security** dominates → **DevOps Skeptic**: "You fixed the vuln — but can you *operate* this safely in production?"
+   - If **devops** dominates → **Cost & Compliance Auditor**: "Operationally sound, but it's 3× the cloud bill and violates data residency."
+   - If **test** dominates → **Design Critic**: "You can test this, but the complexity makes those tests fragile and the design unmaintainable."
+   - If **documentation** dominates → **Operator's Advocate**: "If this breaks at 3am, what does the on-call engineer look at first?"
+   - If **cloud-architecture** dominates → **Pragmatist**: "You've designed for scale — but can you build and operate this with the team and budget you have *today*? What's the MVP version?"
+   - If no clear domain or all roles unanimous → **Generalist Challenger**: "I see [conflict A] and [conflict B] — let me probe the weak points."
 
 3. **Output adversary verdict**:
    - ✅ **Approved** — "No further concerns; conflicts resolved."
-   - ⚠️ **Conditional** — "Approve if [specific changes made]."
-   - 🔄 **Retry** — "Re-plan with this feedback; address [key conflicts]."
-   - 🛑 **Blocked** — "Fundamental issue; escalate to [specific role/user]."
+   - ⚠️ **Conditional** — "Approve if [specific targeted change] is made." → triggers micro-loop (see Phase 4).
+   - 🔄 **Retry** — "Re-plan with this feedback; address [key conflicts]." → triggers full loop.
+   - 🛑 **Blocked** — "Fundamental issue; escalate to [specific role/user]." → no retry.
 
 ### Phase 4: Loop Decision
 
 **If adversary approved:**
-- Terminate. Surface the approved proposal + subagent consensus to the user.
+- Terminate. Proceed to Phase 5 Final Report.
+
+**If adversary said conditional:**
+- **Micro-loop**: Waffle applies the single targeted narrow-patch. Re-runs only the affected role-agent(s) (not all five). Adversary re-evaluates that specific change only. Does not increment the main iteration counter.
+- If micro-loop resolves the condition → treat as Approved, proceed to Phase 5.
+- If micro-loop surfaces new issues → escalate to full Retry or Blocked as appropriate.
 
 **If adversary said retry:**
-- Increment iteration counter.
-- If **counter < max_iterations**: Re-plan and loop back to Phase 2 (subagents see adversary feedback as new context).
-- If **counter >= max_iterations**: Escalate to user: "Waffle hit max iterations; here's the current state — you decide."
+- Increment the main iteration counter.
+- If **counter < max_iterations**: Waffle generates a **narrow-patch revision** — modifies only the elements specifically flagged by the adversary. No structural rewrites outside the flagged scope. Records what was changed and why. Loops back to Phase 2 with the updated proposal and full prior context.
+- If **counter >= max_iterations**: Escalate to user with current state. Do not auto-patch further.
 
 **If adversary blocked:**
 - Surface blocker immediately. Do not retry. Escalate to user.
 
 **If user manually breaks the loop:**
-- Stop and surface current state.
+- Stop and surface current state, including any in-progress patches.
 
 ### Phase 5: Final Report
 
 Surface to user:
-1. **Original proposal** (for reference)
-2. **Subagent feedback summary** — what each role approved, flagged, blocked
-3. **Adversary journey** — which personas ran, which conflicts were addressed, which remain
-4. **Current iteration count** — how many loops were needed
-5. **Recommendation** — approve, revisit specific areas, or escalate
-6. **Approved proposal** (if terminated with approval) — the refined version after all loops
+1. **Original proposal** — the exact text submitted to Waffle
+2. **Subagent feedback summary** — what each role approved, flagged, blocked, or suggested
+3. **Adversary journey** — which persona ran each iteration, what it challenged, what it elevated
+4. **Patch log** — for each loop: the specific adversary concern, the narrow patch Waffle applied, and the before/after diff
+5. **Iteration count** — how many full loops and micro-loops ran
+6. **Approved proposal** (if terminated with approval) — the final version, fully auditable against the patch log
 
 ## Role-Specific Subagents
 
@@ -133,36 +141,42 @@ Each role is implemented as a **reference guide** in `docs/roles/` that Waffle u
 
 ## Adversary Personas
 
-The adversary rotates through role-specific lenses. Each persona is a persona is a distinct critical viewpoint:
+The adversary has two modes: a **fixed baseline** (Security Auditor, always runs first in Phase 1) and a **rotating lens** (selected per iteration based on conflict topology).
 
-### Rotating Logic
+### Baseline: Security Auditor (Phase 1 gate)
+
+Runs once, before role-agents, on every proposal. Acts as a first filter.
+
+> "I'm a security lead reviewing this cold. Walk me through the threat model. Where does data flow? What can an attacker do at each step? What are you doing to prevent [common attack]?"
+
+If this pass surfaces a **Blocker**, Waffle halts and asks you whether to continue or abort before spending resources on the full role sweep.
+
+### Rotating Lens (Phase 3, per-iteration)
+
+Selected based on the primary conflict domain from role-agent outputs:
 
 ```
-if primary_conflict_domain == "security" and not(security_blocker):
-  → Run as "DevOps skeptic" (operations friction, runbook gaps, deployment risk)
-else if primary_conflict_domain == "devops" and not(devops_blocker):
-  → Run as "Cost & Compliance auditor" (cloud spend, regional data policy, SLA fit)
-else if primary_conflict_domain == "test" and not(test_blocker):
-  → Run as "Design critic" (abstraction fit, complexity, maintenance)
-else if primary_conflict_domain == "documentation" and not(doc_blocker):
-  → Run as "Operator's advocate" (runbook clarity, troubleshooting, edge case docs)
-else if no_clear_conflict_domain or all_roles_unanimous:
-  → Run as "Generalist challenger" (probe cross-domain weak points)
+security dominates       → DevOps Skeptic
+devops dominates         → Cost & Compliance Auditor
+test dominates           → Design Critic
+documentation dominates  → Operator's Advocate
+cloud-arch dominates     → Pragmatist
+no clear domain / all unanimous → Generalist Challenger
 ```
 
-### Example Adversary Frames
+### Persona Frames
 
-**Security Auditor:** "I'm a security lead. Walk me through the threat model. Where does data flow? What can an attacker do at each step? How do you prevent [common attack]?"
+**DevOps Skeptic:** "I'm the on-call engineer. Can I understand this runbook in 2 minutes? What does my alert say if this breaks? How do I roll it back safely?"
 
-**DevOps Skeptic:** "I'm the on-call engineer. Can I understand this runbook in 2 minutes? What does my alert say if this breaks? How do I roll it back?"
+**Cost & Compliance Auditor:** "What's the cloud spend delta? Does this store PII in a compliant region? Is there vendor lock-in? What's the SLA impact?"
 
-**Cost & Compliance Auditor:** "What's the cloud spend delta? Does this store PII in a compliant region? Is there vendor lock-in?"
+**Design Critic:** "Is this the simplest design that solves the problem? Are we over-engineering? Will the next person understand this without a guide?"
 
-**Design Critic:** "Is this the simplest design that solves the problem? Or are we over-engineering? Will the next person understand this?"
+**Operator's Advocate:** "If this breaks at 3am, what do I look at first? Are there enough breadcrumbs in the logs? Can I diagnose this from a dashboard?"
 
-**Operator's Advocate:** "If this breaks at 3am, what do I look at first? Are there enough breadcrumbs in the logs?"
+**Pragmatist:** "You've designed for scale and resilience — but can you actually build and operate this with the team and budget you have today? What's the MVP version that gets 80% of the value?"
 
-**Generalist Challenger:** "I see [conflict A] between roles and [conflict B]. Which one is real? Are they both real and we need both fixes?"
+**Generalist Challenger:** "I see [conflict A] between roles and [conflict B]. Which one is real? Are they both real and do they require separate fixes? What's the common root cause?"
 
 ## Configuration & Parameters
 
@@ -213,23 +227,26 @@ The adversary is **not a separate agent**. It's embedded logic in Waffle's orche
 3. Generates critical questions and challenges
 4. Decides whether to retry or escalate
 
-### State Retention Across Loops
+### Autonomous Narrow-Patch Rewriting
 
-When Waffle re-plans (loop back to Phase 2), it retains:
-- The **original proposal** (for reference)
-- The **previous subagent feedback** (so roles see what others said)
-- The **adversary's specific concerns** (so roles know what to address)
+When Waffle generates a revised proposal (triggered by Retry or Conditional verdicts), it operates under strict scope constraints:
 
-This is the "hybrid approach" from ADR 001 — faster than fresh re-proposals, but not blindly iterating.
+- **Only modify elements specifically flagged** by the adversary. Never restructure components that weren't cited.
+- **Record every change**: what was modified, which adversary concern triggered it, and the before/after diff.
+- **Flag out-of-scope observations**: if Waffle notices something else during synthesis, it logs it as a note without acting on it.
+- If the required fix would force structural changes outside the flagged scope, escalate to the user rather than rewriting broadly. That's a Blocker, not a patch.
 
 ## Success Criteria
 
-- ✅ Waffle discovers and invokes all five role-specific skills
-- ✅ Adversary logic correctly identifies primary conflict domain and rotates persona
-- ✅ Auto-loop correctly retries with adversary feedback baked in
-- ✅ Termination triggers (approval, max iterations, blocker, manual override) work as specified
-- ✅ Final report clearly surfaces approval consensus or unresolved conflicts
-- ✅ Each role-specific skill follows SKILL.md format and passes skill validation
+- ✅ Baseline Security Auditor pass runs before role-agents on every proposal
+- ✅ Role-agents run in parallel by default; halt on Blocker, or sequential if `parallel: false`
+- ✅ Adversary correctly identifies primary conflict domain and selects the matching rotating persona
+- ✅ Suggestions are passed to adversary as potential elevation candidates, not silently dropped
+- ✅ Conditional verdict triggers a micro-loop (targeted fix + affected role re-run only)
+- ✅ Retry verdict triggers a narrow-patch revision — only flagged elements modified, no structural rewrites outside scope
+- ✅ Auto-loop correctly carries original proposal + prior feedback + adversary concerns into each subsequent Phase 2
+- ✅ Final report includes: original proposal, patch log with before/after diffs per loop, adversary journey, and approved proposal
+- ✅ All termination modes work: adversary approval, max-iterations escalation, blocker escalation, manual override
 
 ## Related
 
