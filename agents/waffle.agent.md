@@ -1,7 +1,10 @@
+---
+name: waffle
+description: Multi-role orchestrator with rotating adversary. Delegates proposals to security, devops, test, documentation, and cloud-architecture role-agents in parallel, then runs an integrated adversarial challenge loop with autonomous narrow-patch revision. Use when a proposal needs multi-dimensional expert review with automated refinement.
+---
+
 # Waffle — Multi-Role Orchestrator with Rotating Adversary
 
-**Type:** Manual-only orchestrator agent  
-**Status:** Specification  
 **Reference:** [`docs/adr/001-waffle-orchestrator.md`](../docs/adr/001-waffle-orchestrator.md)  
 
 ## Overview
