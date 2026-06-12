@@ -54,19 +54,30 @@ Use Waffle when you need multi-dimensional expert review on a proposal (design, 
    - **Documentation** (`docs/roles/documentation.md`) — clarity, completeness, audience fit, maintainability
    - **Cloud Architecture** (`docs/roles/cloud-architecture.md`) — scalability, cost, HA/DR, compliance
 
-2. **Collect role-agent outputs** — each returns:
-   - ✅ **Approval** — no concerns from this role
-   - ⚠️ **Concern** — specific risk or gap; triggers adversary evaluation
-   - 🔴 **Blocker** — fundamental flaw; halts parallel roles and escalates immediately
-   - 💡 **Suggestion** — optional improvement; not loop-triggering, but **adversary may elevate to Concern** if it judges the suggestion is underweighted
+2. **Collect role-agent outputs** — each role-agent must return structured JSON:
+
+```json
+{
+  "role": "security|devops|test|documentation|cloud-architecture",
+  "verdict": "approve|concern|blocker|conditional",
+  "score": 0.0,
+  "concerns": [{"element": "...", "description": "...", "severity": "critical|high|medium|low"}],
+  "suggestions": [{"element": "...", "description": "..."}],
+  "summary": "..."
+}
+```
+
+   Verdict semantics:
+   - ✅ **approve** — no concerns; `score` will be 1.0
+   - ⚠️ **concern** — specific risk or gap; triggers adversary evaluation
+   - 🔴 **blocker** — fundamental flaw; halts parallel roles and escalates immediately; `score` = 0.0
+   - 💡 **suggestion** — optional improvement; not loop-triggering, but **adversary may elevate to Concern**
+
+   **Parse failure fallback:** If a role-agent returns malformed or unparseable output, treat it as `{"verdict": "concern", "score": 0.0, "concerns": [{"element": "role-agent output", "description": "parse failure — treating as failing score", "severity": "high"}]}`. Never skip a role or let a parse failure silently propagate.
 
 ### Phase 3: Integrated Adversary Evaluation
 
-1. **Synthesize subagent feedback** — collect Approvals, Concerns, Blockers, and Suggestions:
-   - Which roles approved, which flagged concerns, which blocked?
-   - Are there patterns (all roles converge on one risk)?
-   - Are there contradictions (security wants X, devops says X is undeployable)?
-   - Are there Suggestions that look underweighted? If so, the adversary may elevate them to Concerns.
+1. **Synthesize subagent feedback** — collect all role outputs. Elevate any Suggestions the adversary considers underweighted. Identify the primary conflict domain.
 
 2. **Run rotating-adversary persona** — adapt the critical lens based on the primary conflict domain:
    - If **security** dominates → **DevOps Skeptic**: "You fixed the vuln — but can you *operate* this safely in production?"
@@ -76,42 +87,69 @@ Use Waffle when you need multi-dimensional expert review on a proposal (design, 
    - If **cloud-architecture** dominates → **Pragmatist**: "You've designed for scale — but can you build and operate this with the team and budget you have *today*? What's the MVP version?"
    - If no clear domain or all roles unanimous → **Generalist Challenger**: "I see [conflict A] and [conflict B] — let me probe the weak points."
 
-3. **Output adversary verdict**:
-   - ✅ **Approved** — "No further concerns; conflicts resolved."
-   - ⚠️ **Conditional** — "Approve if [specific targeted change] is made." → triggers micro-loop (see Phase 4).
-   - 🔄 **Retry** — "Re-plan with this feedback; address [key conflicts]." → triggers full loop.
-   - 🛑 **Blocked** — "Fundamental issue; escalate to [specific role/user]." → no retry.
+3. **Output structured adversary evaluation** — always as JSON, never free-text. This is the signal the loop wires off:
+
+```json
+{
+  "iteration": 1,
+  "overall_score": 0.74,
+  "dimensions": {
+    "security":           {"score": 0.9, "verdict": "approve",  "weight": 0.25},
+    "devops":             {"score": 0.5, "verdict": "concern",  "weight": 0.25},
+    "test":               {"score": 0.8, "verdict": "approve",  "weight": 0.20},
+    "documentation":      {"score": 0.7, "verdict": "concern",  "weight": 0.15},
+    "cloud_architecture": {"score": 0.6, "verdict": "concern",  "weight": 0.15}
+  },
+  "primary_conflict_domain": "devops",
+  "adversary_persona": "Cost & Compliance Auditor",
+  "adversary_challenge": "...",
+  "adversary_verdict": "retry",
+  "patches_required": [
+    {"element": "deployment strategy", "concern": "no rollback path", "suggested_fix": "add blue-green config"}
+  ],
+  "elevated_suggestions": [],
+  "score_delta": null
+}
+```
+
+   `overall_score` = weighted sum of dimension scores (weights sum to 1.0; defaults in config).  
+   `score_delta` = `current_score − previous_score` (null on first iteration).  
+   Adversary verdict values: `"approved" | "conditional" | "retry" | "blocked"`.
 
 ### Phase 4: Loop Decision
 
-**If adversary approved:**
-- Terminate. Proceed to Phase 5 Final Report.
+**Score threshold:** `overall_score >= 0.85` → treat as Approved (configurable via `score_threshold`).
 
-**If adversary said conditional:**
+**If adversary verdict is `approved` OR `overall_score >= score_threshold`:**
+- Exit with reason `threshold_met`. Proceed to Phase 5.
+
+**If adversary verdict is `conditional`:**
 - **Micro-loop**: Waffle applies the single targeted narrow-patch. Re-runs only the affected role-agent(s) (not all five). Adversary re-evaluates that specific change only. Does not increment the main iteration counter.
-- If micro-loop resolves the condition → treat as Approved, proceed to Phase 5.
+- If micro-loop resolves the condition → exit with reason `threshold_met`, proceed to Phase 5.
 - If micro-loop surfaces new issues → escalate to full Retry or Blocked as appropriate.
 
-**If adversary said retry:**
-- Increment the main iteration counter.
-- If **counter < max_iterations**: Waffle generates a **narrow-patch revision** — modifies only the elements specifically flagged by the adversary. No structural rewrites outside the flagged scope. Records what was changed and why. Loops back to Phase 2 with the updated proposal and full prior context.
-- If **counter >= max_iterations**: Escalate to user with current state. Do not auto-patch further.
+**If adversary verdict is `retry`:**
+- Check convergence: if `score_delta <= 0` (score did not improve from previous iteration), exit immediately with reason `convergence`. Do not consume another iteration — the loop has plateaued. Escalate current state to user.
+- Otherwise: increment the main iteration counter.
+  - If **counter < max_iterations**: Waffle generates a **narrow-patch revision** — modifies only the elements in `patches_required`. Records what was changed and why. Loops back to Phase 2 with updated proposal and full prior context (original + all previous evaluations).
+  - If **counter >= max_iterations**: Exit with reason `max_iterations`. Escalate to user with current state. Do not auto-patch further.
 
-**If adversary blocked:**
-- Surface blocker immediately. Do not retry. Escalate to user.
+**If adversary verdict is `blocked`:**
+- Exit with reason `blocker`. Surface immediately. Do not retry.
 
 **If user manually breaks the loop:**
-- Stop and surface current state, including any in-progress patches.
+- Exit with reason `manual_override`. Surface current state including any in-progress patches.
 
 ### Phase 5: Final Report
 
 Surface to user:
 1. **Original proposal** — the exact text submitted to Waffle
-2. **Subagent feedback summary** — what each role approved, flagged, blocked, or suggested
-3. **Adversary journey** — which persona ran each iteration, what it challenged, what it elevated
-4. **Patch log** — for each loop: the specific adversary concern, the narrow patch Waffle applied, and the before/after diff
-5. **Iteration count** — how many full loops and micro-loops ran
-6. **Approved proposal** (if terminated with approval) — the final version, fully auditable against the patch log
+2. **Subagent feedback summary** — what each role approved, flagged, blocked, or suggested (per-role structured output)
+3. **Adversary journey** — per-iteration: which persona ran, the `adversary_challenge`, the `overall_score`, and `score_delta`
+4. **Score trajectory** — e.g., `[0.61 → 0.74 → 0.88]` across iterations; shows whether refinement is converging
+5. **Patch log** — per loop: `patches_required` entries, the narrow patch Waffle applied, and the before/after diff
+6. **Exit reason** — one of: `threshold_met | convergence | max_iterations | blocker | manual_override`
+7. **Approved proposal** (if `exit_reason == threshold_met`) — the final version, fully auditable against the patch log
 
 ## Role-Specific Subagents
 
@@ -186,16 +224,23 @@ no clear domain / all unanimous → Generalist Challenger
 ```yaml
 # waffle-config.yaml (optional; defaults shown)
 max_iterations: 3
+score_threshold: 0.85        # overall_score >= this → approved
 default_roles:
   - security
   - devops
   - test
   - documentation
   - cloud-architecture
-adversary_strategy: "rotating"  # could also be "fixed" or "none" in future
-parallel_subagents: true  # invoke all subagents in parallel; false for sequential
-termination_on_approval: true  # stop immediately when adversary approves
-manual_override_allowed: true  # user can break the loop
+dimension_weights:           # must sum to 1.0
+  security: 0.25
+  devops: 0.25
+  test: 0.20
+  documentation: 0.15
+  cloud_architecture: 0.15
+adversary_strategy: "rotating"  # "fixed" or "none" also supported in future
+parallel_subagents: true     # false → sequential; halt immediately on Blocker
+termination_on_approval: true
+manual_override_allowed: true
 ```
 
 ## Implementation Notes
@@ -243,13 +288,15 @@ When Waffle generates a revised proposal (triggered by Retry or Conditional verd
 
 - ✅ Baseline Security Auditor pass runs before role-agents on every proposal
 - ✅ Role-agents run in parallel by default; halt on Blocker, or sequential if `parallel: false`
+- ✅ Every role-agent returns structured JSON; parse failures fall back to `score: 0.0` concern, never silently skip
+- ✅ Phase 3 adversary evaluation always outputs the structured JSON contract (never free-text)
+- ✅ `overall_score` is computed as weighted sum of dimension scores using `dimension_weights`
 - ✅ Adversary correctly identifies primary conflict domain and selects the matching rotating persona
 - ✅ Suggestions are passed to adversary as potential elevation candidates, not silently dropped
-- ✅ Conditional verdict triggers a micro-loop (targeted fix + affected role re-run only)
-- ✅ Retry verdict triggers a narrow-patch revision — only flagged elements modified, no structural rewrites outside scope
-- ✅ Auto-loop correctly carries original proposal + prior feedback + adversary concerns into each subsequent Phase 2
-- ✅ Final report includes: original proposal, patch log with before/after diffs per loop, adversary journey, and approved proposal
-- ✅ All termination modes work: adversary approval, max-iterations escalation, blocker escalation, manual override
+- ✅ Conditional verdict triggers a micro-loop (targeted fix + affected role re-run only; no main counter increment)
+- ✅ Retry verdict: convergence check fires first (`score_delta <= 0` → exit `convergence`); otherwise narrow-patch + loop
+- ✅ Loop exits with an explicit `exit_reason`: `threshold_met | convergence | max_iterations | blocker | manual_override`
+- ✅ Final report includes: score trajectory, patch log with before/after diffs, adversary journey, and `exit_reason`
 
 ## Related
 
