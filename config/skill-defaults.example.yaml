@@ -1,0 +1,35 @@
+# Copy this file to `config/skill-defaults.local.yaml` for personal defaults.
+# Template only: nothing in this repository reads this file automatically yet.
+
+schemaVersion: 1
+
+skillDefaults:
+  global:
+    output:
+      style: concise
+      includeValidationSummary: true
+      includeNextAction: true
+    routing:
+      preferExistingSkill: true
+      preferWorktreesForParallelChanges: true
+      preferDirectValidationCommands: true
+    validation:
+      requireVerificationBeforeDone: true
+      includeExecutedChecksInSummary: true
+
+  skills:
+    review-comment-resolution:
+      output:
+        format: markdown
+        includeResolvedThreads: true
+        includeRemainingReviewerRisk: true
+
+    git-worktrees:
+      routing:
+        createIsolatedWorktreeByDefault: true
+        worktreeRoot: .worktrees
+
+    verification-before-completion:
+      validation:
+        requireNamedChecks: true
+        requireCleanGitStatus: true

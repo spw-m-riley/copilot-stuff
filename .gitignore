@@ -3,6 +3,7 @@
 
 # Local Copilot config
 /config.json
+/config/skill-defaults.local.yaml
 
 # Local CLI history and per-session artifacts
 /command-history-state.json

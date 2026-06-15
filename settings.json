@@ -41,12 +41,11 @@
   "mouse": true,
   "renderMarkdown": true,
   "rollout": {},
-  "showReasoning": false,
   "stream": true,
   "updateTerminalTitle": true,
   "voice": {
     "enabled": true,
     "selectedModel": "nemotron-speech-streaming-en-0.6b-generic-cpu:3"
   },
-  "model": "auto"
+  "model": "gpt-5.4"
 }

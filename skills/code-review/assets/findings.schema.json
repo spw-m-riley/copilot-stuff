@@ -1,0 +1,323 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://copilot.local/skills/code-review/findings.schema.json",
+  "title": "Code review findings",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "review_target",
+    "summary",
+    "findings"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "review_target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "label"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "diff",
+            "pull_request",
+            "branch",
+            "patch",
+            "worktree"
+          ]
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "repository": {
+          "type": "string",
+          "minLength": 1
+        },
+        "base_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "head_ref": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "verdict",
+        "scope_classification",
+        "finding_count"
+      ],
+      "properties": {
+        "verdict": {
+          "enum": [
+            "approve",
+            "revise",
+            "blocked"
+          ]
+        },
+        "scope_classification": {
+          "enum": [
+            "focused",
+            "mixed",
+            "broad"
+          ]
+        },
+        "finding_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "validator_status": {
+          "enum": [
+            "not_run",
+            "clean",
+            "confirmed_findings",
+            "disputed_findings"
+          ]
+        },
+        "notes": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/finding"
+      }
+    }
+  },
+  "$defs": {
+    "location": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "line_start": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "line_end": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "excerpt"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "diff",
+            "code",
+            "test",
+            "build",
+            "docs",
+            "spec",
+            "runtime"
+          ]
+        },
+        "excerpt": {
+          "type": "string",
+          "minLength": 1
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "line_start": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "line_end": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "personaRoute": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "agent",
+        "mode",
+        "reason"
+      ],
+      "properties": {
+        "agent": {
+          "enum": [
+            "implementation-planner",
+            "typescript-api-test-generator",
+            "ci-migration-orchestrator",
+            "web-research-analyst"
+          ]
+        },
+        "mode": {
+          "enum": [
+            "always_on",
+            "conditional"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "validator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "not_run",
+            "clean",
+            "confirmed",
+            "rejected"
+          ]
+        },
+        "agent": {
+          "enum": [
+            "code-review",
+            "general-purpose",
+            "manual"
+          ]
+        },
+        "notes": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "title",
+        "severity",
+        "confidence",
+        "diff_scope",
+        "locations",
+        "recommendation",
+        "evidence",
+        "validator"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_-]{2,}$"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "category": {
+          "type": "string",
+          "minLength": 1
+        },
+        "severity": {
+          "enum": [
+            "critical",
+            "high",
+            "medium",
+            "low"
+          ]
+        },
+        "confidence": {
+          "enum": [
+            0,
+            25,
+            50,
+            75,
+            100
+          ]
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "diff_scope": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "classification",
+            "rationale"
+          ],
+          "properties": {
+            "classification": {
+              "enum": [
+                "primary",
+                "secondary",
+                "pre-existing"
+              ]
+            },
+            "rationale": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "locations": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/location"
+          }
+        },
+        "recommendation": {
+          "enum": [
+            "fix_now",
+            "defer",
+            "accept_risk",
+            "needs_more_proof"
+          ]
+        },
+        "owner": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/evidence"
+          }
+        },
+        "validator": {
+          "$ref": "#/$defs/validator"
+        },
+        "persona_routes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/personaRoute"
+          }
+        }
+      }
+    }
+  }
+}
