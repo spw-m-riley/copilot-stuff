@@ -7,9 +7,64 @@ description: "Use for any question about a codebase, its architecture, file rela
 
 Turn any folder of files into a navigable knowledge graph with community detection, an honest audit trail, and three outputs: interactive HTML, GraphRAG-ready JSON, and a plain-language GRAPH_REPORT.md.
 
+## Use this skill when
+
+- You need architecture, dependency, or flow answers from a codebase and want graph-backed evidence.
+- `graphify-out/graph.json` already exists and the user asks a natural-language question about the corpus.
+- You need to build or refresh a project graph (`/graphify`, `--update`, `--cluster-only`, `query`, `path`, `explain`, `add`, `--watch`).
+
+## Do not use this skill when
+
+- The task is a normal one-file edit or simple symbol lookup better handled by direct repo tools.
+- The user asks for unrelated workflows (CI migration, test generation, release automation, etc.).
+- The user wants conjecture without graph evidence; this skill requires evidence-first answers.
+
+## Inputs to gather
+
+- User intent: build, update, query, path, explain, add, watch, or install hook.
+- Target input: local path(s), GitHub URL(s), optional branch, and any mode flags.
+- Existing graph state: whether `graphify-out/graph.json` and `graphify-out/.graphify_python` already exist.
+- Constraints: corpus size, token/cost sensitivity, and whether outputs like `--obsidian`, `--svg`, `--graphml`, or `--neo4j` are required.
+
+## First move
+
+1. If request is `/graphify --help` or `/graphify -h` only, print `## Usage` verbatim and stop.
+2. Check for `graphify-out/graph.json`; for question-only asks, jump directly to query flow instead of rebuilding.
+3. Resolve target path/URL inputs (including multi-repo merge setup when GitHub URLs are provided).
+
+## Workflow
+
+1. Resolve path/URL context and interpreter, then run detect/extract/analysis pipeline for fresh builds.
+2. For existing graphs, use query/path/explain flows directly and cite graph evidence.
+3. Use subcommand-specific flows for `--update`, `--cluster-only`, `add`, `--watch`, and hook integration.
+4. Return outputs (`graph.html`, `GRAPH_REPORT.md`, `graph.json`, optional exports), then guide follow-up exploration.
+
+## Validation
+
+- Run: `node skills/skill-authoring/scripts/validate-skill-library.mjs skills/graphify/SKILL.md`
+- Confirm required sections are present and non-empty.
+- Confirm `## Reference files` lists existing local files in `skills/graphify/references/`.
+- Keep operational command guidance below intact so behavior remains executable.
+
+## Examples
+
+- `/graphify` (build graph from current directory)
+- `/graphify /path/to/repo --mode deep --obsidian`
+- `/graphify https://github.com/<owner>/<repo> --branch main`
+- `/graphify query "How does auth flow into persistence?"`
+- `/graphify /path/to/repo --update`
+
+## Reference files
+
+- `references/query.md` - query, path, explain, fallback traversal, and answer shaping.
+- `references/update.md` - `--update` and `--cluster-only` operational flow.
+- `references/github-and-merge.md` - GitHub clone and multi-repo merge flow.
+- `references/add-watch.md` - `/graphify add` and `--watch` behavior.
+- `references/hooks.md` - commit hook and CLAUDE.md integration.
+
 ## Usage
 
-```
+``` 
 /graphify                                             # full pipeline on current directory → Obsidian vault
 /graphify <path>                                      # full pipeline on specific path
 /graphify https://github.com/<owner>/<repo>           # clone repo then run full pipeline on it

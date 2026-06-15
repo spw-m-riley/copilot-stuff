@@ -3,7 +3,7 @@
     "userPromptSubmitted": [
       {
         "type": "command",
-        "command": "/opt/homebrew/Cellar/agit/1.20.0/bin/agit",
+        "command": "agit",
         "args": [
           "copilot-hook"
         ]
@@ -12,7 +12,7 @@
     "postToolUse": [
       {
         "type": "command",
-        "command": "/opt/homebrew/Cellar/agit/1.20.0/bin/agit",
+        "command": "agit",
         "args": [
           "copilot-hook"
         ]
@@ -21,7 +21,7 @@
     "agentStop": [
       {
         "type": "command",
-        "command": "/opt/homebrew/Cellar/agit/1.20.0/bin/agit",
+        "command": "agit",
         "args": [
           "copilot-hook"
         ]
@@ -29,6 +29,6 @@
     ]
   },
   "_agit": {
-    "binary": "/opt/homebrew/Cellar/agit/1.20.0/bin/agit"
+    "binary": "agit"
   }
 }
