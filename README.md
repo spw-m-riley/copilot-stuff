@@ -298,16 +298,18 @@ Older flat-pattern worktrees can be renamed incrementally as they are touched or
 
 ## Custom Agents
 
-Beyond the built-in agents currently documented by Copilot CLI (`task`, `explore`, `general-purpose`, and `code-review`), this repository tracks **4 custom agents** for specialized workflows:
+Alongside the built-in agents, this repository tracks **6 custom agents** for specialized workflows:
 
 | Agent | What It Does | Use When |
 |-------|-------------|----------|
-| **ci-migration-orchestrator** | Orchestrates multi-workflow CI migrations with planning, validation, and rollout coordination. Works with the reusable `circleci-to-github-actions-migration` skill. | CircleCI→GitHub Actions spans multiple workflows or environments and needs phased rollout |
-| **implementation-planner** | Breaks complex work into actionable plans with clear tasks, dependencies, and parallelizable phases. Outputs stable `v1` planner contracts. | You want a detailed implementation plan before coding (explicitly ask for it) |
+| **ci-migration-orchestrator** | Orchestrates multi-workflow CI migration and workflow-modernization work with phased rollout, validation, and contract checks. Works with reusable GitHub Actions skills. | CI work spans multiple workflows, environments, or rollout stages |
+| **copilot-config-curator** | Audits and improves this `~/.copilot` repo's skills, agents, instructions, extensions, docs, and validators as one coherent library. | You want repo-wide Copilot config curation driven by current state and recent sessions |
+| **implementation-planner** | Breaks complex work into actionable plans with clear tasks, dependencies, and parallelizable phases. Outputs stable `v1` planner contracts. | You want a detailed implementation plan before coding |
+| **pr-operations-orchestrator** | Coordinates PR descriptions, review-thread handling, workflow checks, and merge-readiness once most code changes already exist. | The remaining work is GitHub-side PR orchestration rather than fresh implementation |
 | **typescript-api-test-generator** | Writes runtime tests for TypeScript APIs, request handlers, and Lambda functions using your repo's existing test framework. | You need new or expanded test coverage around a TypeScript API surface |
 | **web-research-analyst** | Investigates external docs, patterns, and prior art, then distills findings into actionable recommendations and handoff-friendly summaries. | You need research + comparisons grounded in actual documentation before deciding on an approach |
 
-All four are manual-only (you invoke them explicitly), not auto-triggered. They integrate with skills and workflow contracts for clear handoff and coordination.
+These custom agents are still **manual-only** in the current runtime: Lore can recommend them and local skills can route toward them, but they are not auto-invoked as background subagents by the CLI itself.
 
 ---
 

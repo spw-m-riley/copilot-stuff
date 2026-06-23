@@ -22,6 +22,7 @@ metadata:
 - The task is only to summarize or classify review comments without making changes.
 - The comments are actually bug reports, issue triage, or general design questions outside a concrete review surface.
 - The main task is creating/updating a PR and watching checks before review starts; route to [`github-cli-pr-workflow`](../github-cli-pr-workflow/SKILL.md).
+- The code changes are already handled and the remaining work is cross-cutting PR operations like metadata, thread cleanup, and merge-readiness; route to [`pr-operations-orchestrator`](../../agents/pr-operations-orchestrator.agent.md).
 - The real blocker is a failing workflow or check; route that to [`github-actions-failure-triage`](../github-actions-failure-triage/SKILL.md) first.
 - You cannot access the branch, PR, or review comment context needed to judge the concern.
 - The user explicitly instructs you to apply every review comment exactly as written without assessment.
@@ -66,8 +67,9 @@ metadata:
 5. Re-run the relevant validation commands for the touched surface.
 6. Prepare a concise rationale for comments you intentionally do not fix so the result can be explained clearly.
 7. Commit only the intended changes with a focused message.
-8. Push the branch and monitor workflows or checks on the new head commit until they reach a terminal state.
+8. Push the branch, confirm the PR head SHA matches the pushed commit SHA, and monitor workflows or checks on that head commit until they reach a terminal state.
 9. If workflows fail because of your changes, investigate and fix them before considering the task complete.
+10. After workflows pass, fetch the current unresolved review threads on the PR. New threads may have been added since you started — treat them as a fresh classification cycle from step 2. The task is only complete when workflows are green **and** there are no new unresolved threads that require a response.
 
 ## Output for comments intentionally not fixed
 
@@ -96,14 +98,18 @@ Do not leave an unresolved comment without a reason. If the concern is real but 
 - **Must not** mix unrelated cleanup into the review-comment fix batch.
 - **Must not** force-push, merge, or resolve/dismiss comments unless the surrounding workflow clearly calls for it.
 - **Must not** rationalize away an unresolved comment by omitting it from the summary; every intentional non-fix needs a disposition.
+- **Must not** declare the task complete after workflows pass without checking for new unresolved threads; reviewers may have added comments during or after the CI run.
+- **Must not** claim a review fix is "pushed" until the PR head SHA reflects the expected commit SHA.
 - **Should** prefer the smallest change that addresses the real concern rather than the literal wording of a comment if the wording is imprecise.
 - **Should** keep accepted and rejected comment reasoning easy to summarize after the push.
+- **Should** treat a user message of the form `#<N> has review comments` as an explicit re-entry signal: fetch the current unresolved threads on that PR and begin a fresh classification cycle, regardless of prior progress.
 
 ## Validation
 
 - Run the repository's relevant validation commands before committing.
 - Verify the staged diff only contains the intended review-comment fixes.
 - Confirm the pushed branch matches the branch or PR under review.
+- Confirm the PR head SHA equals the pushed commit SHA before evaluating whether comment state should have changed.
 - Wait for workflows or checks on the new head commit to finish.
 - If any workflow fails, inspect whether the failure was introduced by your changes and address it when it is in scope.
 
@@ -130,6 +136,7 @@ Do not leave an unresolved comment without a reason. If the concern is real but 
 | --- | --- | --- |
 | PR has review comments or feedback that needs classification and fixing | Yes | — |
 | The next step is only PR creation, update, or watching checks before review starts | No | [`github-cli-pr-workflow`](../github-cli-pr-workflow/SKILL.md) |
+| Code changes are done and the remaining work is GitHub-side PR coordination | No | [`pr-operations-orchestrator`](../../agents/pr-operations-orchestrator.agent.md) |
 | A failing workflow is blocking the review cycle | No | [`github-actions-failure-triage`](../github-actions-failure-triage/SKILL.md) first |
 | Working in an isolated worktree during the review cycle | Pairs | [`git-worktrees`](../git-worktrees/SKILL.md) |
 | Review outcome needs a durable artifact for a downstream phase | Pairs | [`workflow-contracts`](../workflow-contracts/SKILL.md) |

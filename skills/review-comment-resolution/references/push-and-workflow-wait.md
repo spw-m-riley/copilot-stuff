@@ -33,6 +33,7 @@ Verify:
 - the current branch is the intended PR branch
 - the push target is correct
 - the new head commit is the one you just created
+- the PR head SHA now equals that pushed commit SHA (for example via `gh pr view <number> --json headRefOid`)
 
 Avoid force-push unless the workflow explicitly requires it.
 
@@ -41,12 +42,15 @@ Avoid force-push unless the workflow explicitly requires it.
 After the push:
 
 - get the new head commit SHA for the branch you pushed
+- confirm GitHub reports that same SHA as the PR head before reasoning about review-thread state
 - use the available GitHub tools, API, or CLI to list checks or workflow runs for that SHA
 - if `gh` is available, `gh pr checks --watch` or `gh run list --commit <sha>` are reasonable starting points
 - identify the workflows or checks triggered for the new head commit
 - poll every 10-30 seconds or use a built-in watch mode until they finish instead of stopping after the push
 - distinguish required checks from optional informational ones when the platform exposes that detail
 - treat `success`, `failure`, `cancelled`, and `skipped` as terminal states only after all relevant runs have landed there
+
+If a user expects review comments to be auto-outdated, check thread state *after* the PR head SHA update. Some threads stay unresolved when they are not auto-marked outdated by GitHub, even when a fix was pushed.
 
 ## 6. Handle failures deliberately
 

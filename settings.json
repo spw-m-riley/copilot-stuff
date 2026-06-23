@@ -4,7 +4,8 @@
   "continueOnAutoMode": true,
   "copyOnSelect": true,
   "enabledPlugins": {
-    "copilot-sdk@awesome-copilot": true
+    "copilot-sdk@awesome-copilot": true,
+    "ponytail@ponytail": true
   },
   "experimental": true,
   "extensions": {
@@ -15,6 +16,12 @@
       "source": {
         "source": "github",
         "repo": "matt-riley/lucky-hat"
+      }
+    },
+    "ponytail": {
+      "source": {
+        "source": "github",
+        "repo": "DietrichGebert/ponytail"
       }
     }
   },
@@ -42,10 +49,19 @@
   "renderMarkdown": true,
   "rollout": {},
   "stream": true,
+  "subagents": {
+    "agents": {
+      "explore": {
+        "model": "auto"
+      },
+      "general-purpose": {
+        "model": "auto"
+      }
+    }
+  },
   "updateTerminalTitle": true,
   "voice": {
     "enabled": true,
     "selectedModel": "nemotron-speech-streaming-en-0.6b-generic-cpu:3"
-  },
-  "model": "gpt-5.4"
+  }
 }

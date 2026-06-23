@@ -3,7 +3,7 @@
 import { joinSession } from "@github/copilot-sdk/extension";
 import { spawnSync } from "node:child_process";
 
-const AGIT_BINARY = "/opt/homebrew/Cellar/agit/1.20.1/bin/agit";
+const AGIT_BINARY = "/opt/homebrew/bin/agit";
 const MAX_FIELD = 1000000;
 
 function replacer(_key, value) {

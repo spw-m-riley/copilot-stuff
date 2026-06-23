@@ -21,6 +21,7 @@ Use this skill when working with Terraform or OpenTofu infrastructure code. It d
 - Configuring or migrating remote state backends
 - Choosing state organization for multi-team environments
 - Performing security scans or compliance checks on Terraform code
+- Evaluating whether a shared Terraform module can be adopted by one or more target repositories — including gap analysis, blocker identification, and example implementation planning
 
 ## Do not use this skill when
 
@@ -79,6 +80,7 @@ Use this skill when working with Terraform or OpenTofu infrastructure code. It d
 | State corruption/recovery | Stuck lock, backend migration, drift reconciliation | `references/state-management.md` |
 | Provider upgrade risk | Breaking-change bump, unpinned modules | `references/code-patterns.md`, `references/module-patterns.md` |
 | Provider lifecycle | Removing a provider with resources still in state | `references/state-management.md` |
+| Module adoption gap analysis | Shared module missing features needed by target repos; unclear which gaps are blockers vs nice-to-haves; need example implementation for a specific repo | `references/module-patterns.md` |
 | Navigation/safe rename | Cannot locate symbol definitions/refs semantically | `references/code-intelligence-lsp.md` |
 
 **Then follow these steps:**

@@ -187,6 +187,50 @@
           "extensionName": "user:gha-url-router"
         }
       ]
+    },
+    "/Users/matthew.riley/work/deploy-tasks": {
+      "tool_approvals": [
+        {
+          "kind": "extension-permission-access",
+          "extensionName": "user:gha-url-router"
+        },
+        {
+          "kind": "extension-permission-access",
+          "extensionName": "user:copilot-healthcheck"
+        },
+        {
+          "kind": "extension-permission-access",
+          "extensionName": "user:fleet-model-policy"
+        },
+        {
+          "kind": "extension-permission-access",
+          "extensionName": "user:ci-migration-context"
+        },
+        {
+          "kind": "extension-permission-access",
+          "extensionName": "user:worktree-manager"
+        },
+        {
+          "kind": "extension-permission-access",
+          "extensionName": "user:agit-recorder"
+        },
+        {
+          "kind": "extension-permission-access",
+          "extensionName": "user:rtk-hook"
+        },
+        {
+          "kind": "extension-permission-access",
+          "extensionName": "user:stabilisation-guard"
+        },
+        {
+          "kind": "extension-permission-access",
+          "extensionName": "user:post-edit-lint"
+        },
+        {
+          "kind": "extension-permission-access",
+          "extensionName": "user:lore"
+        }
+      ]
     }
   }
 }

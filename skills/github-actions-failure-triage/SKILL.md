@@ -1,6 +1,6 @@
 ---
 name: github-actions-failure-triage
-description: Use when a GitHub Actions run, job, or check is failing and root-cause diagnosis is needed before touching any files — especially after workflow edits, action version bumps, runner changes, cache invalidation, or matrix changes in a repo already on Actions.
+description: Use when a GitHub Actions run, job, or check is failing and root-cause diagnosis is needed before touching any files — especially after workflow edits, action version bumps, runner changes, cache invalidation, or matrix changes in a repo already on Actions. Also use when deprecation warnings in CI logs (e.g. Node.js runtime warnings from setup-node or configure-nodejs) require proactive action version updates.
 metadata:
   category: ci
   audience: general-coding-agent
@@ -17,6 +17,7 @@ Use this skill when a repository already uses GitHub Actions and you need to dia
 - The user asks why a GitHub Actions run, job, or check is failing.
 - A workflow started failing after a workflow edit, action version bump, runner change, cache change, matrix change, or reusable workflow change.
 - A post-migration GitHub Actions regression needs diagnosis, but the repository is already on GitHub Actions.
+- Deprecation warnings appear in CI run logs (e.g. "Node.js 20 is deprecated", warnings from `setup-node`, `configure-nodejs`, or similar actions) and a proactive version-pin or action update is needed to prevent future failures.
 - The likely best outcome is a targeted fix, a precise explanation, or a clean escalation path rather than a broad CI redesign.
 
 ## Do not use this skill when
@@ -25,6 +26,7 @@ Use this skill when a repository already uses GitHub Actions and you need to dia
 - The main task is handling PR review comments, pushing a fix batch, or waiting for post-push checks.
 - The main task is worktree or branch isolation for parallel work.
 - The user is asking for greenfield CI design or a broad GitHub Actions redesign with no concrete failing run to anchor on.
+- The workflow is not failing; the real task is to simplify dense inline Bash or condition logic for readability and maintainability.
 - The primary action required is changing org-admin settings, runner fleet configuration, branch protection, or environment policy rather than diagnosing a repository-owned failure.
 
 ## Iron Law
@@ -43,6 +45,7 @@ Use the closest matching workflow:
 | Failing GitHub Actions run, job, or check in a repo already on Actions | Yes | - |
 | CircleCI migration planning, parity checks, or staged cutover | No | [`circleci-to-github-actions-migration`](../circleci-to-github-actions-migration/SKILL.md) |
 | Broad multi-workflow or multi-environment CI migration orchestration | No | `ci-migration-orchestrator` |
+| Workflow cleanup is about readability of inline Bash, shell branching, or sprawling conditions rather than a live failure | No | [`workflow-bash-refactor`](../../agents/workflow-bash-refactor.agent.md) |
 | PR review-comment adjudication and fix batching | No | [`review-comment-resolution`](../review-comment-resolution/SKILL.md) |
 | Worktree or isolated branch setup for parallel changes | No | [`git-worktrees`](../git-worktrees/SKILL.md) |
 | Root cause found; local reproduction with `act` is feasible | No | [`github-actions-local-repro`](../github-actions-local-repro/SKILL.md) |
@@ -112,6 +115,7 @@ Use this as the fast path once the failure bucket is known:
 | Cache, artifact, job-output, or cross-job handoff failures | Compare the producer and consumer path or output name | Fix the exact path, name, or `needs` handoff | Rerun the downstream consumer after verifying the producer created the file |
 | Reusable workflow or action interface issues | Inspect both caller and callee contracts together | Align inputs, secrets, outputs, or ref pins | Escalate only if the contract change needs broader coordination |
 | Concurrency, cancellation, or dependency-order issues | Check `needs`, concurrency groups, and skip conditions | Remove the ordering bug or unsafe cancellation rule | Rerun after the dependency graph is corrected |
+| Action version or runtime deprecation warnings | Identify the deprecated action, node version, or runtime in the run annotations | Pin the action to the recommended version or update the `node-version` input | Rerun to confirm warnings are gone; treat as high priority if a removal date is announced |
 | Project, test, deployment, or runtime failures | Confirm the workflow is exposing a real repo bug | Fix the code or config surface that actually failed | Hand off instead of polishing workflow YAML |
 
 ## Outputs

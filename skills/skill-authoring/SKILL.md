@@ -23,6 +23,7 @@ Use this skill when creating or revising a reusable agent skill, especially when
 
 - The guidance belongs in global instructions or a repository-wide policy file.
 - The workflow is so narrow or stateful that it belongs in a specialized agent.
+- The request spans skills, agents, instructions, extensions, docs, and validators across the whole `~/.copilot` repo; route to [`copilot-config-curator`](../../agents/copilot-config-curator.agent.md).
 - The request is a one-off task description with no reuse value.
 - The user is asking for collaborative documentation rather than an agent skill; route to [`doc-coauthoring`](../doc-coauthoring/SKILL.md).
 
@@ -33,6 +34,7 @@ Use this skill when creating or revising a reusable agent skill, especially when
 | Create or revise a reusable skill package | Yes | - |
 | Create or update agent instruction files | No | [`init`](../init/SKILL.md) |
 | Author README, guide, API docs, or runbook prose | No | [`doc-coauthoring`](../doc-coauthoring/SKILL.md) |
+| Curate the whole `~/.copilot` library across skills, agents, instructions, docs, and validators | No | [`copilot-config-curator`](../../agents/copilot-config-curator.agent.md) |
 | Build a long-lived operator persona or stateful workflow | No | specialized agent |
 
 ## Inputs to gather

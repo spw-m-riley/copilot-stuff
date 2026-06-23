@@ -10,6 +10,7 @@ Use these compact scenarios to keep review-comment routing, disposition, and han
 | Another fix in the branch already removed the commented line. | superseded | Avoid duplicating work and note that the concern is already covered. |
 | The comment asks for a broader architecture change the user did not request. | not actionable yet | Escalate or defer instead of widening the review-fix batch. |
 | The comment has a real bug plus an unrelated style nit. | partially valid | Fix the bug, skip the extra style-only ask, and explain the narrower change. |
+| User says fixes were pushed but comments are not marked outdated yet. | superseded or still unresolved (re-check) | Confirm PR head SHA advanced to the expected commit, then re-fetch unresolved threads before deciding whether action is still needed. |
 
 ## Maintenance loop
 

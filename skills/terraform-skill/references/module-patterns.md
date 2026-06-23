@@ -17,6 +17,7 @@ This document provides detailed guidance on creating reusable, maintainable Terr
 6. [Common Patterns](#common-patterns)
 7. [Anti-patterns to Avoid](#anti-patterns-to-avoid)
 8. [Testing Philosophy & Patterns](#testing-philosophy--patterns)
+9. [Cross-Repo Module Adoption Analysis](#cross-repo-module-adoption-analysis)
 
 ---
 
@@ -763,6 +764,53 @@ Common model mistakes to correct when generating or reviewing modules:
 - pushes environment-specific policy (prod-only allowlists, region pins) into primitive/resource modules where it cannot be overridden
 - omits `configuration_aliases` in a multi-provider child module's `required_providers` — callers cannot pass aliased providers
 - drops the `providers = { aws = aws.region }` map from the module call on multi-region or multi-account deploys — resources land on the default provider
+
+---
+
+## Cross-Repo Module Adoption Analysis
+
+Use this framework when a shared module exists (typically owned by a platform/DevOps team) and one or more application repos need to adopt it. The goal is a short, actionable gap list — not a full re-audit of the module.
+
+### Step 1 — Establish requirements per target repo
+
+For each target repo, identify:
+- What resources does the repo currently provision manually or via inline Terraform?
+- What variables does the repo pass today (size, tags, environment flags)?
+- What outputs does the repo consume downstream (ARNs, endpoints, bucket names)?
+- What CI/CD behavior does the repo expect (plan-on-PR, apply-on-merge, OIDC auth)?
+
+### Step 2 — Audit the shared module against requirements
+
+Compare the module's current `variables.tf` and `outputs.tf` against each target repo's requirements:
+
+| Gap type | Description | Priority |
+|----------|-------------|----------|
+| **Blocker** | Module lacks a required variable, output, or resource that the target repo cannot function without | Must fix before adoption |
+| **Workaround needed** | Module has the capability but requires awkward composition or a wrapper module | Fix if adoption is more than one repo |
+| **Nice-to-have** | Missing convenience feature, optional tag, or non-critical output | Log as future improvement; do not block adoption |
+| **Ownership boundary** | Feature belongs in module but is owned by another team | Raise as a request; do not implement in the consuming repo |
+
+### Step 3 — Distil to a short blocker list
+
+After auditing all target repos:
+1. Consolidate gaps that appear across multiple repos — these are the highest-value fixes.
+2. Separate hard blockers (adoption impossible without them) from soft blockers (adoption is awkward but possible).
+3. Present findings as: _"N blockers, M workarounds needed, K nice-to-haves"_ with one sentence per item.
+
+### Step 4 — Example implementation (optional)
+
+When the user asks for an example of the adoption approach:
+1. Create a thin `examples/<repo-name>/` directory in the module repo (preferred) or a standalone example directory.
+2. Use the module as a black box — no edits to the shared module source.
+3. Demonstrate only the variables and outputs the target repo actually needs.
+4. Include a minimal `provider.tf` and `backend.tf` to make the example runnable.
+
+### Guardrails for adoption analysis
+
+- Never recommend editing the shared module to paper over a blocker without confirming ownership with the platform team.
+- Never conflate "the module can do this" with "this target repo needs this" — keep the analysis scoped to actual requirements.
+- Always distinguish universal gaps (affect all target repos) from repo-specific gaps before presenting findings.
+- Keep the blocker list short: if a gap list exceeds five items, re-classify — most items are probably nice-to-haves.
 
 ---
 
