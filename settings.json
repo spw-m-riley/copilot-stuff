@@ -63,5 +63,6 @@
   "voice": {
     "enabled": true,
     "selectedModel": "nemotron-speech-streaming-en-0.6b-generic-cpu:3"
-  }
+  },
+  "effortLevel": "high"
 }
