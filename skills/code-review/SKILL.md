@@ -36,6 +36,7 @@ Use this skill when the task is to produce a structured review result for a code
 | Known failure needs root-cause debugging before any review verdict matters | No | `systematic-debugging` |
 | The next step is PR lifecycle work, not review | No | `github-cli-pr-workflow` |
 | Review findings need a durable follow-on contract after the verdict | Pairs | [`workflow-contracts`](../workflow-contracts/SKILL.md) |
+| Comparing two or more repositories for parity, gaps, or reference-guided implementation | No | [`cross-repo-diff`](../cross-repo-diff/SKILL.md) |
 
 ## Inputs to gather
 

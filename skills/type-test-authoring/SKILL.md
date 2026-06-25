@@ -90,6 +90,7 @@ If the repository has no established type-test convention:
 
 - Use this skill after source typing work (for example via [`typescript-any-eliminator`](../typescript-any-eliminator/SKILL.md) or [`schema-boundary-typing`](../schema-boundary-typing/SKILL.md)) has made the target type surface truthful.
 - Route runtime API behavior tests to [`typescript-api-test-generator`](../../agents/typescript-api-test-generator.agent.md); keep this skill focused on compile-time guarantees only.
+- If the TypeScript problem is vague or it's unclear which skill applies, route to [`typescript-triage`](../typescript-triage/SKILL.md).
 
 ## Red flags
 

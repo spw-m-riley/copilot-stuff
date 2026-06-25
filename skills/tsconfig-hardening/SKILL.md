@@ -140,6 +140,7 @@ Stop broadening the config work when any of these happen:
 - Use this skill when the primary work is TypeScript configuration cleanup or strictness sequencing.
 - Route to [`project-references-migration`](../project-references-migration/SKILL.md) when the main goal is incremental `tsc -b` project-references adoption across a layered workspace.
 - Route to [`tsc-error-triage`](../tsc-error-triage/SKILL.md) once config changes have landed and the task becomes source-level compiler error remediation.
+- If the TypeScript problem is vague or it's unclear which skill applies, route to [`typescript-triage`](../typescript-triage/SKILL.md).
 
 ## Validation
 

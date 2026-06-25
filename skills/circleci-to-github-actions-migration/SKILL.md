@@ -81,6 +81,7 @@ metadata:
 
 - Use this skill directly for single-repo CircleCI→GitHub Actions migration work where parity mapping and staged cutover are the main tasks.
 - Escalate to [`ci-migration-orchestrator`](../../agents/ci-migration-orchestrator.agent.md) when migration execution needs phased rollout choreography, multi-workflow coordination, or cross-surface sequencing beyond this reusable playbook.
+- Use [`cross-repo-diff`](../cross-repo-diff/SKILL.md) when using another repo as a reference guide for how to approach the migration, before starting the migration work itself.
 
 ## Validation
 

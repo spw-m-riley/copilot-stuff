@@ -36,6 +36,7 @@ Use this skill when a Go repository is failing to build or test and the next mov
 | Linux CI fails with a late `TempDir` cleanup or background-event race | Yes | Stay here and investigate test isolation |
 | The problem is `func(string) *DomainError` vs `func(string) error` or error-type design | No | [`go-error-patterns`](../go-error-patterns/SKILL.md) |
 | The failure signal is vague and no one knows whether the cause is Go code, config, or infrastructure | No | [`systematic-debugging`](../systematic-debugging/SKILL.md) |
+| Go toolchain version upgrade itself fails (not the build after upgrading) | No | [`tooling-upgrade-triage`](../tooling-upgrade-triage/SKILL.md) |
 
 ## Inputs to gather
 

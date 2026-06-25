@@ -90,6 +90,7 @@ Do not force a fake precise type when the right answer is to keep the boundary p
 - Route to [`schema-boundary-typing`](../schema-boundary-typing/SKILL.md) when truthful `any` removal depends on runtime validation at an untrusted input boundary.
 - Route to [`type-test-authoring`](../type-test-authoring/SKILL.md) after the type surface is truthful and you need compile-time regression coverage for inference or assignability.
 - If compiler failures remain after `any` cleanup, route causal error triage to [`tsc-error-triage`](../tsc-error-triage/SKILL.md).
+- If the TypeScript problem is vague or it's unclear which skill applies, route to [`typescript-triage`](../typescript-triage/SKILL.md).
 
 ## Validation
 

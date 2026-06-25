@@ -74,6 +74,7 @@ metadata:
 - Route here from [`typescript-any-eliminator`](../typescript-any-eliminator/SKILL.md) when replacing `any` requires runtime boundary validation to make types truthful.
 - After boundary types are stable, route compile-time contract locking to [`type-test-authoring`](../type-test-authoring/SKILL.md).
 - For runtime behavior coverage of boundary handlers/controllers, route test implementation to [`typescript-api-test-generator`](../../agents/typescript-api-test-generator.agent.md).
+- If the TypeScript problem is vague or it's unclear which skill applies, route to [`typescript-triage`](../typescript-triage/SKILL.md).
 
 ## Validation
 

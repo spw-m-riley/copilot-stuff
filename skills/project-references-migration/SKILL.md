@@ -113,6 +113,7 @@ Pilot package config:
 - Use this skill when a multi-package TypeScript workspace needs a deliberate `composite` / `references` migration path.
 - Route to [`tsconfig-hardening`](../tsconfig-hardening/SKILL.md) when the task is mainly single-package compiler-option cleanup or strictness tuning.
 - Route to [`tsc-error-triage`](../tsc-error-triage/SKILL.md) when the references migration has already landed and remaining work is source-level compiler failure triage.
+- If the TypeScript problem is vague or it's unclear which skill applies, route to [`typescript-triage`](../typescript-triage/SKILL.md).
 
 ## Validation
 

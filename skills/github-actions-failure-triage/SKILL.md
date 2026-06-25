@@ -49,6 +49,7 @@ Use the closest matching workflow:
 | PR review-comment adjudication and fix batching | No | [`review-comment-resolution`](../review-comment-resolution/SKILL.md) |
 | Worktree or isolated branch setup for parallel changes | No | [`git-worktrees`](../git-worktrees/SKILL.md) |
 | Root cause found; local reproduction with `act` is feasible | No | [`github-actions-local-repro`](../github-actions-local-repro/SKILL.md) |
+| Upgrade tool failure (`topgrade`, `uv`, Homebrew, Go toolchain) outside of a CI job | No | [`tooling-upgrade-triage`](../tooling-upgrade-triage/SKILL.md) |
 
 ## Inputs to gather
 
