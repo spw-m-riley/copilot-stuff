@@ -27,6 +27,8 @@ Use this checklist before considering a skill complete.
 
 - Detailed mappings, checklists, or examples live in `references/` or `assets/` instead of bloating `SKILL.md`.
 - Every support file is referenced from `SKILL.md`.
+- `## Reference files` entries are backtick-wrapped only when the path exists locally in the skill package — the validator treats a backticked path-like string as a required local reference and fails on missing upstream-only paths (e.g. `guides/foo/bar.md`).
+- `## Reference files` always lists at least one existing local file — never a placeholder like `None`, since the validator requires a resolvable local reference target.
 - Any scripts are optional and clearly documented.
 - Support-file names and paths are explicit enough that a future tool could discover them without guessing.
 

@@ -23,6 +23,7 @@ Use this skill to work through active `open_loop` and `assistant_goal` memories 
 - The goal is to browse or search Lore generally (use `memory_search` directly).
 - The goal is to onboard a new repo's history into Lore (use `lore_onboard`).
 - The session is already unblocked and the user wants to start implementation immediately.
+- The task is writing, reflecting on, or verifying Lore memories rather than triaging open loops — route to [`lore-memory-operations`](../lore-memory-operations/SKILL.md).
 
 ## Inputs to gather
 

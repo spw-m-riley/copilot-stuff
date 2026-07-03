@@ -81,10 +81,16 @@ See [Worktrunk command equivalents](references/worktrunk-commands.md) and the `w
 
 - **Must** use one active worktree per independent task to avoid accidental cross-task edits.
 - **Must** verify the current directory and branch before applying changes.
+- **Must** account for the uncommitted tracked and untracked baseline when continuing existing work in a fresh worktree — a new worktree starts from `HEAD` only and can silently omit local state the task actually needs.
+- **Must** never report a task done while the assigned worktree has uncommitted changes — validate, commit the finalized slice, confirm `git status` is clean, then update status.
+- **Must** check nested git repositories separately from the parent worktree — the parent's status can look clean while a nested repo still has uncommitted changes.
 - **Should** use consistent naming defaults, but adjust to repository conventions when needed.
 - **Should** keep branch names and worktree paths aligned so the branch name still makes sense if the worktree path is copied or recreated later.
 - **Should** verify the repository root before creating the worktree in monorepos or nested checkouts.
 - **Should** inspect for uncommitted changes before removing any worktree.
+- **Should** confirm a dependent/follow-on worktree's branch already contains the prerequisite commit(s) before treating that lane as active, rather than assuming it's caught up.
+- **Should** ignore pre-existing out-of-scope changes already in the worktree unless they interfere with the requested slice, but still surface a focused file-level diff for the actual requested slice so it isn't lost amid the noise.
+- **Should** stop at the current safe point — no further edits, no status changes — when another lane is already active for the same slice, or the slice is already being promoted/merged, unless validated evidence says otherwise.
 - **May** keep long-lived worktrees for release branches if the team workflow benefits.
 - **Should** use `wt switch --create` / `wt remove` instead of `git worktree add` / `git worktree remove` when Worktrunk is installed, so project hooks fire and worktree lifecycle is tracked.
 
