@@ -19,6 +19,7 @@ Use this skill when calling Lore's memory tools (`lore_retain`, `lore_reflect`, 
 - Setting up or debugging a recurring automation that persists into a `refreshable_observation`.
 - Verifying whether a Lore write or reflection actually captured real evidence.
 - Backfilling more than a handful of historical sessions into Lore.
+- Exporting approved improvement artifacts with `memory_portable_bundle` for external review, archival, or sharing outside the CLI.
 
 ## Do not use this skill when
 
@@ -63,14 +64,16 @@ Use this skill when calling Lore's memory tools (`lore_retain`, `lore_reflect`, 
 7. Place stable identity/style facts (preferred tone, name to use) as **global** memories; treat repository isolation as the default retrieval scope but not a hard wall — allow labeled cross-repo fallback when local recall is weak.
 8. For unscoped temporal recall ("what did we do last Thursday?"), default to cross-workspace search; stay repo-local only when the user explicitly scopes it.
 9. For backfilling more than ~20 sessions, use `memory_backfill` with `mode: "controlled"` and its resumable actions rather than the one-shot legacy mode (see [reference notes](references/tool-behavior-notes.md#memory_backfill-modes-and-caps)).
-10. Before reloading the Lore extension to capture a baseline, account for `autoProcessOnSessionStart` — a reload can consume deferred extraction jobs and mutate the baseline you're measuring.
-11. When validating `lore.db` snapshot/restore behavior, prefer in-process extension tool validation over external Node probes to avoid misleading lock errors from a stale or parallel process.
+10. When exporting approved improvements for human review or sharing outside the CLI, call `memory_portable_bundle` with `format: "okf"` instead of the default `json` format (see [reference notes](references/tool-behavior-notes.md#portable-export-formats-json-vs-okf)); render the result with `node scripts/visualize-okf-bundle.mjs --bundle <dir>` in `extensions/lore` for a browsable graph view.
+11. Before reloading the Lore extension to capture a baseline, account for `autoProcessOnSessionStart` — a reload can consume deferred extraction jobs and mutate the baseline you're measuring.
+12. When validating `lore.db` snapshot/restore behavior, prefer in-process extension tool validation over external Node probes to avoid misleading lock errors from a stale or parallel process.
 
 ## Outputs
 
 - A Lore write or reflection whose reported outcome has been verified against `lore.db`/`session-store.db` directly.
 - Correctly scoped memories and domain upserts that don't silently reset existing enrichment.
 - A recurring automation that evolves its stored narrative instead of clobbering it every run.
+- A portable export (json or OKF) containing only reviewed/approved improvement artifacts, never raw memory content.
 
 ## Guardrails
 
@@ -95,6 +98,7 @@ Use this skill when calling Lore's memory tools (`lore_retain`, `lore_reflect`, 
 - "My daily profile-refresh automation should evolve the stored narrative instead of overwriting it every run."
 - "Verify whether this `lore_reflect` call for 'last day' actually pulled real session evidence or just echoed existing memories."
 - "Backfill 200 sessions of history into Lore without hitting the 20-session cap."
+- "Export the approved improvement artifacts as OKF markdown so I can review them in a PR instead of raw JSON."
 
 ## Reference files
 

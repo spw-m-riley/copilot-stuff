@@ -58,6 +58,17 @@ For any archive bigger than ~20 sessions, use `mode: "controlled"` with resume a
 
 *(Archived rules #13, #14, #17, #18, #32 — rewritten from "coherence system" terminology; the underlying policy is unchanged and confirmed still live via Lore's `includeOtherRepositories`/`crossRepo` handling.)*
 
+## Portable export formats: `json` vs `okf`
+
+`memory_portable_bundle` exports approved improvement artifacts (never raw memories) as either format, selected with the `format` parameter:
+
+- **`json`** (default): a single signed file, meant for machine re-import into another Lore instance. Human-unfriendly to skim directly.
+- **`okf`**: an [Open Knowledge Format v0.1](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md) bundle directory — one markdown file with YAML frontmatter per artifact, plus a root `index.md`. Use this format when the goal is human review, git-diffable archival, or sharing outside the CLI (e.g. attaching to a PR, pasting into a doc, or handing to a non-Copilot tool). Render it into a browsable graph with `node scripts/visualize-okf-bundle.mjs --bundle <dir>` (see `extensions/lore/README.md`).
+
+Neither format currently supports import — both are export-only, and both only ever include artifacts that already have `reviewState: "approved"` (never unreviewed proposals or raw memory content).
+
+*(Added alongside `extensions/lore` PR #52, the OKF export bridge.)*
+
 ## Baseline capture and validation hygiene
 
 - Before reloading the Lore extension to capture a baseline ahead of extraction/ranking changes, account for `autoProcessOnSessionStart` — a reload can consume deferred extraction jobs and mutate the would-be baseline under unchanged logic.
