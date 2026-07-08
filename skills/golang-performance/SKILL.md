@@ -1,112 +1,48 @@
 ---
 name: golang-performance
-description: "Use when optimize go cpu, memory, or throughput; not when another Go skill is a better fit."
+description: "Golang performance optimization patterns and methodology - if X bottleneck, then apply Y. Covers allocation reduction, CPU efficiency, memory layout, GC tuning, pooling, caching, and hot-path optimization. Use when profiling or benchmarks have identified a bottleneck and you need the right optimization pattern to fix it. Also use when performing performance code review to suggest improvements or benchmarks that could help identify quick performance gains. Not for measurement methodology (→ See `samber/cc-skills-golang@golang-benchmark` skill) or debugging workflow (→ See `samber/cc-skills-golang@golang-troubleshooting` skill)."
 metadata:
   category: go
   audience: general-coding-agent
-  maturity: draft
+  maturity: stable
   kind: reference
 ---
-
-# Go Performance
-
-Use this skill when you are optimizing Go CPU, memory, I/O, caching, or throughput.
-
 ## Use this skill when
 
-- The task is about reducing cost or improving throughput in Go code.
-- You need optimization patterns after measurement or profiling.
-- The request is about runtime efficiency rather than bug-finding.
+- You are working on Go performance concerns and need targeted guidance.
+- The task is primarily in this skill's domain rather than general Go troubleshooting.
 
 ## Do not use this skill when
 
-- You mainly need to measure or compare performance first.
-- The issue is a correctness bug or panic.
-- The task belongs to observability or troubleshooting instead.
-
-## Routing boundary
-
-| Situation | Use this skill? | Route instead |
-| --- | --- | --- |
-| The request is specifically about go performance. | Yes | - |
-| The request is better served by an adjacent Go skill. | No | Route measurement work to [`golang-benchmark`](../golang-benchmark/SKILL.md) and debugging work to [`golang-troubleshooting`](../golang-troubleshooting/SKILL.md). |
-
-## Guardrails
-
-- Keep the guidance focused on go performance work.
-- Prefer the narrower Go skill when the request clearly fits one.
-- Do not turn this skill into a generic catch-all.
+- Another specialized Go skill is a clearer match for the task.
+- The request is unrelated to Go implementation, review, or architecture decisions.
 
 ## Validation
 
 - Run `node skills/skill-authoring/scripts/validate-skill-library.mjs skills/golang-performance/SKILL.md`.
-- Smoke test:
-  - should trigger: "Optimize Go CPU, memory, or throughput."
-  - should not trigger: "Write a Go unit test."
+- Run the full validator when this package changes alongside others.
 
 ## Examples
 
-- "Optimize this Go path for CPU and allocations."
-- "Review the caching and I/O behavior for performance wins."
-- "What should I change after profiling this Go service?"
-
-# Go Performance
-
-Use this skill when you are optimizing Go CPU, memory, I/O, caching, or throughput.
-
-## Use this skill when
-
-- The task is about reducing cost or improving throughput in Go code.
-- You need optimization patterns after measurement or profiling.
-- The request is about runtime efficiency rather than bug-finding.
-
-## Do not use this skill when
-
-- You mainly need to measure or compare performance first.
-- The issue is a correctness bug or panic.
-- The task belongs to observability or troubleshooting instead.
-
-## Routing boundary
-
-| Situation | Use this skill? | Route instead |
-| --- | --- | --- |
-| The request is specifically about go performance. | Yes | - |
-| The request is better served by an adjacent Go skill. | No | Route measurement work to [`golang-benchmark`](../golang-benchmark/SKILL.md) and debugging work to [`golang-troubleshooting`](../golang-troubleshooting/SKILL.md). |
-
-## Guardrails
-
-- Keep the guidance focused on go performance work.
-- Prefer the narrower Go skill when the request clearly fits one.
-- Do not turn this skill into a generic catch-all.
-
-## Validation
-
-- Run `node skills/skill-authoring/scripts/validate-skill-library.mjs skills/golang-performance/SKILL.md`.
-- Smoke test:
-  - should trigger: "Optimize Go CPU, memory, or throughput."
-  - should not trigger: "Write a Go unit test."
-
-## Examples
-
-- "Optimize this Go path for CPU and allocations."
-- "Review the caching and I/O behavior for performance wins."
-- "What should I change after profiling this Go service?"
+- "Help me apply performance guidance in this Go codepath."
+- "Review this Go change for performance issues."
 
 ## Reference files
 
-- [`assets/prometheus-alerts.yml`](./assets/prometheus-alerts.yml)
-- [`references/caching.md`](./references/caching.md)
-- [`references/cpu.md`](./references/cpu.md)
-- [`references/io-networking.md`](./references/io-networking.md)
-- [`references/memory.md`](./references/memory.md)
-- [`references/observability.md`](./references/observability.md)
-- [`references/runtime.md`](./references/runtime.md)
-- [`evals/evals.json`](./evals/evals.json)
+- [`assets/prometheus-alerts.yml`](assets/prometheus-alerts.yml) - support file
+- [`evals/evals.json`](evals/evals.json) - support file
+- [`references/caching.md`](references/caching.md) - support file
+- [`references/cpu.md`](references/cpu.md) - support file
+- [`references/io-networking.md`](references/io-networking.md) - support file
+- [`references/memory.md`](references/memory.md) - support file
+- [`references/observability.md`](references/observability.md) - support file
+- [`references/runtime.md`](references/runtime.md) - support file
 
-## Imported content
 **Persona:** You are a Go performance engineer. You never optimize without profiling first — measure, hypothesize, change one thing, re-measure.
 
 **Thinking mode:** Use `ultrathink` for performance optimization. Shallow analysis misidentifies bottlenecks — deep reasoning ensures the right optimization is applied to the right problem.
+
+**Orchestration mode:** Use `ultracode` for a broad architectural performance review — orchestrate the three sub-agents described in Review mode (architecture) (allocation and memory layout, I/O and concurrency, algorithmic complexity and caching). A single hot-path review stays sequential; fan-out only pays off at package/service scope.
 
 **Modes:**
 
@@ -148,6 +84,8 @@ Before optimizing Go code, verify the bottleneck is in your process — if 90% o
 8. **Repeat** — increment report number, tackle next bottleneck
 
 Refer to library documentation for known patterns before inventing custom solutions. Keep all `/tmp/report-*.txt` files as an audit trail.
+
+When multiple candidate optimizations compete for the same bottleneck, implement each in an isolated worktree via a separate sub-agent — then → See `samber/cc-skills-golang@golang-benchmark` skill for comparing the variants and its serial-measurement caveat (concurrent benchmark runs on shared CPU contaminate results, even when the implementations themselves were built in parallel).
 
 ## Decision Tree: Where Is Time Spent?
 
@@ -196,5 +134,3 @@ Automate benchmark comparison in CI to catch regressions before they reach produ
 - → See `samber/cc-skills-golang@golang-safety` skill for defer in loops, slice backing array aliasing
 - → See `samber/cc-skills-golang@golang-database` skill for connection pool tuning and batch processing
 - → See `samber/cc-skills-golang@golang-observability` skill for continuous profiling in production
-
-

@@ -1,109 +1,45 @@
 ---
 name: golang-testing
-description: "Use when write or review go tests; not when another Go skill is a better fit."
+description: "Production-ready Golang tests — table-driven tests, testify suites and mocks, parallel tests, fuzzing, fixtures, goroutine leak detection with goleak, snapshot testing, code coverage, integration tests, idiomatic test naming. Use when writing or reviewing Go tests, choosing a testing approach, setting up Go test CI, or debugging flaky/slow tests. For testify-specific APIs see `samber/cc-skills-golang@golang-stretchr-testify`; for measurement methodology see `samber/cc-skills-golang@golang-benchmark`."
 metadata:
   category: go
   audience: general-coding-agent
-  maturity: draft
+  maturity: stable
   kind: reference
 ---
-
-# Go Testing
-
-Use this skill when you are writing or reviewing Go tests, helpers, integration tests, HTTP tests, or mocks.
-
 ## Use this skill when
 
-- The task is about test coverage, test helpers, integration tests, or mocking.
-- You need to decide test shape or improve test readability.
-- The request is explicitly about Go tests.
+- You are working on Go testing concerns and need targeted guidance.
+- The task is primarily in this skill's domain rather than general Go troubleshooting.
 
 ## Do not use this skill when
 
-- You need debugging methodology for a specific failure.
-- The task is about benchmarking, docs, or package layout instead.
-- The problem does not involve tests.
-
-## Routing boundary
-
-| Situation | Use this skill? | Route instead |
-| --- | --- | --- |
-| The request is specifically about go testing. | Yes | - |
-| The request is better served by an adjacent Go skill. | No | Route debugging to [`golang-troubleshooting`](../golang-troubleshooting/SKILL.md) and assertion-style questions to [`golang-stretchr-testify`](../golang-stretchr-testify/SKILL.md). |
-
-## Guardrails
-
-- Keep the guidance focused on go testing work.
-- Prefer the narrower Go skill when the request clearly fits one.
-- Do not turn this skill into a generic catch-all.
+- Another specialized Go skill is a clearer match for the task.
+- The request is unrelated to Go implementation, review, or architecture decisions.
 
 ## Validation
 
 - Run `node skills/skill-authoring/scripts/validate-skill-library.mjs skills/golang-testing/SKILL.md`.
-- Smoke test:
-  - should trigger: "Write or review Go tests."
-  - should not trigger: "Update Go dependencies."
+- Run the full validator when this package changes alongside others.
 
 ## Examples
 
-- "Add tests for this Go handler."
-- "Review this integration test for gaps."
-- "How should I structure these Go test helpers?"
-
-# Go Testing
-
-Use this skill when you are writing or reviewing Go tests, helpers, integration tests, HTTP tests, or mocks.
-
-## Use this skill when
-
-- The task is about test coverage, test helpers, integration tests, or mocking.
-- You need to decide test shape or improve test readability.
-- The request is explicitly about Go tests.
-
-## Do not use this skill when
-
-- You need debugging methodology for a specific failure.
-- The task is about benchmarking, docs, or package layout instead.
-- The problem does not involve tests.
-
-## Routing boundary
-
-| Situation | Use this skill? | Route instead |
-| --- | --- | --- |
-| The request is specifically about go testing. | Yes | - |
-| The request is better served by an adjacent Go skill. | No | Route debugging to [`golang-troubleshooting`](../golang-troubleshooting/SKILL.md) and assertion-style questions to [`golang-stretchr-testify`](../golang-stretchr-testify/SKILL.md). |
-
-## Guardrails
-
-- Keep the guidance focused on go testing work.
-- Prefer the narrower Go skill when the request clearly fits one.
-- Do not turn this skill into a generic catch-all.
-
-## Validation
-
-- Run `node skills/skill-authoring/scripts/validate-skill-library.mjs skills/golang-testing/SKILL.md`.
-- Smoke test:
-  - should trigger: "Write or review Go tests."
-  - should not trigger: "Update Go dependencies."
-
-## Examples
-
-- "Add tests for this Go handler."
-- "Review this integration test for gaps."
-- "How should I structure these Go test helpers?"
+- "Help me apply testing guidance in this Go codepath."
+- "Review this Go change for testing issues."
 
 ## Reference files
 
-- [`references/helpers.md`](./references/helpers.md)
-- [`references/http-testing.md`](./references/http-testing.md)
-- [`references/integration-testing.md`](./references/integration-testing.md)
-- [`references/mocking.md`](./references/mocking.md)
-- [`evals/evals.json`](./evals/evals.json)
+- [`evals/evals.json`](evals/evals.json) - support file
+- [`references/helpers.md`](references/helpers.md) - support file
+- [`references/http-testing.md`](references/http-testing.md) - support file
+- [`references/integration-testing.md`](references/integration-testing.md) - support file
+- [`references/mocking.md`](references/mocking.md) - support file
 
-## Imported content
 **Persona:** You are a Go engineer who treats tests as executable specifications. You write tests to constrain behavior, not to hit coverage targets.
 
 **Thinking mode:** Use `ultrathink` for test strategy design and failure analysis. Shallow reasoning misses edge cases and produces brittle tests that pass today but break tomorrow.
+
+**Orchestration mode:** Use `ultracode` for auditing a large test suite — orchestrate the three sub-agents described in Audit mode (unit quality and coverage gaps, integration isolation, goroutine/race issues) and merge their findings into one gap report.
 
 **Modes:**
 
@@ -506,5 +442,3 @@ go test -bench=. -benchmem ./...       # benchmarks
 go test -fuzz=FuzzName ./...           # fuzzing
 go test -tags=integration ./...        # integration tests
 ```
-
-

@@ -1,23 +1,47 @@
 ---
 name: golang-documentation
 description: "Comprehensive documentation guide for Golang projects, covering godoc comments, README, CONTRIBUTING, CHANGELOG, Go Playground, Example tests, API docs, and llms.txt. Use when writing or reviewing doc comments, documentation, adding code examples, setting up doc sites, or discussing documentation best practices. Triggers for both libraries and applications/CLIs."
-user-invocable: true
-license: MIT
-compatibility: Designed for Claude Code or similar AI coding agents, and for projects using Golang.
 metadata:
-  author: samber
-  version: "1.1.5"
-  openclaw:
-    emoji: "📝"
-    homepage: https://github.com/samber/cc-skills-golang
-    requires:
-      bins:
-        - go
-    install: []
-allowed-tools: Read Edit Write Glob Grep Bash(go:*) Bash(golangci-lint:*) Bash(git:*) Agent WebFetch
+  category: go
+  audience: general-coding-agent
+  maturity: stable
+  kind: reference
 ---
+## Use this skill when
+
+- You are working on Go documentation concerns and need targeted guidance.
+- The task is primarily in this skill's domain rather than general Go troubleshooting.
+
+## Do not use this skill when
+
+- Another specialized Go skill is a clearer match for the task.
+- The request is unrelated to Go implementation, review, or architecture decisions.
+
+## Validation
+
+- Run `node skills/skill-authoring/scripts/validate-skill-library.mjs skills/golang-documentation/SKILL.md`.
+- Run the full validator when this package changes alongside others.
+
+## Examples
+
+- "Help me apply documentation guidance in this Go codepath."
+- "Review this Go change for documentation issues."
+
+## Reference files
+
+- [`assets/templates/CHANGELOG.md`](assets/templates/CHANGELOG.md) - support file
+- [`assets/templates/CONTRIBUTING.md`](assets/templates/CONTRIBUTING.md) - support file
+- [`assets/templates/README.md`](assets/templates/README.md) - support file
+- [`assets/templates/llms.txt`](assets/templates/llms.txt) - support file
+- [`evals/evals.json`](evals/evals.json) - support file
+- [`references/application.md`](references/application.md) - support file
+- [`references/code-comments.md`](references/code-comments.md) - support file
+- [`references/library.md`](references/library.md) - support file
+- [`references/project-docs.md`](references/project-docs.md) - support file
 
 **Persona:** You are a Go technical writer and API designer. You treat documentation as a first-class deliverable — accurate, example-driven, and written for the reader who has never seen this codebase before.
+
+**Orchestration mode:** Use `ultracode` for documenting or auditing documentation across a large codebase — orchestrate the sub-agents described in the "Parallelizing Documentation Work" section (one per package, or one per doc layer/file) and merge their output into the final docs.
 
 **Modes:**
 

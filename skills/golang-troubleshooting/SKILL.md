@@ -1,115 +1,18 @@
 ---
 name: golang-troubleshooting
-description: "Use when debug a go crash, hang, or build failure; not when another Go skill is a better fit."
+description: "Troubleshoot Golang programs systematically - find and fix the root cause. Use when encountering bugs, crashes, deadlocks, or unexpected behavior in Go code. Covers debugging methodology, common Go pitfalls, test-driven debugging, pprof setup and capture, Delve debugger, race detection, GODEBUG tracing, and production debugging. Start here for any 'something is wrong' situation. Not for interpreting profiles or benchmarking (→ See `samber/cc-skills-golang@golang-benchmark` skill) or applying optimization patterns (→ See `samber/cc-skills-golang@golang-performance` skill)."
 metadata:
-  category: go
-  audience: general-coding-agent
-  maturity: draft
+  category: golang
+  audience: developer
+  maturity: stable
   kind: reference
 ---
 
-# Go Troubleshooting
-
-Use this skill when you are debugging Go crashes, hangs, races, build failures, or unexpected behavior.
-
-## Use this skill when
-
-- The task is to find the root cause of a Go failure or symptom.
-- You need evidence-driven debugging rather than a quick fix.
-- The request is about crashes, panics, deadlocks, race conditions, or build problems.
-
-## Do not use this skill when
-
-- You mainly need benchmarking or optimization guidance.
-- The issue is not a bug or failure.
-- A narrower Go skill already matches the task.
-
-## Routing boundary
-
-| Situation | Use this skill? | Route instead |
-| --- | --- | --- |
-| The request is specifically about go troubleshooting. | Yes | - |
-| The request is better served by an adjacent Go skill. | No | Route measurement work to [`golang-benchmark`](../golang-benchmark/SKILL.md) and optimization work to [`golang-performance`](../golang-performance/SKILL.md). |
-
-## Guardrails
-
-- Keep the guidance focused on go troubleshooting work.
-- Prefer the narrower Go skill when the request clearly fits one.
-- Do not turn this skill into a generic catch-all.
-
-## Validation
-
-- Run `node skills/skill-authoring/scripts/validate-skill-library.mjs skills/golang-troubleshooting/SKILL.md`.
-- Smoke test:
-  - should trigger: "Debug a Go crash, hang, or build failure."
-  - should not trigger: "Compare Go benchmark results."
-
-## Examples
-
-- "Debug this Go panic and find the root cause."
-- "Investigate why this Go build is failing."
-- "Trace the race condition before suggesting a fix."
-
-# Go Troubleshooting
-
-Use this skill when you are debugging Go crashes, hangs, races, build failures, or unexpected behavior.
-
-## Use this skill when
-
-- The task is to find the root cause of a Go failure or symptom.
-- You need evidence-driven debugging rather than a quick fix.
-- The request is about crashes, panics, deadlocks, race conditions, or build problems.
-
-## Do not use this skill when
-
-- You mainly need benchmarking or optimization guidance.
-- The issue is not a bug or failure.
-- A narrower Go skill already matches the task.
-
-## Routing boundary
-
-| Situation | Use this skill? | Route instead |
-| --- | --- | --- |
-| The request is specifically about go troubleshooting. | Yes | - |
-| The request is better served by an adjacent Go skill. | No | Route measurement work to [`golang-benchmark`](../golang-benchmark/SKILL.md) and optimization work to [`golang-performance`](../golang-performance/SKILL.md). |
-
-## Guardrails
-
-- Keep the guidance focused on go troubleshooting work.
-- Prefer the narrower Go skill when the request clearly fits one.
-- Do not turn this skill into a generic catch-all.
-
-## Validation
-
-- Run `node skills/skill-authoring/scripts/validate-skill-library.mjs skills/golang-troubleshooting/SKILL.md`.
-- Smoke test:
-  - should trigger: "Debug a Go crash, hang, or build failure."
-  - should not trigger: "Compare Go benchmark results."
-
-## Examples
-
-- "Debug this Go panic and find the root cause."
-- "Investigate why this Go build is failing."
-- "Trace the race condition before suggesting a fix."
-
-## Reference files
-
-- [`references/code-review-flags.md`](./references/code-review-flags.md)
-- [`references/common-go-bugs.md`](./references/common-go-bugs.md)
-- [`references/compilation.md`](./references/compilation.md)
-- [`references/concurrency-debug.md`](./references/concurrency-debug.md)
-- [`references/diagnostic-tools.md`](./references/diagnostic-tools.md)
-- [`references/methodology.md`](./references/methodology.md)
-- [`references/performance-debug.md`](./references/performance-debug.md)
-- [`references/pprof.md`](./references/pprof.md)
-- [`references/production-debug.md`](./references/production-debug.md)
-- [`references/testing-debug.md`](./references/testing-debug.md)
-- [`evals/evals.json`](./evals/evals.json)
-
-## Imported content
 **Persona:** You are a Go systems debugger. You follow evidence, not intuition — instrument, reproduce, and trace root causes systematically.
 
 **Thinking mode:** Use `ultrathink` for debugging and root cause analysis. Rushed reasoning leads to symptom fixes — deep thinking finds the actual root cause.
+
+**Orchestration mode:** Use `ultracode` for a codebase-wide bug hunt — orchestrate the five bug-category sub-agents described in Codebase bug hunt mode. A single-issue debug session should stay sequential; orchestration only pays off when scanning broadly for unknown bugs.
 
 **Modes:**
 
@@ -226,7 +129,7 @@ When you don't understand the issue:
 
 Before flagging a bug or proposing a fix, trace the data flow and check for upstream handling. A function that looks broken in isolation may be correct in context — callers may validate inputs, middleware may enforce invariants, or the surrounding code may guarantee conditions the function relies on.
 
-1. **Trace callers** — who calls this function and with what values? Call sites can be found with code search tools.
+1. **Trace callers** — who calls this function and with what values? Call sites can be found with code search tools. → See `samber/cc-skills-golang@golang-gopls` skill to resolve the actual symbol through interfaces and embedding — it finds indirect call sites and skips unrelated same-named identifiers that plain grep would respectively miss or falsely match.
 2. **Check upstream validation** — input parsing, type conversions, or guard clauses earlier in the chain may make the "bug" unreachable.
 3. **Read the surrounding code** — middleware, interceptors, or init functions may set up state the function depends on.
 
@@ -277,4 +180,34 @@ If any of these are happening, stop and return to Step 1:
 - → See `samber/cc-skills@promql-cli` skill for querying Prometheus metrics during production incident investigation
 - → See `samber/cc-skills-golang@golang-concurrency`, `samber/cc-skills-golang@golang-safety`, `samber/cc-skills-golang@golang-error-handling` skills
 
+## Use this skill when
 
+- Working with troubleshooting in Go code.
+- Reviewing or writing Go code that involves troubleshooting.
+
+## Do not use this skill when
+
+- The question is not specific to Go or this topic area.
+
+## Validation
+
+- Apply patterns consistently within the change scope.
+- Run existing tests after changes.
+
+## Examples
+
+- should trigger: "How should I handle troubleshooting in Go?"
+- should not trigger: "How do I set up a new Go project from scratch?"
+
+## Reference files
+- [`evals/evals.json`](evals/evals.json) - evals reference
+- [`references/code-review-flags.md`](references/code-review-flags.md) - code review flags reference
+- [`references/common-go-bugs.md`](references/common-go-bugs.md) - common go bugs reference
+- [`references/compilation.md`](references/compilation.md) - compilation reference
+- [`references/concurrency-debug.md`](references/concurrency-debug.md) - concurrency debug reference
+- [`references/diagnostic-tools.md`](references/diagnostic-tools.md) - diagnostic tools reference
+- [`references/methodology.md`](references/methodology.md) - methodology reference
+- [`references/performance-debug.md`](references/performance-debug.md) - performance debug reference
+- [`references/pprof.md`](references/pprof.md) - pprof reference
+- [`references/production-debug.md`](references/production-debug.md) - production debug reference
+- [`references/testing-debug.md`](references/testing-debug.md) - testing debug reference

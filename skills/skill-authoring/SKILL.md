@@ -10,14 +10,13 @@ metadata:
 
 # Skill authoring
 
-Use this skill when creating or revising a reusable agent skill, especially when deciding activation, layering, examples, validation, or whether guidance belongs in a skill at all.
+Use this skill when creating or revising a reusable `skills/<name>/SKILL.md` package with clear activation, concise workflow, and validator-safe structure.
 
 ## Use this skill when
 
 - You are creating or revising a reusable skill package under `skills/<name>/`.
-- You need to decide whether guidance belongs in a skill, instruction file, documentation, or specialized agent.
+- You need to decide whether guidance belongs in a skill, instruction file, docs, or specialized agent.
 - You are normalizing frontmatter, activation boundaries, examples, validation, or support-file links.
-- You need a reusable authoring standard with shallow support files and an obvious first validation step.
 
 ## Do not use this skill when
 
@@ -43,24 +42,23 @@ Use this skill when creating or revising a reusable agent skill, especially when
 - Intended audience and whether the skill is `task` or `reference`.
 - Inputs, constraints, examples, common failure modes, and expected outputs.
 - Nearby skills, instructions, or agents that may overlap.
-- Support files, scripts, templates, or examples that should stay shallow and linked.
+- Support files/scripts/templates that should stay shallow and linked.
 
 ## First move
 
 1. Check whether the guidance belongs in a skill at all.
 2. Choose a concise kebab-case name that matches the directory.
-3. Start from [`assets/skill-template.md`](assets/skill-template.md) and keep the top-level file focused on activation, first actions, and validation.
+3. Start from [`assets/skill-template.md`](assets/skill-template.md).
 
 ## Workflow
 
-1. Define what should activate the skill and what should not.
-2. Draft a description that contains trigger conditions only, not a workflow summary.
-3. Choose `metadata.kind: task` for multi-step playbooks or `metadata.kind: reference` for lookup-heavy guidance.
-4. Keep `SKILL.md` concise; move lookup tables, long examples, schemas, and templates into shallow support files.
-5. Use stable section names so validators and future agents can inspect the package mechanically.
-6. Link every support file from `## Reference files`.
-7. Add concrete examples and at least one validation step.
-8. Run the local validator and the checklist before considering the skill complete.
+1. Define trigger and non-trigger boundaries.
+2. Draft a trigger-focused description (when to read, not how to execute).
+3. Choose `metadata.kind`: `task` for playbooks, `reference` for lookup-heavy guidance.
+4. Keep `SKILL.md` concise; move detailed tables/examples/schemas into support files.
+5. Keep stable section names and link every support file from `## Reference files`.
+6. Add concrete trigger/non-trigger examples.
+7. Run validator + checklist before considering the skill complete.
 
 ## Outputs
 
@@ -77,7 +75,6 @@ Use this skill when creating or revising a reusable agent skill, especially when
 - Do not leave a task skill without explicit outputs and validation.
 - Prefer `references/` before `scripts/` unless automation clearly reduces repeated work.
 - Descriptions must say when to read the skill, not how to execute it.
-- Move repo-specific policy, environment branching, and long-lived persona behavior out of the skill.
 
 ## Validation
 
@@ -85,14 +82,13 @@ Use this skill when creating or revising a reusable agent skill, especially when
 - Run the checklist in [`references/checklist.md`](references/checklist.md).
 - Check layering against [`references/layering-guide.md`](references/layering-guide.md).
 - Run `node skills/skill-authoring/scripts/validate-skill-library.mjs` after changing `SKILL.md`, `assets/`, `references/`, or `scripts/`.
-- Smoke-test the description with one realistic request that should trigger and one near-miss that should not.
-- Confirm the target agent can identify the next action within a few seconds of reading the top-level file.
+- Smoke-test with one trigger and one near-miss prompt.
 
 ## Examples
 
-- "Turn this conventions-heavy note into a reference skill with a one-paragraph activation block, direct links to support files, and a concrete example."
-- "Rewrite `skills/reverse-prompt/SKILL.md` so decision logic stays obvious and detailed branching moves into references."
-- "Create a `terraform-module-upgrade` skill that stays generic and makes the first validation step obvious."
+- "Turn this conventions-heavy note into a reference skill with concise activation and linked support files."
+- "Rewrite `skills/reverse-prompt/SKILL.md` so decision logic is top-level and details move to references."
+- "Create a `terraform-module-upgrade` skill with clear trigger boundaries and first validation step."
 - should trigger: "Create a reusable skill for GraphQL schema migrations with activation boundaries and validation."
 - should not trigger: "Add a rule to copilot-instructions.md about how this repo signs commits."
 

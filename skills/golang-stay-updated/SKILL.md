@@ -1,21 +1,38 @@
 ---
 name: golang-stay-updated
-description: "Provides resources to stay updated with Golang news, communities and people to follow. Use when seeking Go learning resources, discovering new libraries, finding community channels, or keeping up with Go language changes and releases."
-user-invocable: true
-license: MIT
-compatibility: Designed for Claude Code or similar AI coding agents, and for projects using Golang.
+description: "Use when checking whether a Go project or toolchain should be updated; not when the task is implementation or day-to-day debugging."
 metadata:
-  author: samber
-  version: "1.2.4"
-  openclaw:
-    emoji: "📰"
-    homepage: https://github.com/samber/cc-skills-golang
-    requires:
-      bins:
-        - go
-    install: []
-allowed-tools: Read Edit Write Glob Grep Bash(go:*) Bash(golangci-lint:*) Bash(git:*) Agent WebFetch WebSearch
+  category: go
+  audience: general-coding-agent
+  maturity: stable
+  kind: reference
 ---
+
+## Use this skill when
+
+- You are deciding whether to upgrade Go, a toolchain, or project dependencies.
+- The task is about staying current with new Go releases or package maintenance.
+- You need a lightweight check on whether a version bump is worth doing now.
+
+## Do not use this skill when
+
+- The issue is a concrete build, test, or runtime failure.
+- You need detailed dependency-management or security guidance.
+- The task is about implementation rather than upgrade planning.
+
+## Validation
+
+- Run `node skills/skill-authoring/scripts/validate-skill-library.mjs skills/golang-stay-updated/SKILL.md`.
+- Smoke-test with an upgrade-planning question and a near-miss about fixing a compile error.
+
+## Examples
+
+- "Should we update this Go toolchain yet?"
+- "What changed in the latest Go release that matters for us?"
+
+## Reference files
+
+- [`evals/evals.json`](evals/evals.json) - evaluation scenarios and validator coverage
 
 <!-- markdownlint-disable table-column-style -->
 

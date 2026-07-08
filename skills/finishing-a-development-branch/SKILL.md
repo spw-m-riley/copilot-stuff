@@ -56,14 +56,14 @@ Use this skill after implementation work is complete and the branch needs a safe
 
 ## Workflow
 
-1. Confirm the current branch, base branch, worktree path, and verification evidence.
-2. If checks are failing and the user did not ask to discard, stop and report the blocker instead of presenting green-path options.
-3. If unresolved actionable findings remain, run the manual gate in [`references/residual-risk-gate.md`](references/residual-risk-gate.md) and force one explicit decision per finding: `fix now`, `defer to tracker`, `accept with durable record`, or `stop`.
-4. If any finding lands on `stop`, halt the branch-finishing flow and report the blocker instead of presenting integration options.
-5. Present the four outcomes from [`references/integration-options.md`](references/integration-options.md): merge locally, push/create PR, keep as-is, or discard.
+1. Confirm branch, base, worktree path, and verification evidence.
+2. If checks are failing and discard is not requested, stop and report blocker.
+3. If unresolved actionable findings remain, run [`references/residual-risk-gate.md`](references/residual-risk-gate.md) and record one explicit decision per finding.
+4. If any finding lands on `stop`, halt and report blocker.
+5. Present four outcomes from [`references/integration-options.md`](references/integration-options.md): merge locally, push/create PR, keep, or discard.
 6. Execute only the selected outcome.
-7. Validate the resulting branch, PR, merge, or cleanup state.
-8. Report the final state with the relevant branch name, PR link, merge target, or preserved worktree path, plus any residual-risk record or tracker created by the gate.
+7. Validate resulting branch/PR/merge/cleanup state.
+8. Report final state and any residual-risk record/tracker.
 
 ## Outputs
 
@@ -105,7 +105,6 @@ Use this skill after implementation work is complete and the branch needs a safe
 
 ## Integration
 
-- Called by multi-step implementation workflows after all tasks complete and before final handoff.
 - Pairs with [`git-worktrees`](../git-worktrees/SKILL.md) for worktree cleanup via `mr_worktree_remove`.
 - Pairs with [`worktrunk`](../worktrunk/SKILL.md) when `wt merge` is the preferred local merge path.
 - Pairs with [`github-cli-pr-workflow`](../github-cli-pr-workflow/SKILL.md) for PR creation and check-watch handoff.

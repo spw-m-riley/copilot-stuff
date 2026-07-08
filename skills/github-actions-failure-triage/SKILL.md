@@ -29,16 +29,7 @@ Use this skill when a repository already uses GitHub Actions and you need to dia
 - The workflow is not failing; the real task is to simplify dense inline Bash or condition logic for readability and maintainability.
 - The primary action required is changing org-admin settings, runner fleet configuration, branch protection, or environment policy rather than diagnosing a repository-owned failure.
 
-## Iron Law
-
-> **No edits before reading the concrete failing evidence.**
->
-> Read the exact failing run, job, step, and logs before touching any file.
-> Speculative edits without evidence are the most common cause of wasted reruns.
-
 ## Routing boundary
-
-Use the closest matching workflow:
 
 | Situation | Use this skill? | Route instead |
 | --- | --- | --- |
@@ -77,8 +68,6 @@ Do not collect secret values. Only confirm whether the expected names, scopes, a
 
 ## First move
 
-**Announce at start:** "I'm using the github-actions-failure-triage skill to diagnose this run."
-
 1. Anchor the exact failing run, attempt, job, step, SHA, branch or ref, and event.
 2. Read the failed-step logs and surrounding setup context before editing anything.
 3. Map the failure to the exact workflow file, called reusable workflow, action version, or repository script that ran for that commit.
@@ -87,13 +76,8 @@ Do not collect secret values. Only confirm whether the expected names, scopes, a
 
 1. Gather the required evidence using the checklist in [`references/evidence-checklist.md`](references/evidence-checklist.md).
 2. Classify the failure using [`references/failure-buckets.md`](references/failure-buckets.md) before proposing a fix.
-3. Form the smallest root-cause hypothesis that explains the failing step with evidence.
-4. Decide whether the right next action is:
-   - a small workflow fix
-   - a code or config fix outside the workflow file
-   - a targeted rerun or debug pass
-   - an explanation-only outcome
-   - escalation or handoff
+3. Form the smallest root-cause hypothesis that explains the failing step.
+4. Choose the next action: small workflow fix, repo code/config fix, targeted rerun/debug, explanation-only, or escalation.
 5. Apply the smallest justified change only after the evidence supports it.
 6. Validate as narrowly as possible:
    - relevant repository checks for the touched surface
@@ -101,23 +85,6 @@ Do not collect secret values. Only confirm whether the expected names, scopes, a
    - targeted rerun, check, or workflow verification where practical
 7. Summarize the result using [`assets/triage-summary-template.md`](assets/triage-summary-template.md), including evidence, change made, validation, and any remaining blocker.
 8. If the failure really belongs to migration design, review-comment handling, or admin-only settings, stop and hand off cleanly instead of stretching the skill.
-
-
-## Quick decision appendix
-
-Use this as the fast path once the failure bucket is known:
-
-| Bucket | First safe move | Tightest fix | Rerun / escalation cue |
-| --- | --- | --- | --- |
-| Workflow syntax, trigger, or expression errors | Read the exact YAML and expression path that failed | Fix the broken key, trigger filter, or expression reference | Rerun only after the workflow parses cleanly |
-| Permissions, token, secret, or variable issues | Confirm the expected names and scopes without reading secret values | Adjust repo-owned permissions or secret wiring | Escalate when the dependency lives in org-admin or environment policy |
-| Runner or environment mismatch | Compare `runs-on`, image, labels, and shell assumptions | Switch to the correct runner or remove the environment-specific assumption | Escalate when the label or fleet health is outside repo control |
-| Matrix or fan-out issues | Identify the single failing axis | Tighten include/exclude logic or branch-specific setup | Rerun the narrow matrix leg after the fix |
-| Cache, artifact, job-output, or cross-job handoff failures | Compare the producer and consumer path or output name | Fix the exact path, name, or `needs` handoff | Rerun the downstream consumer after verifying the producer created the file |
-| Reusable workflow or action interface issues | Inspect both caller and callee contracts together | Align inputs, secrets, outputs, or ref pins | Escalate only if the contract change needs broader coordination |
-| Concurrency, cancellation, or dependency-order issues | Check `needs`, concurrency groups, and skip conditions | Remove the ordering bug or unsafe cancellation rule | Rerun after the dependency graph is corrected |
-| Action version or runtime deprecation warnings | Identify the deprecated action, node version, or runtime in the run annotations | Pin the action to the recommended version or update the `node-version` input | Rerun to confirm warnings are gone; treat as high priority if a removal date is announced |
-| Project, test, deployment, or runtime failures | Confirm the workflow is exposing a real repo bug | Fix the code or config surface that actually failed | Hand off instead of polishing workflow YAML |
 
 ## Outputs
 
@@ -137,16 +104,6 @@ Use this as the fast path once the failure bucket is known:
 - **Should** prefer the smallest change that explains the failure and preserves the surrounding workflow shape.
 - **Should** distinguish flaky, pre-existing, and newly introduced failures before claiming a fix.
 - **Should** escalate instead of guessing when the failure depends on org-admin controls, runner-fleet health, or broader CI redesign.
-
-## Common rationalisations
-
-| Rationalisation | Reality |
-|---|---|
-| "I'll just rerun it to see if it's flaky" | A rerun without evidence only wastes a run. Read the logs first. |
-| "It's probably a YAML syntax issue" | Most failures are runner, secret, or project bugs — not YAML. Read the logs before assuming. |
-| "It was working before the last merge, so it must be that" | Correlation is not causation. Anchor on the exact failing step. |
-| "I'll fix something obvious while I read the logs" | Speculative fixes in parallel with investigation create confounding variables. |
-| "The fix is small, I don't need to wait for the run" | A fix that seems small can pass locally and fail in CI for unrelated reasons. Wait for evidence. |
 
 ## Validation
 

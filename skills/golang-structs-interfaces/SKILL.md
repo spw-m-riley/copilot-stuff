@@ -1,102 +1,13 @@
 ---
 name: golang-structs-interfaces
-description: "Use when choose between go structs and interfaces; not when another Go skill is a better fit."
+description: 'Golang struct and interface design patterns — composition, embedding, type assertions, type switches, interface segregation, dependency injection via interfaces, struct field tags, and pointer vs value receivers. Use this skill when designing Go types, defining or implementing interfaces, embedding structs or interfaces, writing type assertions or type switches, adding struct field tags for JSON/YAML/DB serialization, or choosing between pointer and value receivers. Also use when the user asks about "accept interfaces, return structs", compile-time interface checks, or composing small interfaces into larger ones.'
 metadata:
-  category: go
-  audience: general-coding-agent
-  maturity: draft
+  category: golang
+  audience: developer
+  maturity: stable
   kind: reference
 ---
 
-# Go Structs and Interfaces
-
-Use this skill when you are designing or refactoring Go structs, interfaces, composition, or method sets.
-
-## Use this skill when
-
-- The task is about type design or API shape in Go.
-- You need to choose between structs, interfaces, embedding, or composition.
-- The request is about method sets or how types fit together.
-
-## Do not use this skill when
-
-- The problem is broader architecture or DI rather than type design.
-- You need naming or style guidance instead.
-- The task is unrelated to type structure.
-
-## Routing boundary
-
-| Situation | Use this skill? | Route instead |
-| --- | --- | --- |
-| The request is specifically about go structs and interfaces. | Yes | - |
-| The request is better served by an adjacent Go skill. | No | Route architecture questions to [`golang-design-patterns`](../golang-design-patterns/SKILL.md) and injection questions to [`golang-dependency-injection`](../golang-dependency-injection/SKILL.md). |
-
-## Guardrails
-
-- Keep the guidance focused on go structs and interfaces work.
-- Prefer the narrower Go skill when the request clearly fits one.
-- Do not turn this skill into a generic catch-all.
-
-## Validation
-
-- Run `node skills/skill-authoring/scripts/validate-skill-library.mjs skills/golang-structs-interfaces/SKILL.md`.
-- Smoke test:
-  - should trigger: "Choose between Go structs and interfaces."
-  - should not trigger: "Write a Go benchmark."
-
-## Examples
-
-- "Should this Go API use a struct or an interface?"
-- "Review this embedding pattern for clarity."
-- "Help me simplify these method sets."
-
-# Go Structs and Interfaces
-
-Use this skill when you are designing or refactoring Go structs, interfaces, composition, or method sets.
-
-## Use this skill when
-
-- The task is about type design or API shape in Go.
-- You need to choose between structs, interfaces, embedding, or composition.
-- The request is about method sets or how types fit together.
-
-## Do not use this skill when
-
-- The problem is broader architecture or DI rather than type design.
-- You need naming or style guidance instead.
-- The task is unrelated to type structure.
-
-## Routing boundary
-
-| Situation | Use this skill? | Route instead |
-| --- | --- | --- |
-| The request is specifically about go structs and interfaces. | Yes | - |
-| The request is better served by an adjacent Go skill. | No | Route architecture questions to [`golang-design-patterns`](../golang-design-patterns/SKILL.md) and injection questions to [`golang-dependency-injection`](../golang-dependency-injection/SKILL.md). |
-
-## Guardrails
-
-- Keep the guidance focused on go structs and interfaces work.
-- Prefer the narrower Go skill when the request clearly fits one.
-- Do not turn this skill into a generic catch-all.
-
-## Validation
-
-- Run `node skills/skill-authoring/scripts/validate-skill-library.mjs skills/golang-structs-interfaces/SKILL.md`.
-- Smoke test:
-  - should trigger: "Choose between Go structs and interfaces."
-  - should not trigger: "Write a Go benchmark."
-
-## Examples
-
-- "Should this Go API use a struct or an interface?"
-- "Review this embedding pattern for clarity."
-- "Help me simplify these method sets."
-
-## Reference files
-
-- [`evals/evals.json`](./evals/evals.json)
-
-## Imported content
 **Persona:** You are a Go type system designer. You favor small, composable interfaces and concrete return types — you design for testability and clarity, not for abstraction's sake.
 
 > **Community default.** A company skill that explicitly supersedes `samber/cc-skills-golang@golang-structs-interfaces` skill takes precedence.
@@ -444,6 +355,7 @@ func process(pool ConnPool) { ... }
 - → See `samber/cc-skills-golang@golang-design-patterns` skill for functional options, constructors, and builder patterns
 - → See `samber/cc-skills-golang@golang-dependency-injection` skill for DI patterns using interfaces
 - → See `samber/cc-skills-golang@golang-code-style` skill for value vs pointer function parameters (distinct from receivers)
+- → See `samber/cc-skills-golang@golang-gopls` skill for safe rename and the `implementInterface` code action — renaming a method or receiver that participates in interface satisfaction updates every call site and refuses a rename that would silently break the interface, which grep/sed cannot detect
 
 ## Common Mistakes
 
@@ -462,4 +374,24 @@ func process(pool ConnPool) { ... }
 | Nil map/slice in zero value struct | Use lazy initialization in methods |
 | Using `any` for type-safe operations | Use generics (`[T comparable]`) instead |
 
+## Use this skill when
 
+- Working with structs interfaces in Go code.
+- Reviewing or writing Go code that involves structs interfaces.
+
+## Do not use this skill when
+
+- The question is not specific to Go or this topic area.
+
+## Validation
+
+- Apply patterns consistently within the change scope.
+- Run existing tests after changes.
+
+## Examples
+
+- should trigger: "How should I handle structs interfaces in Go?"
+- should not trigger: "How do I set up a new Go project from scratch?"
+
+## Reference files
+- [`evals/evals.json`](evals/evals.json) - evals reference

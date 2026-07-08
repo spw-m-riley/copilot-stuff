@@ -1,106 +1,41 @@
 ---
 name: golang-lint
-description: "Use when configure or fix go lint rules; not when another Go skill is a better fit."
+description: "Linting best practices and golangci-lint configuration for Golang projects — running linters, configuring .golangci.yml, suppressing warnings with nolint directives, interpreting lint output, and selecting linters. Use when configuring golangci-lint, asking about lint warnings or nolint suppressions, setting up code quality tooling, or choosing linters. Also use when the user mentions golangci-lint, go vet, staticcheck, or revive."
 metadata:
   category: go
   audience: general-coding-agent
-  maturity: draft
+  maturity: stable
   kind: reference
 ---
-
-# Go Linting
-
-Use this skill when you are configuring or fixing Go lint rules, linters, or suppressions.
-
 ## Use this skill when
 
-- The task is about lint configuration or linter output.
-- You need to tune or suppress Go lint rules.
-- The request is about static analysis checks rather than runtime code.
+- You are working on Go lint concerns and need targeted guidance.
+- The task is primarily in this skill's domain rather than general Go troubleshooting.
 
 ## Do not use this skill when
 
-- You need debugging or performance guidance.
-- The problem is general code style rather than lint behavior.
-- The task belongs to CI or testing instead.
-
-## Routing boundary
-
-| Situation | Use this skill? | Route instead |
-| --- | --- | --- |
-| The request is specifically about go linting. | Yes | - |
-| The request is better served by an adjacent Go skill. | No | Route general style work to [`golang-code-style`](../golang-code-style/SKILL.md) and CI automation to [`golang-continuous-integration`](../golang-continuous-integration/SKILL.md). |
-
-## Guardrails
-
-- Keep the guidance focused on go linting work.
-- Prefer the narrower Go skill when the request clearly fits one.
-- Do not turn this skill into a generic catch-all.
+- Another specialized Go skill is a clearer match for the task.
+- The request is unrelated to Go implementation, review, or architecture decisions.
 
 ## Validation
 
 - Run `node skills/skill-authoring/scripts/validate-skill-library.mjs skills/golang-lint/SKILL.md`.
-- Smoke test:
-  - should trigger: "Configure or fix Go lint rules."
-  - should not trigger: "Add a Go database transaction."
+- Run the full validator when this package changes alongside others.
 
 ## Examples
 
-- "Fix the Go lint rules that keep failing in CI."
-- "Add a suppression for this Go linter warning."
-- "Review this lint config for Go-specific issues."
-
-# Go Linting
-
-Use this skill when you are configuring or fixing Go lint rules, linters, or suppressions.
-
-## Use this skill when
-
-- The task is about lint configuration or linter output.
-- You need to tune or suppress Go lint rules.
-- The request is about static analysis checks rather than runtime code.
-
-## Do not use this skill when
-
-- You need debugging or performance guidance.
-- The problem is general code style rather than lint behavior.
-- The task belongs to CI or testing instead.
-
-## Routing boundary
-
-| Situation | Use this skill? | Route instead |
-| --- | --- | --- |
-| The request is specifically about go linting. | Yes | - |
-| The request is better served by an adjacent Go skill. | No | Route general style work to [`golang-code-style`](../golang-code-style/SKILL.md) and CI automation to [`golang-continuous-integration`](../golang-continuous-integration/SKILL.md). |
-
-## Guardrails
-
-- Keep the guidance focused on go linting work.
-- Prefer the narrower Go skill when the request clearly fits one.
-- Do not turn this skill into a generic catch-all.
-
-## Validation
-
-- Run `node skills/skill-authoring/scripts/validate-skill-library.mjs skills/golang-lint/SKILL.md`.
-- Smoke test:
-  - should trigger: "Configure or fix Go lint rules."
-  - should not trigger: "Add a Go database transaction."
-
-## Examples
-
-- "Fix the Go lint rules that keep failing in CI."
-- "Add a suppression for this Go linter warning."
-- "Review this lint config for Go-specific issues."
+- "Help me apply lint guidance in this Go codepath."
+- "Review this Go change for lint issues."
 
 ## Reference files
 
-- [`assets/.golangci.yml`](./assets/.golangci.yml)
-- [`references/linter-reference.md`](./references/linter-reference.md)
-- [`references/nolint-directives.md`](./references/nolint-directives.md)
-- [`evals/evals.json`](./evals/evals.json)
+- [`evals/evals.json`](evals/evals.json) - support file
+- [`references/linter-reference.md`](references/linter-reference.md) - support file
+- [`references/nolint-directives.md`](references/nolint-directives.md) - support file
 
-## Imported content
 **Persona:** You are a Go code quality engineer. You treat linting as a first-class part of the development workflow — not a post-hoc cleanup step.
+
+**Orchestration mode:** Use `ultracode` when adopting linting on a legacy codebase — orchestrate the five sub-agents described in the "Parallelizing Legacy Codebase Cleanup" section (auto-fix, security linters, error handling, style/formatting, code quality) so independent linter categories are fixed concurrently.
 
 **Modes:**
 
@@ -232,5 +167,3 @@ When adopting linting on a legacy codebase, use up to 5 parallel sub-agents (via
 - → See `samber/cc-skills-golang@golang-code-style` skill for style rules that linters enforce
 - → See `samber/cc-skills-golang@golang-security` skill for SAST tools beyond linting (gosec, govulncheck)
 - → See `samber/cc-skills-golang@golang-continuous-integration` skill for automated AI-driven code review in CI using these guidelines
-
-

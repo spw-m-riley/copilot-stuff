@@ -1,24 +1,11 @@
 ---
 name: golang-grpc
 description: "Provides gRPC usage guidelines, protobuf organization, and production-ready patterns for Golang microservices. Use when implementing, reviewing, or debugging gRPC servers/clients, writing proto files, setting up interceptors, handling gRPC errors with status codes, configuring TLS/mTLS, testing with bufconn, or working with streaming RPCs."
-user-invocable: true
-license: MIT
-compatibility: Designed for Claude Code or similar AI coding agents, and for projects using Golang.
 metadata:
-  author: samber
-  version: "1.1.5"
-  openclaw:
-    emoji: "🌐"
-    homepage: https://github.com/samber/cc-skills-golang
-    requires:
-      bins:
-        - go
-        - protoc
-    install:
-      - kind: brew
-        formula: protobuf
-        bins: [protoc]
-allowed-tools: Read Edit Write Glob Grep Bash(go:*) Bash(golangci-lint:*) Bash(git:*) Agent WebFetch mcp__context7__resolve-library-id mcp__context7__query-docs Bash(protoc:*) AskUserQuestion
+  category: golang
+  audience: developer
+  maturity: stable
+  kind: reference
 ---
 
 **Persona:** You are a Go distributed systems engineer. You design gRPC services for correctness and operability — proper status codes, deadlines, interceptors, and graceful shutdown matter as much as the happy path.
@@ -38,7 +25,7 @@ allowed-tools: Read Edit Write Glob Grep Bash(go:*) Bash(golangci-lint:*) Bash(g
 
 Treat gRPC as a pure transport layer — keep it separate from business logic. The official Go implementation is `google.golang.org/grpc`.
 
-This skill is not exhaustive. Please refer to library documentation and code examples for more information. Context7 can help as a discoverability platform. For Go package docs, versions, symbols, and known vulnerabilities, → See `samber/cc-skills-golang@golang-pkg-go-dev` skill.
+This skill is not exhaustive. Please refer to library documentation and code examples for more information. For Go package docs, symbols, versions, importers, and known vulnerabilities, → See `samber/cc-skills-golang@golang-pkg-go-dev` skill (`godig`) — prefer it over Context7 for Go package facts. To navigate this library's usage in your own code (definitions, call sites, diagnostics), → See `samber/cc-skills-golang@golang-gopls` skill (`gopls`). Context7 remains a fallback for docs not indexed on pkg.go.dev.
 
 ## Quick Reference
 
@@ -219,3 +206,27 @@ Most services do not need connection pooling — profile before adding complexit
 - → See `samber/cc-skills-golang@golang-error-handling` skill for gRPC error to Go error mapping
 - → See `samber/cc-skills-golang@golang-observability` skill for gRPC interceptors (logging, tracing, metrics)
 - → See `samber/cc-skills-golang@golang-testing` skill for gRPC testing with bufconn
+
+## Use this skill when
+
+- Working with grpc in Go code.
+- Reviewing or writing Go code that involves grpc.
+
+## Do not use this skill when
+
+- The question is not specific to Go or this topic area.
+
+## Validation
+
+- Apply patterns consistently within the change scope.
+- Run existing tests after changes.
+
+## Examples
+
+- should trigger: "How should I handle grpc in Go?"
+- should not trigger: "How do I set up a new Go project from scratch?"
+
+## Reference files
+- [`evals/evals.json`](evals/evals.json) - evals reference
+- [`references/protoc-reference.md`](references/protoc-reference.md) - protoc reference reference
+- [`references/testing.md`](references/testing.md) - testing reference

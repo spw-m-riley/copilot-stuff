@@ -1,21 +1,11 @@
 ---
 name: golang-spf13-cobra
 description: "Golang CLI command tree library using spf13/cobra — cobra.Command, RunE vs Run, PersistentPreRunE hook chain, Args validators (NoArgs, ExactArgs, MatchAll, custom), persistent vs local flags, command groups, ValidArgsFunction, RegisterFlagCompletionFunc, ShellCompDirective, usage/help template customization, man-page and markdown doc generation, and testing with SetArgs/SetOut/SetErr. Apply when using or adopting spf13/cobra, or when the codebase imports `github.com/spf13/cobra`. For configuration layering alongside cobra, see the `samber/cc-skills-golang@golang-spf13-viper` skill. For general CLI architecture (project layout, exit codes, signal handling, I/O patterns), see `samber/cc-skills-golang@golang-cli`."
-user-invocable: true
-license: MIT
-compatibility: Designed for Claude Code or similar AI coding agents, and for projects using Golang.
 metadata:
-  author: samber
-  version: "1.0.2"
-  openclaw:
-    emoji: "🐍"
-    homepage: https://github.com/samber/cc-skills-golang
-    requires:
-      bins:
-        - go
-    install: []
-    skill-library-version: "1.10.2"
-allowed-tools: Read Edit Write Glob Grep Bash(go:*) Bash(golangci-lint:*) Bash(git:*) Agent WebFetch mcp__context7__resolve-library-id mcp__context7__query-docs
+  category: golang
+  audience: developer
+  maturity: stable
+  kind: reference
 ---
 
 **Persona:** You are a Go CLI engineer building command trees that feel native to the Unix shell. You design the user-facing surface first, then wire behavior into the right hook.
@@ -36,7 +26,7 @@ Cobra is the de facto standard for Go CLI applications. It provides the command/
 - [github.com/spf13/cobra](https://github.com/spf13/cobra)
 - [cobra.dev](https://cobra.dev)
 
-This skill is not exhaustive. Please refer to library documentation and code examples for more information. Context7 can help as a discoverability platform. For Go package docs, versions, symbols, and known vulnerabilities, → See `samber/cc-skills-golang@golang-pkg-go-dev` skill.
+This skill is not exhaustive. Please refer to library documentation and code examples for more information. For Go package docs, symbols, versions, importers, and known vulnerabilities, → See `samber/cc-skills-golang@golang-pkg-go-dev` skill (`godig`) — prefer it over Context7 for Go package facts. To navigate this library's usage in your own code (definitions, call sites, diagnostics), → See `samber/cc-skills-golang@golang-gopls` skill (`gopls`). Context7 remains a fallback for docs not indexed on pkg.go.dev.
 
 ```bash
 go get github.com/spf13/cobra@latest
@@ -168,3 +158,30 @@ Cobra accumulates flag state across `Execute()` calls — build a fresh command 
 - → See `samber/cc-skills-golang@golang-testing` skill for general Go testing patterns
 
 If you encounter a bug or unexpected behavior in spf13/cobra, open an issue at <https://github.com/spf13/cobra/issues>.
+
+## Use this skill when
+
+- Working with spf13 cobra in Go code.
+- Reviewing or writing Go code that involves spf13 cobra.
+
+## Do not use this skill when
+
+- The question is not specific to Go or this topic area.
+
+## Validation
+
+- Apply patterns consistently within the change scope.
+- Run existing tests after changes.
+
+## Examples
+
+- should trigger: "How should I handle spf13 cobra in Go?"
+- should not trigger: "How do I set up a new Go project from scratch?"
+
+## Reference files
+- [`evals/evals.json`](evals/evals.json) - evals reference
+- [`references/commands-and-args.md`](references/commands-and-args.md) - commands and args reference
+- [`references/completions.md`](references/completions.md) - completions reference
+- [`references/flags.md`](references/flags.md) - flags reference
+- [`references/generators.md`](references/generators.md) - generators reference
+- [`references/testing.md`](references/testing.md) - testing reference

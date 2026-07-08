@@ -1,110 +1,44 @@
 ---
 name: golang-benchmark
-description: "Use when compare go benchmark results and explain pprof output; not when another Go skill is a better fit."
+description: "Golang benchmarking, profiling, and performance measurement. Use when writing, running, or comparing Go benchmarks, profiling hot paths with pprof, interpreting CPU/memory/trace profiles, analyzing results with benchstat, setting up CI benchmark regression detection, or investigating production performance with Prometheus runtime metrics. Also use when the developer needs deep analysis on a specific performance indicator - this skill provides the measurement methodology, while `samber/cc-skills-golang@golang-performance` provides the optimization patterns."
 metadata:
   category: go
   audience: general-coding-agent
-  maturity: draft
+  maturity: stable
   kind: reference
 ---
-
-# Go Benchmarking
-
-Use this skill when you need to measure, compare, or explain Go performance with benchmarks, profiles, or regression checks.
-
 ## Use this skill when
 
-- The task is about benchmark design, benchmark comparisons, pprof output, benchstat, or CI regression detection.
-- You need to reason about measurement before choosing an optimization path.
-- The request is performance-analysis work, not general debugging.
+- You are working on Go benchmark concerns and need targeted guidance.
+- The task is primarily in this skill's domain rather than general Go troubleshooting.
 
 ## Do not use this skill when
 
-- The main problem is a crash, panic, or logic bug rather than measurement.
-- You are already in the optimization phase and need code-level tuning patterns instead.
-- A broader Go troubleshooting skill is a better first stop.
-
-## Routing boundary
-
-| Situation | Use this skill? | Route instead |
-| --- | --- | --- |
-| The request is specifically about go benchmarking. | Yes | - |
-| The request is better served by an adjacent Go skill. | No | Use [`golang-performance`](../golang-performance/SKILL.md) for optimization patterns and [`golang-troubleshooting`](../golang-troubleshooting/SKILL.md) for bug diagnosis. |
-
-## Guardrails
-
-- Keep the guidance focused on go benchmarking work.
-- Prefer the narrower Go skill when the request clearly fits one.
-- Do not turn this skill into a generic catch-all.
+- Another specialized Go skill is a clearer match for the task.
+- The request is unrelated to Go implementation, review, or architecture decisions.
 
 ## Validation
 
 - Run `node skills/skill-authoring/scripts/validate-skill-library.mjs skills/golang-benchmark/SKILL.md`.
-- Smoke test:
-  - should trigger: "Compare Go benchmark results and explain pprof output."
-  - should not trigger: "Debug a Go compile error."
+- Run the full validator when this package changes alongside others.
 
 ## Examples
 
-- "Compare two Go benchmark runs and tell me whether the regression is real."
-- "Help me profile this handler and interpret the hot path before I change code."
-- "Set up benchmark regression checks in CI for this Go package."
-
-# Go Benchmarking
-
-Use this skill when you need to measure, compare, or explain Go performance with benchmarks, profiles, or regression checks.
-
-## Use this skill when
-
-- The task is about benchmark design, benchmark comparisons, pprof output, benchstat, or CI regression detection.
-- You need to reason about measurement before choosing an optimization path.
-- The request is performance-analysis work, not general debugging.
-
-## Do not use this skill when
-
-- The main problem is a crash, panic, or logic bug rather than measurement.
-- You are already in the optimization phase and need code-level tuning patterns instead.
-- A broader Go troubleshooting skill is a better first stop.
-
-## Routing boundary
-
-| Situation | Use this skill? | Route instead |
-| --- | --- | --- |
-| The request is specifically about go benchmarking. | Yes | - |
-| The request is better served by an adjacent Go skill. | No | Use [`golang-performance`](../golang-performance/SKILL.md) for optimization patterns and [`golang-troubleshooting`](../golang-troubleshooting/SKILL.md) for bug diagnosis. |
-
-## Guardrails
-
-- Keep the guidance focused on go benchmarking work.
-- Prefer the narrower Go skill when the request clearly fits one.
-- Do not turn this skill into a generic catch-all.
-
-## Validation
-
-- Run `node skills/skill-authoring/scripts/validate-skill-library.mjs skills/golang-benchmark/SKILL.md`.
-- Smoke test:
-  - should trigger: "Compare Go benchmark results and explain pprof output."
-  - should not trigger: "Debug a Go compile error."
-
-## Examples
-
-- "Compare two Go benchmark runs and tell me whether the regression is real."
-- "Help me profile this handler and interpret the hot path before I change code."
-- "Set up benchmark regression checks in CI for this Go package."
+- "Help me apply benchmark guidance in this Go codepath."
+- "Review this Go change for benchmark issues."
 
 ## Reference files
 
-- [`references/benchstat.md`](./references/benchstat.md)
-- [`references/ci-regression.md`](./references/ci-regression.md)
-- [`references/compiler-analysis.md`](./references/compiler-analysis.md)
-- [`references/investigation-session.md`](./references/investigation-session.md)
-- [`references/pprof.md`](./references/pprof.md)
-- [`references/prometheus-go-metrics.md`](./references/prometheus-go-metrics.md)
-- [`references/tools.md`](./references/tools.md)
-- [`references/trace.md`](./references/trace.md)
-- [`evals/evals.json`](./evals/evals.json)
+- [`evals/evals.json`](evals/evals.json) - support file
+- [`references/benchstat.md`](references/benchstat.md) - support file
+- [`references/ci-regression.md`](references/ci-regression.md) - support file
+- [`references/compiler-analysis.md`](references/compiler-analysis.md) - support file
+- [`references/investigation-session.md`](references/investigation-session.md) - support file
+- [`references/pprof.md`](references/pprof.md) - support file
+- [`references/prometheus-go-metrics.md`](references/prometheus-go-metrics.md) - support file
+- [`references/tools.md`](references/tools.md) - support file
+- [`references/trace.md`](references/trace.md) - support file
 
-## Imported content
 **Persona:** You are a Go performance measurement engineer. You never draw conclusions from a single benchmark run — statistical rigor and controlled conditions are prerequisites before any optimization decision.
 
 **Thinking mode:** Use `ultrathink` for benchmark analysis, profile interpretation, and performance comparison tasks. Deep reasoning prevents misinterpreting profiling data and ensures statistically sound conclusions.
@@ -189,6 +123,14 @@ go test -bench=BenchmarkEncode -benchmem -count=10 ./pkg/... | tee bench.txt
 
 **Output format:** `BenchmarkEncode/size=64-8  5000000  230.5 ns/op  128 B/op  2 allocs/op` — the `-8` suffix is GOMAXPROCS, `ns/op` is time per operation, `B/op` is bytes allocated per op, `allocs/op` is heap allocation count per op.
 
+## Comparing Optimization Variants in Parallel
+
+When several competing optimization hypotheses exist for the same bottleneck, implement each variant in its own isolated worktree (`EnterWorktree`) via a separate sub-agent, so their code changes never collide in the shared working tree.
+
+**Run the benchmarks serially, not concurrently.** Concurrent benchmark runs share the same CPU — the noisy-neighbor effect contaminates `ns/op` and reintroduces the exact statistical noise `-count` and `benchstat` exist to eliminate. Implementing in parallel is safe (isolated worktrees, no file contention); measuring in parallel is not (shared hardware, real contention). Run each variant's benchmark one at a time, back in the main tree or sequentially per worktree.
+
+Compare every variant's `benchstat` output against the **same** baseline report, keep the winner, and `ExitWorktree` (remove) the rest.
+
 ## Documenting Results in Commits
 
 Paste benchstat output in the commit body when the change has a measurable performance impact. This documents _why_ an optimization was made, prevents future readers from reverting it, and lets reviewers verify the claim without re-running benchmarks.
@@ -266,5 +208,3 @@ For full pprof CLI reference (all commands, non-interactive mode, profile interp
 - → See `samber/cc-skills-golang@golang-observability` skill for everyday always-on monitoring, continuous profiling (Pyroscope), distributed tracing (OpenTelemetry)
 - → See `samber/cc-skills-golang@golang-testing` skill for general testing practices
 - → See `samber/cc-skills@promql-cli` skill for querying Prometheus runtime metrics in production to validate benchmark findings
-
-

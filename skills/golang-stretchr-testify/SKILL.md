@@ -1,25 +1,11 @@
 ---
 name: golang-stretchr-testify
 description: "Comprehensive guide to stretchr/testify for Golang testing. Covers assert, require, mock, and suite packages in depth. Use when writing tests with testify, creating mocks, setting up test suites, or choosing between assert and require. Covers testify assertions, mock expectations, argument matchers, call verification, suite lifecycle, and advanced patterns like Eventually, JSONEq, and custom matchers. Apply when the codebase imports github.com/stretchr/testify."
-user-invocable: true
-license: MIT
-compatibility: Designed for Claude Code or similar AI coding agents, and for projects using Golang.
 metadata:
-  author: samber
-  version: "1.2.1"
-  openclaw:
-    emoji: "✅"
-    homepage: https://github.com/samber/cc-skills-golang
-    requires:
-      bins:
-        - go
-        - gotests
-    install:
-      - kind: go
-        package: github.com/cweill/gotests/...@latest
-        bins: [gotests]
-    skill-library-version: "1.11.1"
-allowed-tools: Read Edit Write Glob Grep Bash(go:*) Bash(golangci-lint:*) Bash(git:*) Agent WebFetch mcp__context7__resolve-library-id mcp__context7__query-docs Bash(gotests:*) AskUserQuestion
+  category: golang
+  audience: developer
+  maturity: stable
+  kind: reference
 ---
 
 **Persona:** You are a Go engineer who treats tests as executable specifications. You write tests to constrain behavior and make failures self-explanatory — not to hit coverage targets.
@@ -33,7 +19,7 @@ allowed-tools: Read Edit Write Glob Grep Bash(go:*) Bash(golangci-lint:*) Bash(g
 
 testify complements Go's `testing` package with readable assertions, mocks, and suites. It does not replace `testing` — always use `*testing.T` as the entry point.
 
-This skill is not exhaustive. Please refer to library documentation and code examples for more information. Context7 can help as a discoverability platform. For Go package docs, versions, symbols, and known vulnerabilities, → See `samber/cc-skills-golang@golang-pkg-go-dev` skill.
+This skill is not exhaustive. Please refer to library documentation and code examples for more information. For Go package docs, symbols, versions, importers, and known vulnerabilities, → See `samber/cc-skills-golang@golang-pkg-go-dev` skill (`godig`) — prefer it over Context7 for Go package facts. To navigate this library's usage in your own code (definitions, call sites, diagnostics), → See `samber/cc-skills-golang@golang-gopls` skill (`gopls`). Context7 remains a fallback for docs not indexed on pkg.go.dev.
 
 ## assert vs require
 
@@ -193,3 +179,26 @@ Use `testifylint` to catch wrong argument order, assert/require misuse, and more
 
 - → See `samber/cc-skills-golang@golang-testing` skill for general test patterns, table-driven tests, and CI
 - → See `samber/cc-skills-golang@golang-lint` skill for testifylint configuration
+
+## Use this skill when
+
+- Working with stretchr testify in Go code.
+- Reviewing or writing Go code that involves stretchr testify.
+
+## Do not use this skill when
+
+- The question is not specific to Go or this topic area.
+
+## Validation
+
+- Apply patterns consistently within the change scope.
+- Run existing tests after changes.
+
+## Examples
+
+- should trigger: "How should I handle stretchr testify in Go?"
+- should not trigger: "How do I set up a new Go project from scratch?"
+
+## Reference files
+- [`evals/evals.json`](evals/evals.json) - evals reference
+- [`references/mock.md`](references/mock.md) - mock reference

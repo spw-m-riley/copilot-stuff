@@ -1,110 +1,46 @@
 ---
 name: golang-observability
-description: "Use when add go logs, metrics, or tracing; not when another Go skill is a better fit."
+description: "Golang everyday observability — the always-on signals in production. Covers structured logging with slog, Prometheus metrics, OpenTelemetry distributed tracing, continuous profiling with pprof/Pyroscope, server-side RUM event tracking, alerting, and Grafana dashboards. Apply when instrumenting Go services for production monitoring, setting up metrics or alerting, adding OpenTelemetry tracing, correlating logs with traces, migrating legacy loggers (zap/logrus/zerolog) to slog, adding observability to new features, or implementing GDPR/CCPA-compliant tracking with Customer Data Platforms (CDP). Not for temporary deep-dive performance investigation (→ See `samber/cc-skills-golang@golang-benchmark` and `samber/cc-skills-golang@golang-performance` skills)."
 metadata:
   category: go
   audience: general-coding-agent
-  maturity: draft
+  maturity: stable
   kind: reference
 ---
-
-# Go Observability
-
-Use this skill when you are adding or reviewing Go logging, metrics, tracing, alerting, or dashboards.
-
 ## Use this skill when
 
-- The work is about making the system observable in production.
-- You need logging, metrics, tracing, alerting, or dashboard guidance.
-- The request is about operational visibility rather than core business logic.
+- You are working on Go observability concerns and need targeted guidance.
+- The task is primarily in this skill's domain rather than general Go troubleshooting.
 
 ## Do not use this skill when
 
-- The issue is really a profiling or optimization task.
-- You need a bug-fix debugging workflow instead.
-- The task is about dependency management or packaging.
-
-## Routing boundary
-
-| Situation | Use this skill? | Route instead |
-| --- | --- | --- |
-| The request is specifically about go observability. | Yes | - |
-| The request is better served by an adjacent Go skill. | No | Route performance work to [`golang-performance`](../golang-performance/SKILL.md) and debugging work to [`golang-troubleshooting`](../golang-troubleshooting/SKILL.md). |
-
-## Guardrails
-
-- Keep the guidance focused on go observability work.
-- Prefer the narrower Go skill when the request clearly fits one.
-- Do not turn this skill into a generic catch-all.
+- Another specialized Go skill is a clearer match for the task.
+- The request is unrelated to Go implementation, review, or architecture decisions.
 
 ## Validation
 
 - Run `node skills/skill-authoring/scripts/validate-skill-library.mjs skills/golang-observability/SKILL.md`.
-- Smoke test:
-  - should trigger: "Add Go logs, metrics, or tracing."
-  - should not trigger: "Update Go module versions."
+- Run the full validator when this package changes alongside others.
 
 ## Examples
 
-- "Add tracing and metrics to this Go handler."
-- "Review these logs and alerts for production usefulness."
-- "What observability signals should this Go service emit?"
-
-# Go Observability
-
-Use this skill when you are adding or reviewing Go logging, metrics, tracing, alerting, or dashboards.
-
-## Use this skill when
-
-- The work is about making the system observable in production.
-- You need logging, metrics, tracing, alerting, or dashboard guidance.
-- The request is about operational visibility rather than core business logic.
-
-## Do not use this skill when
-
-- The issue is really a profiling or optimization task.
-- You need a bug-fix debugging workflow instead.
-- The task is about dependency management or packaging.
-
-## Routing boundary
-
-| Situation | Use this skill? | Route instead |
-| --- | --- | --- |
-| The request is specifically about go observability. | Yes | - |
-| The request is better served by an adjacent Go skill. | No | Route performance work to [`golang-performance`](../golang-performance/SKILL.md) and debugging work to [`golang-troubleshooting`](../golang-troubleshooting/SKILL.md). |
-
-## Guardrails
-
-- Keep the guidance focused on go observability work.
-- Prefer the narrower Go skill when the request clearly fits one.
-- Do not turn this skill into a generic catch-all.
-
-## Validation
-
-- Run `node skills/skill-authoring/scripts/validate-skill-library.mjs skills/golang-observability/SKILL.md`.
-- Smoke test:
-  - should trigger: "Add Go logs, metrics, or tracing."
-  - should not trigger: "Update Go module versions."
-
-## Examples
-
-- "Add tracing and metrics to this Go handler."
-- "Review these logs and alerts for production usefulness."
-- "What observability signals should this Go service emit?"
+- "Help me apply observability guidance in this Go codepath."
+- "Review this Go change for observability issues."
 
 ## Reference files
 
-- [`references/alerting.md`](./references/alerting.md)
-- [`references/dashboards.md`](./references/dashboards.md)
-- [`references/logging.md`](./references/logging.md)
-- [`references/metrics.md`](./references/metrics.md)
-- [`references/profiling.md`](./references/profiling.md)
-- [`references/rum.md`](./references/rum.md)
-- [`references/tracing.md`](./references/tracing.md)
-- [`evals/evals.json`](./evals/evals.json)
+- [`evals/evals.json`](evals/evals.json) - support file
+- [`references/alerting.md`](references/alerting.md) - support file
+- [`references/dashboards.md`](references/dashboards.md) - support file
+- [`references/logging.md`](references/logging.md) - support file
+- [`references/metrics.md`](references/metrics.md) - support file
+- [`references/profiling.md`](references/profiling.md) - support file
+- [`references/rum.md`](references/rum.md) - support file
+- [`references/tracing.md`](references/tracing.md) - support file
 
-## Imported content
 **Persona:** You are a Go observability engineer. You treat every unobserved production system as a liability — instrument proactively, correlate signals to diagnose, and never consider a feature done until it is observable.
+
+**Orchestration mode:** Use `ultracode` for auditing observability coverage across a codebase — orchestrate the five signal-specific sub-agents described in Audit mode (metrics, logging, tracing, profiling, RUM) and merge their coverage findings.
 
 **Modes:**
 
@@ -277,5 +213,3 @@ prometheus.NewHistogram(prometheus.HistogramOpts{
     Buckets: prometheus.DefBuckets,
 })
 ```
-
-

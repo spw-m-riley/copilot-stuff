@@ -1,112 +1,23 @@
 ---
 name: golang-modernize
-description: "Use when modernize go code or toolchain usage; not when another Go skill is a better fit."
+description: "Modernize Golang code to use recent language features, standard library improvements, and idiomatic patterns. Trigger proactively when writing or reviewing Go code and old-style patterns are detected, or when encountering a deprecation warning. Also use when the user explicitly asks for modernization, a Go version upgrade, or a CI/tooling refresh."
 metadata:
-  category: go
-  audience: general-coding-agent
-  maturity: draft
+  category: golang
+  audience: developer
+  maturity: stable
   kind: reference
 ---
 
-# Go Modernization
-
-Use this skill when you are updating Go code to newer language features, toolchain behavior, or ecosystem practices.
-
-## Use this skill when
-
-- The work is about moving code forward to newer Go versions or practices.
-- You need a modernization plan for syntax, tooling, or ecosystem updates.
-- The task is broader than a simple dependency bump.
-
-## Do not use this skill when
-
-- You only need to update versions or dependencies without code changes.
-- The main problem is a bug or test failure.
-- A more specific dependency or stay-updated skill is a better fit.
-
-## Routing boundary
-
-| Situation | Use this skill? | Route instead |
-| --- | --- | --- |
-| The request is specifically about go modernization. | Yes | - |
-| The request is better served by an adjacent Go skill. | No | Route version-only changes to [`golang-dependency-management`](../golang-dependency-management/SKILL.md) and version-check work to [`golang-stay-updated`](../golang-stay-updated/SKILL.md). |
-
-## Guardrails
-
-- Keep the guidance focused on go modernization work.
-- Prefer the narrower Go skill when the request clearly fits one.
-- Do not turn this skill into a generic catch-all.
-
-## Validation
-
-- Run `node skills/skill-authoring/scripts/validate-skill-library.mjs skills/golang-modernize/SKILL.md`.
-- Smoke test:
-  - should trigger: "Modernize Go code or toolchain usage."
-  - should not trigger: "Review Go benchmark results."
-
-## Examples
-
-- "Modernize this Go package for newer language features."
-- "Which parts of this repo should we update for current Go practices?"
-- "Help me plan this Go modernization safely."
-
-# Go Modernization
-
-Use this skill when you are updating Go code to newer language features, toolchain behavior, or ecosystem practices.
-
-## Use this skill when
-
-- The work is about moving code forward to newer Go versions or practices.
-- You need a modernization plan for syntax, tooling, or ecosystem updates.
-- The task is broader than a simple dependency bump.
-
-## Do not use this skill when
-
-- You only need to update versions or dependencies without code changes.
-- The main problem is a bug or test failure.
-- A more specific dependency or stay-updated skill is a better fit.
-
-## Routing boundary
-
-| Situation | Use this skill? | Route instead |
-| --- | --- | --- |
-| The request is specifically about go modernization. | Yes | - |
-| The request is better served by an adjacent Go skill. | No | Route version-only changes to [`golang-dependency-management`](../golang-dependency-management/SKILL.md) and version-check work to [`golang-stay-updated`](../golang-stay-updated/SKILL.md). |
-
-## Guardrails
-
-- Keep the guidance focused on go modernization work.
-- Prefer the narrower Go skill when the request clearly fits one.
-- Do not turn this skill into a generic catch-all.
-
-## Validation
-
-- Run `node skills/skill-authoring/scripts/validate-skill-library.mjs skills/golang-modernize/SKILL.md`.
-- Smoke test:
-  - should trigger: "Modernize Go code or toolchain usage."
-  - should not trigger: "Review Go benchmark results."
-
-## Examples
-
-- "Modernize this Go package for newer language features."
-- "Which parts of this repo should we update for current Go practices?"
-- "Help me plan this Go modernization safely."
-
-## Reference files
-
-- [`references/tooling.md`](./references/tooling.md)
-- [`references/versions.md`](./references/versions.md)
-- [`evals/evals.json`](./evals/evals.json)
-
-## Imported content
 <!-- markdownlint-disable ol-prefix -->
 
 **Persona:** You are a Go modernization engineer. You keep codebases current with the latest Go idioms and standard library improvements — you prioritize safety and correctness fixes first, then readability, then gradual improvements.
 
+**Orchestration mode:** Use `ultracode` for a full-codebase modernization scan — orchestrate the five sub-agents described in Full-scan mode (deprecated packages, language features, standard library upgrades, testing patterns, tooling and infra) and consolidate results using the migration priority guide.
+
 **Modes:**
 
 - **Inline mode** (developer is actively coding): suggest only modernizations relevant to the current file or feature; mention other opportunities you noticed but do not touch unrelated files.
-- **Full-scan mode** (explicit `/golang-modernize` invocation or CI): use up to 5 parallel sub-agents — Agent 1 scans deprecated packages and API replacements, Agent 2 scans language feature opportunities (range-over-int, min/max, any, iterators), Agent 3 scans standard library upgrades (slices, maps, cmp, slog), Agent 4 scans testing patterns (t.Context, b.Loop, synctest), Agent 5 scans tooling and infra (golangci-lint v2, govulncheck, PGO, CI pipeline) — then consolidate and prioritize by the migration priority guide.
+- **Full-scan mode** (explicit `/golang-modernize` invocation or CI): use up to 5 parallel sub-agents — Agent 1 scans deprecated packages and API replacements, Agent 2 scans language feature opportunities (range-over-int, min/max, any, iterators), Agent 3 scans standard library upgrades (slices, maps, cmp, slog), Agent 4 scans testing patterns (t.Context, b.Loop, synctest), Agent 5 scans tooling and infra (golangci-lint v2, govulncheck, PGO, CI pipeline) — then consolidate and prioritize by the migration priority guide. The scan itself is read-only; once consolidated, apply the resulting codebase-wide rewrite in an isolated worktree (`EnterWorktree`) so a sweeping multi-file modernization never touches the developer's main tree until reviewed.
 
 # Go Code Modernization Guide
 
@@ -130,9 +41,11 @@ When invoked:
 6. **Suggest improvements contextually**:
    - If the developer is actively coding, **only suggest improvements related to the code they are currently working on**. Do not refactor unrelated files. Instead, mention opportunities you noticed and explain why the change would be beneficial — but let the developer decide.
    - If invoked explicitly via `/golang-modernize` or in CI, scan and suggest across the entire codebase.
-7. **For large codebases**, parallelize the scan using up to 5 sub-agents (via the Agent tool), each targeting a different modernization category (e.g. deprecated packages, language features, standard library upgrades, testing patterns, tooling and infra)
+7. **For large codebases**, parallelize the scan using up to 5 sub-agents (via the Agent tool), each targeting a different modernization category (e.g. deprecated packages, language features, standard library upgrades, testing patterns, tooling and infra). Once scanning is done and changes are ready to apply, do so in an isolated worktree (`EnterWorktree`) — a codebase-wide modernization sweep touches many files at once, and isolation keeps the main tree safe to abandon or review before merging.
 8. **Before suggesting a dependency update**, run `go mod tidy` and the test suite to verify compatibility. Ask the developer to review the dependency's changelog and release notes for breaking changes before proceeding.
 9. **If the developer explicitly ignores a suggestion**, write a short memo to `.modernize` in the project root so it is not suggested again. Format: one line per ignored suggestion, with a short description.
+
+When applying a modernization that renames an identifier or replaces a deprecated API (e.g. `reflect.PtrTo` → `PointerTo`, `math/rand` → `math/rand/v2`), → See `samber/cc-skills-golang@golang-gopls` skill — safe rename updates every call site and refuses a rename that would break interface satisfaction, and post-edit diagnostics catch compile errors across the rewritten files that a blind Edit or grep/sed sweep would leave broken.
 
 ### `.modernize` file format
 
@@ -233,4 +146,28 @@ When modernizing a codebase, prioritize changes by impact:
 
 See `samber/cc-skills-golang@golang-concurrency`, `samber/cc-skills-golang@golang-testing`, `samber/cc-skills-golang@golang-observability`, `samber/cc-skills-golang@golang-error-handling`, `samber/cc-skills-golang@golang-lint`, `samber/cc-skills-golang@golang-continuous-integration` skills.
 
+- → See `samber/cc-skills-golang@golang-refactoring` skill for staging a large modernization sweep as small human-reviewed PRs instead of one big worktree sweep.
 
+## Use this skill when
+
+- Working with modernize in Go code.
+- Reviewing or writing Go code that involves modernize.
+
+## Do not use this skill when
+
+- The question is not specific to Go or this topic area.
+
+## Validation
+
+- Apply patterns consistently within the change scope.
+- Run existing tests after changes.
+
+## Examples
+
+- should trigger: "How should I handle modernize in Go?"
+- should not trigger: "How do I set up a new Go project from scratch?"
+
+## Reference files
+- [`evals/evals.json`](evals/evals.json) - evals reference
+- [`references/tooling.md`](references/tooling.md) - tooling reference
+- [`references/versions.md`](references/versions.md) - versions reference

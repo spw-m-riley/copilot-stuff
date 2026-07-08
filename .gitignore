@@ -8,6 +8,7 @@
 # Local CLI history and per-session artifacts
 /command-history-state.json
 /*.db
+/*.db.pre-update-backup-*
 /*.db-shm
 /*.db-wal
 /session-state/

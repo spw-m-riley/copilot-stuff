@@ -1,107 +1,43 @@
 ---
 name: golang-dependency-injection
-description: "Use when choose a go dependency injection pattern; not when another Go skill is a better fit."
+description: "Comprehensive guide for dependency injection (DI) in Golang. Covers why DI matters (testability, loose coupling, separation of concerns, lifecycle management), manual constructor injection, and DI library comparison (google/wire, uber-go/dig, uber-go/fx, samber/do). Use this skill when designing service architecture, setting up dependency injection, refactoring tightly coupled code, managing singletons or service factories, or when the user asks about inversion of control, service containers, or wiring dependencies in Go. For a specific DI library, → See `samber/cc-skills-golang@golang-google-wire`, `samber/cc-skills-golang@golang-uber-dig`, `samber/cc-skills-golang@golang-uber-fx`, or `samber/cc-skills-golang@golang-samber-do` skills."
 metadata:
   category: go
   audience: general-coding-agent
-  maturity: draft
+  maturity: stable
   kind: reference
 ---
-
-# Go Dependency Injection
-
-Use this skill when you are choosing or reviewing Go dependency injection patterns such as manual wiring, Wire, Dig, or Fx.
-
 ## Use this skill when
 
-- The task is about composition roots, constructors, or injection boundaries.
-- You need to compare manual DI with framework-based approaches.
-- The request is about wiring dependencies cleanly in Go.
+- You are working on Go dependency injection concerns and need targeted guidance.
+- The task is primarily in this skill's domain rather than general Go troubleshooting.
 
 ## Do not use this skill when
 
-- The problem is about a specific generated injector or Wire file.
-- You need repository layout guidance instead.
-- The work is really about interfaces or code style rather than injection.
-
-## Routing boundary
-
-| Situation | Use this skill? | Route instead |
-| --- | --- | --- |
-| The request is specifically about go dependency injection. | Yes | - |
-| The request is better served by an adjacent Go skill. | No | Route Google Wire work to [`golang-google-wire`](../golang-google-wire/SKILL.md) and broader architecture questions to [`golang-design-patterns`](../golang-design-patterns/SKILL.md). |
-
-## Guardrails
-
-- Keep the guidance focused on go dependency injection work.
-- Prefer the narrower Go skill when the request clearly fits one.
-- Do not turn this skill into a generic catch-all.
+- Another specialized Go skill is a clearer match for the task.
+- The request is unrelated to Go implementation, review, or architecture decisions.
 
 ## Validation
 
 - Run `node skills/skill-authoring/scripts/validate-skill-library.mjs skills/golang-dependency-injection/SKILL.md`.
-- Smoke test:
-  - should trigger: "Choose a Go dependency injection pattern."
-  - should not trigger: "Write a Go gRPC service."
+- Run the full validator when this package changes alongside others.
 
 ## Examples
 
-- "Should this Go service use manual DI or Wire?"
-- "Review the constructor graph for injection problems."
-- "Help me wire these dependencies without hidden globals."
-
-# Go Dependency Injection
-
-Use this skill when you are choosing or reviewing Go dependency injection patterns such as manual wiring, Wire, Dig, or Fx.
-
-## Use this skill when
-
-- The task is about composition roots, constructors, or injection boundaries.
-- You need to compare manual DI with framework-based approaches.
-- The request is about wiring dependencies cleanly in Go.
-
-## Do not use this skill when
-
-- The problem is about a specific generated injector or Wire file.
-- You need repository layout guidance instead.
-- The work is really about interfaces or code style rather than injection.
-
-## Routing boundary
-
-| Situation | Use this skill? | Route instead |
-| --- | --- | --- |
-| The request is specifically about go dependency injection. | Yes | - |
-| The request is better served by an adjacent Go skill. | No | Route Google Wire work to [`golang-google-wire`](../golang-google-wire/SKILL.md) and broader architecture questions to [`golang-design-patterns`](../golang-design-patterns/SKILL.md). |
-
-## Guardrails
-
-- Keep the guidance focused on go dependency injection work.
-- Prefer the narrower Go skill when the request clearly fits one.
-- Do not turn this skill into a generic catch-all.
-
-## Validation
-
-- Run `node skills/skill-authoring/scripts/validate-skill-library.mjs skills/golang-dependency-injection/SKILL.md`.
-- Smoke test:
-  - should trigger: "Choose a Go dependency injection pattern."
-  - should not trigger: "Write a Go gRPC service."
-
-## Examples
-
-- "Should this Go service use manual DI or Wire?"
-- "Review the constructor graph for injection problems."
-- "Help me wire these dependencies without hidden globals."
+- "Help me apply dependency injection guidance in this Go codepath."
+- "Review this Go change for dependency injection issues."
 
 ## Reference files
 
-- [`references/google-wire.md`](./references/google-wire.md)
-- [`references/manual-di.md`](./references/manual-di.md)
-- [`references/samber-do.md`](./references/samber-do.md)
-- [`references/uber-dig-fx.md`](./references/uber-dig-fx.md)
-- [`evals/evals.json`](./evals/evals.json)
+- [`evals/evals.json`](evals/evals.json) - support file
+- [`references/google-wire.md`](references/google-wire.md) - support file
+- [`references/manual-di.md`](references/manual-di.md) - support file
+- [`references/samber-do.md`](references/samber-do.md) - support file
+- [`references/uber-dig-fx.md`](references/uber-dig-fx.md) - support file
 
-## Imported content
 **Persona:** You are a Go software architect. You guide teams toward testable, loosely coupled designs — you choose the simplest DI approach that solves the problem, and you never over-engineer.
+
+**Orchestration mode:** Use `ultracode` when refactoring a large coupled codebase toward dependency injection — orchestrate the three sub-agents described in Refactor mode (global/init discovery, concrete-dependency mapping, service-locator detection) and consolidate into one migration plan.
 
 **Modes:**
 
@@ -365,5 +301,3 @@ This is particularly useful for integration tests where you want most services t
 - [google/wire user guide](https://github.com/google/wire/blob/main/docs/guide.md)
 - [uber-go/fx documentation](https://uber-go.github.io/fx/)
 - [uber-go/dig](https://github.com/uber-go/dig)
-
-

@@ -217,6 +217,28 @@ This file contains rules that have been superseded, are no longer applicable, or
 
 ---
 
+### Rules 8, 12 (Deprecated: Superseded by Rule 28)
+
+**Original Rule 8:** [EXTENSIONS] After reloading extensions or changing tool availability, validate newly added extension tools sequentially instead of batching them with other extension tool calls - an interrupted post-reload tool batch broke the flow and the user explicitly asked for more care
+
+**Original Rule 12:** [COMMUNICATION] Before any step that may take a while or disrupt active tool streams (for example extension reloads followed by extension-tool calls), tell the user first and prefer a stream-safe path such as separating the steps or using direct local scripts - hidden long operations and stream-destroyed follow-ups made progress look like stalling
+
+**Reason for deprecation:** Quarterly learned-rules review (2026-07-06) found both rules describe the same underlying pitfall as the later, more complete Rule 28 — never batch `extensions_reload` with follow-up extension tool calls. Rule 28 already covers both the sequential-validation guidance (Rule 8) and the tell-the-user-first guidance (Rule 12) in one statement, so the two earlier rules were redundant duplication rather than distinct guidance.
+
+**Current guidance:** See active Rule 28 in `copilot-instructions.md`.
+
+---
+
+### Rule 83 (Deprecated: Superseded by Rule 90)
+
+**Original:** [EXTENSIONS] When RTK routing matters in this `~/.copilot` workflow, invoke `rtk ...` explicitly instead of assuming the `rtk-hook` extension will block the raw Bash command - this session showed `rtk hook copilot` returning the correct deny-with-suggestion response while the CLI still executed the original `git status`
+
+**Reason for deprecation:** Quarterly learned-rules review (2026-07-06) found Rule 90 generalizes this same finding into the actionable standing instruction ("always run RTK directly whenever an equivalent command exists; do not rely on hook-time deny/suggest behavior for adoption"). Rule 83's root-cause detail is preserved here for historical context, but the operative guidance now lives solely in Rule 90.
+
+**Current guidance:** See active Rule 90 in `copilot-instructions.md`.
+
+---
+
 ### Rules 6, 9, 13, 14, 15, 17, 18, 32, 108, 109, 112, 113, 116, 117, 118, 119, 120, 122 (Deprecated: Consolidated into `lore-memory-operations` skill)
 
 **Original text:**

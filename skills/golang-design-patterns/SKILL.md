@@ -1,108 +1,13 @@
 ---
 name: golang-design-patterns
-description: "Use when choose a go architecture pattern; not when another Go skill is a better fit."
+description: "Idiomatic Golang design patterns — functional options, constructors, error flow and cascading, resource management and lifecycle, graceful shutdown, resilience, architecture, dependency injection, data handling, streaming, and more. Apply when explicitly choosing between architectural patterns, implementing functional options, designing constructor APIs, setting up graceful shutdown, applying resilience patterns, or asking which idiomatic Go pattern fits a specific problem."
 metadata:
-  category: go
-  audience: general-coding-agent
-  maturity: draft
+  category: golang
+  audience: developer
+  maturity: stable
   kind: reference
 ---
 
-# Go Design Patterns
-
-Use this skill when you are applying Go architecture patterns such as clean architecture, hexagonal architecture, or DDD.
-
-## Use this skill when
-
-- The task is about structural design rather than a localized bug fix.
-- You need to choose between architectural patterns or layering strategies.
-- The request is about how a Go codebase should be organized.
-
-## Do not use this skill when
-
-- You are already working in a specific package-layout skill.
-- The question is about dependency injection or data shape instead.
-- You need debugging, performance, or testing guidance.
-
-## Routing boundary
-
-| Situation | Use this skill? | Route instead |
-| --- | --- | --- |
-| The request is specifically about go design patterns. | Yes | - |
-| The request is better served by an adjacent Go skill. | No | Route package-layout work to [`golang-project-layout`](../golang-project-layout/SKILL.md) and injection questions to [`golang-dependency-injection`](../golang-dependency-injection/SKILL.md). |
-
-## Guardrails
-
-- Keep the guidance focused on go design patterns work.
-- Prefer the narrower Go skill when the request clearly fits one.
-- Do not turn this skill into a generic catch-all.
-
-## Validation
-
-- Run `node skills/skill-authoring/scripts/validate-skill-library.mjs skills/golang-design-patterns/SKILL.md`.
-- Smoke test:
-  - should trigger: "Choose a Go architecture pattern."
-  - should not trigger: "Add an assertion to a Go test."
-
-## Examples
-
-- "Should this Go service use hexagonal architecture or clean architecture?"
-- "Review the layering in this Go package design."
-- "Help me decide how to structure these application boundaries."
-
-# Go Design Patterns
-
-Use this skill when you are applying Go architecture patterns such as clean architecture, hexagonal architecture, or DDD.
-
-## Use this skill when
-
-- The task is about structural design rather than a localized bug fix.
-- You need to choose between architectural patterns or layering strategies.
-- The request is about how a Go codebase should be organized.
-
-## Do not use this skill when
-
-- You are already working in a specific package-layout skill.
-- The question is about dependency injection or data shape instead.
-- You need debugging, performance, or testing guidance.
-
-## Routing boundary
-
-| Situation | Use this skill? | Route instead |
-| --- | --- | --- |
-| The request is specifically about go design patterns. | Yes | - |
-| The request is better served by an adjacent Go skill. | No | Route package-layout work to [`golang-project-layout`](../golang-project-layout/SKILL.md) and injection questions to [`golang-dependency-injection`](../golang-dependency-injection/SKILL.md). |
-
-## Guardrails
-
-- Keep the guidance focused on go design patterns work.
-- Prefer the narrower Go skill when the request clearly fits one.
-- Do not turn this skill into a generic catch-all.
-
-## Validation
-
-- Run `node skills/skill-authoring/scripts/validate-skill-library.mjs skills/golang-design-patterns/SKILL.md`.
-- Smoke test:
-  - should trigger: "Choose a Go architecture pattern."
-  - should not trigger: "Add an assertion to a Go test."
-
-## Examples
-
-- "Should this Go service use hexagonal architecture or clean architecture?"
-- "Review the layering in this Go package design."
-- "Help me decide how to structure these application boundaries."
-
-## Reference files
-
-- [`references/architecture.md`](./references/architecture.md)
-- [`references/clean-architecture.md`](./references/clean-architecture.md)
-- [`references/data-handling.md`](./references/data-handling.md)
-- [`references/ddd.md`](./references/ddd.md)
-- [`references/hexagonal-architecture.md`](./references/hexagonal-architecture.md)
-- [`references/resource-management.md`](./references/resource-management.md)
-- [`evals/evals.json`](./evals/evals.json)
-
-## Imported content
 **Persona:** You are a Go architect who values simplicity and explicitness. You apply patterns only when they solve a real problem — not to demonstrate sophistication — and you push back on premature abstraction.
 
 **Modes:**
@@ -360,5 +265,32 @@ Core principles regardless of architecture:
 - → See `samber/cc-skills-golang@golang-concurrency` skill for goroutine lifecycle and graceful shutdown
 - → See `samber/cc-skills-golang@golang-context` skill for timeout and cancellation patterns
 - → See `samber/cc-skills-golang@golang-project-layout` skill for architecture and directory structure
+- → See `samber/cc-skills-golang@golang-refactoring` skill for safely staging a migration toward one of these patterns (options struct, DI, consumer-side interfaces) across an existing codebase
 
+## Use this skill when
 
+- Working with design patterns in Go code.
+- Reviewing or writing Go code that involves design patterns.
+
+## Do not use this skill when
+
+- The question is not specific to Go or this topic area.
+
+## Validation
+
+- Apply patterns consistently within the change scope.
+- Run existing tests after changes.
+
+## Examples
+
+- should trigger: "How should I handle design patterns in Go?"
+- should not trigger: "How do I set up a new Go project from scratch?"
+
+## Reference files
+- [`evals/evals.json`](evals/evals.json) - evals reference
+- [`references/architecture.md`](references/architecture.md) - architecture reference
+- [`references/clean-architecture.md`](references/clean-architecture.md) - clean architecture reference
+- [`references/data-handling.md`](references/data-handling.md) - data handling reference
+- [`references/ddd.md`](references/ddd.md) - ddd reference
+- [`references/hexagonal-architecture.md`](references/hexagonal-architecture.md) - hexagonal architecture reference
+- [`references/resource-management.md`](references/resource-management.md) - resource management reference

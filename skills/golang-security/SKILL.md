@@ -1,34 +1,58 @@
 ---
 name: golang-security
 description: "Security best practices and vulnerability prevention for Golang. Covers injection (SQL, command, XSS), cryptography, filesystem safety, network security, cookies, secrets management, memory safety, and logging. Apply when writing, reviewing, or auditing Go code for security, or when working on any risky code involving crypto, I/O, secrets management, user input handling, or authentication. Includes configuration of security tools."
-user-invocable: true
-license: MIT
-compatibility: Designed for Claude Code or similar AI coding agents, and for projects using Golang.
 metadata:
-  author: samber
-  version: "1.1.8"
-  openclaw:
-    emoji: "🔒"
-    homepage: https://github.com/samber/cc-skills-golang
-    requires:
-      bins:
-        - go
-        - govulncheck
-    install:
-      - kind: go
-        package: golang.org/x/vuln/cmd/govulncheck@latest
-        bins: [govulncheck]
-allowed-tools: Read Edit Write Glob Grep Bash(go:*) Bash(golangci-lint:*) Bash(git:*) Agent WebFetch Bash(govulncheck:*) WebSearch AskUserQuestion
+  category: go
+  audience: general-coding-agent
+  maturity: stable
+  kind: reference
 ---
+## Use this skill when
+
+- You are working on Go security concerns and need targeted guidance.
+- The task is primarily in this skill's domain rather than general Go troubleshooting.
+
+## Do not use this skill when
+
+- Another specialized Go skill is a clearer match for the task.
+- The request is unrelated to Go implementation, review, or architecture decisions.
+
+## Validation
+
+- Run `node skills/skill-authoring/scripts/validate-skill-library.mjs skills/golang-security/SKILL.md`.
+- Run the full validator when this package changes alongside others.
+
+## Examples
+
+- "Help me apply security guidance in this Go codepath."
+- "Review this Go change for security issues."
+
+## Reference files
+
+- [`evals/evals.json`](evals/evals.json) - support file
+- [`references/architecture.md`](references/architecture.md) - support file
+- [`references/checklist.md`](references/checklist.md) - support file
+- [`references/cookies.md`](references/cookies.md) - support file
+- [`references/cryptography.md`](references/cryptography.md) - support file
+- [`references/filesystem.md`](references/filesystem.md) - support file
+- [`references/injection.md`](references/injection.md) - support file
+- [`references/logging.md`](references/logging.md) - support file
+- [`references/memory-safety.md`](references/memory-safety.md) - support file
+- [`references/network.md`](references/network.md) - support file
+- [`references/secrets.md`](references/secrets.md) - support file
+- [`references/third-party.md`](references/third-party.md) - support file
+- [`references/threat-modeling.md`](references/threat-modeling.md) - support file
 
 **Persona:** You are a senior Go security engineer. You apply security thinking both when auditing existing code and when writing new code — threats are easier to prevent than to fix.
 
 **Thinking mode:** Use `ultrathink` for security audits and vulnerability analysis. Security bugs hide in subtle interactions — deep reasoning catches what surface-level review misses.
 
+**Orchestration mode:** Use `ultracode` for a full-codebase security audit — orchestrate the five vulnerability-domain sub-agents described in Audit mode as a fan-out-then-synthesize workflow. Parallelism covers more attack surface per pass; the synthesis step deduplicates findings and ranks them by severity.
+
 **Modes:**
 
 - **Review mode** — reviewing a PR for security issues. Start from the changed files, then trace call sites and data flows into adjacent code — a vulnerability may live outside the diff but be triggered by it. Sequential.
-- **Audit mode** — full codebase security scan. Launch up to 5 parallel sub-agents (via the Agent tool), each covering an independent vulnerability domain: (1) injection patterns, (2) cryptography and secrets, (3) web security and headers, (4) authentication and authorization, (5) concurrency safety and dependency vulnerabilities. Aggregate findings, score with DREAD, and report by severity.
+- **Audit mode** — full codebase security scan. Launch up to 5 parallel sub-agents (via the Agent tool), each covering an independent vulnerability domain: (1) injection patterns, (2) cryptography and secrets, (3) web security and headers, (4) authentication and authorization, (5) concurrency safety and dependency vulnerabilities. Aggregate findings, score with DREAD, and report by severity. A large audit produces many independent findings — apply each fix/improvement in its own worktree (`EnterWorktree`), so one fix = one worktree = one focused, reviewable, independently revertible PR, instead of one large mixed-concern change.
 - **Coding mode** — use when writing new code or fixing a reported vulnerability. Follow the skill's sequential guidance. Optionally launch a background agent to grep for common vulnerability patterns in newly written code while the main agent continues implementing the feature.
 
 **Dependencies:**

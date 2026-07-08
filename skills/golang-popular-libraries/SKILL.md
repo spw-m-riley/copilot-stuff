@@ -1,20 +1,11 @@
 ---
 name: golang-popular-libraries
 description: "Recommends production-ready Golang libraries and frameworks. Apply when the user explicitly asks for library suggestions, wants to compare alternatives, needs to choose a library for a specific task, or when a new dependency is being added to the project."
-user-invocable: true
-license: MIT
-compatibility: Designed for Claude Code or similar AI coding agents, and for projects using Golang.
 metadata:
-  author: samber
-  version: "1.1.6"
-  openclaw:
-    emoji: "📚"
-    homepage: https://github.com/samber/cc-skills-golang
-    requires:
-      bins:
-        - go
-    install: []
-allowed-tools: Read Edit Write Glob Grep Bash(go:*) Bash(golangci-lint:*) Bash(git:*) Agent WebFetch WebSearch AskUserQuestion
+  category: golang
+  audience: developer
+  maturity: stable
+  kind: reference
 ---
 
 **Persona:** You are a Go ecosystem expert. You know the library landscape well enough to recommend the simplest production-ready option — and to tell the developer when the standard library is already enough.
@@ -38,7 +29,7 @@ When recommending libraries, prioritize:
 
 Find more libraries here: <https://github.com/avelino/awesome-go>
 
-This skill is not exhaustive. Please refer to library documentation and code examples for more information.
+This skill is not exhaustive. Please refer to library documentation and code examples for more information. When exploring a candidate library, → See `samber/cc-skills-golang@golang-pkg-go-dev` skill (`godig`) for docs, symbols, versions, importers, and known vulnerabilities — prefer it over Context7 for Go package facts. Once a candidate is added to your build, → See `samber/cc-skills-golang@golang-gopls` skill (`gopls`) to browse its actual resolved source and compare candidates side by side. Context7 remains a fallback for docs not indexed on pkg.go.dev.
 
 ## General Guidelines
 
@@ -68,3 +59,28 @@ Remember: The best library is often no library at all. Go's standard library is 
 - → See `samber/cc-skills-golang@golang-samber-oops` skill for samber/oops error handling details
 - → See `samber/cc-skills-golang@golang-stretchr-testify` skill for testify testing details
 - → See `samber/cc-skills-golang@golang-grpc` skill for gRPC implementation details
+
+## Use this skill when
+
+- Working with popular libraries in Go code.
+- Reviewing or writing Go code that involves popular libraries.
+
+## Do not use this skill when
+
+- The question is not specific to Go or this topic area.
+
+## Validation
+
+- Apply patterns consistently within the change scope.
+- Run existing tests after changes.
+
+## Examples
+
+- should trigger: "How should I handle popular libraries in Go?"
+- should not trigger: "How do I set up a new Go project from scratch?"
+
+## Reference files
+- [`evals/evals.json`](evals/evals.json) - evals reference
+- [`references/libraries.md`](references/libraries.md) - libraries reference
+- [`references/stdlib.md`](references/stdlib.md) - stdlib reference
+- [`references/tools.md`](references/tools.md) - tools reference

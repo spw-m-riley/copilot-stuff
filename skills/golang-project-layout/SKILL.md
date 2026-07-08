@@ -1,108 +1,13 @@
 ---
 name: golang-project-layout
-description: "Use when structure a go repository or workspace layout; not when another Go skill is a better fit."
+description: "Provides a guide for setting up Golang project layouts and workspaces. Use when starting a new Go project, organizing an existing codebase, setting up a monorepo with multiple packages, creating CLI tools with multiple main packages, deciding between cmd/internal/pkg directory conventions, or discussing package restructuring, package splits, or module splits."
 metadata:
-  category: go
-  audience: general-coding-agent
-  maturity: draft
+  category: golang
+  audience: developer
+  maturity: stable
   kind: reference
 ---
 
-# Go Project Layout
-
-Use this skill when you are structuring a Go repository, package layout, build files, or workspace organization.
-
-## Use this skill when
-
-- The task is about repo shape, package boundaries, or workspace layout.
-- You need to compare build file organization or directory structure.
-- The request is architectural but focused on physical project layout.
-
-## Do not use this skill when
-
-- The main concern is benchmark, testing, or runtime behavior.
-- You need an architecture-pattern decision instead.
-- The codebase layout is already settled and you are fixing a different problem.
-
-## Routing boundary
-
-| Situation | Use this skill? | Route instead |
-| --- | --- | --- |
-| The request is specifically about go project layout. | Yes | - |
-| The request is better served by an adjacent Go skill. | No | Route architecture choices to [`golang-design-patterns`](../golang-design-patterns/SKILL.md) and test layout questions to [`golang-testing`](../golang-testing/SKILL.md). |
-
-## Guardrails
-
-- Keep the guidance focused on go project layout work.
-- Prefer the narrower Go skill when the request clearly fits one.
-- Do not turn this skill into a generic catch-all.
-
-## Validation
-
-- Run `node skills/skill-authoring/scripts/validate-skill-library.mjs skills/golang-project-layout/SKILL.md`.
-- Smoke test:
-  - should trigger: "Structure a Go repository or workspace layout."
-  - should not trigger: "Tune a Go benchmark."
-
-## Examples
-
-- "How should I structure this Go repository?"
-- "Review the package layout for this workspace."
-- "Where should these Go build files live?"
-
-# Go Project Layout
-
-Use this skill when you are structuring a Go repository, package layout, build files, or workspace organization.
-
-## Use this skill when
-
-- The task is about repo shape, package boundaries, or workspace layout.
-- You need to compare build file organization or directory structure.
-- The request is architectural but focused on physical project layout.
-
-## Do not use this skill when
-
-- The main concern is benchmark, testing, or runtime behavior.
-- You need an architecture-pattern decision instead.
-- The codebase layout is already settled and you are fixing a different problem.
-
-## Routing boundary
-
-| Situation | Use this skill? | Route instead |
-| --- | --- | --- |
-| The request is specifically about go project layout. | Yes | - |
-| The request is better served by an adjacent Go skill. | No | Route architecture choices to [`golang-design-patterns`](../golang-design-patterns/SKILL.md) and test layout questions to [`golang-testing`](../golang-testing/SKILL.md). |
-
-## Guardrails
-
-- Keep the guidance focused on go project layout work.
-- Prefer the narrower Go skill when the request clearly fits one.
-- Do not turn this skill into a generic catch-all.
-
-## Validation
-
-- Run `node skills/skill-authoring/scripts/validate-skill-library.mjs skills/golang-project-layout/SKILL.md`.
-- Smoke test:
-  - should trigger: "Structure a Go repository or workspace layout."
-  - should not trigger: "Tune a Go benchmark."
-
-## Examples
-
-- "How should I structure this Go repository?"
-- "Review the package layout for this workspace."
-- "Where should these Go build files live?"
-
-## Reference files
-
-- [`assets/.gitignore`](./assets/.gitignore)
-- [`assets/Makefile`](./assets/Makefile)
-- [`references/config.md`](./references/config.md)
-- [`references/directory-layouts.md`](./references/directory-layouts.md)
-- [`references/testing-layout.md`](./references/testing-layout.md)
-- [`references/workspaces.md`](./references/workspaces.md)
-- [`evals/evals.json`](./evals/evals.json)
-
-## Imported content
 **Persona:** You are a Go project architect. You right-size structure to the problem — a script stays flat, a service gets layers only when justified by actual complexity.
 
 # Go Project Layout
@@ -169,7 +74,7 @@ See [directory layout examples](references/directory-layouts.md) for universal, 
 
 Every Go project should include at the root:
 
-- **Makefile** — build automation. See [Makefile template](assets/Makefile)
+- **Makefile** — build automation. See [Makefile template](./assets/Makefile)
 - **.gitignore** — git ignore patterns. See [.gitignore template](assets/.gitignore)
 - **.golangci.yml** — linter config. See the `samber/cc-skills-golang@golang-lint` skill for the recommended configuration
 
@@ -203,6 +108,32 @@ When starting a new Go project:
 
 ## Related Skills
 
-→ See `samber/cc-skills-golang@golang-cli` skill for CLI tool structure and Cobra/Viper patterns. → See `samber/cc-skills-golang@golang-dependency-injection` skill for DI approach comparison and wiring. → See `samber/cc-skills-golang@golang-lint` skill for golangci-lint configuration. → See `samber/cc-skills-golang@golang-continuous-integration` skill for CI/CD pipeline setup. → See `samber/cc-skills-golang@golang-design-patterns` skill for architectural patterns.
+→ See `samber/cc-skills-golang@golang-cli` skill for CLI tool structure and Cobra/Viper patterns. → See `samber/cc-skills-golang@golang-dependency-injection` skill for DI approach comparison and wiring. → See `samber/cc-skills-golang@golang-lint` skill for golangci-lint configuration. → See `samber/cc-skills-golang@golang-continuous-integration` skill for CI/CD pipeline setup. → See `samber/cc-skills-golang@golang-design-patterns` skill for architectural patterns. → See `samber/cc-skills-golang@golang-refactoring` skill for safely moving or splitting existing code into the layout above via type-alias gradual code repair and staged PRs, without a big-bang break.
 
+## Use this skill when
 
+- Working with project layout in Go code.
+- Reviewing or writing Go code that involves project layout.
+
+## Do not use this skill when
+
+- The question is not specific to Go or this topic area.
+
+## Validation
+
+- Apply patterns consistently within the change scope.
+- Run existing tests after changes.
+
+## Examples
+
+- should trigger: "How should I handle project layout in Go?"
+- should not trigger: "How do I set up a new Go project from scratch?"
+
+## Reference files
+- [`assets/.gitignore`](assets/.gitignore) -  reference
+- [`./assets/Makefile`](./assets/Makefile) - Makefile reference
+- [`evals/evals.json`](evals/evals.json) - evals reference
+- [`references/config.md`](references/config.md) - config reference
+- [`references/directory-layouts.md`](references/directory-layouts.md) - directory layouts reference
+- [`references/testing-layout.md`](references/testing-layout.md) - testing layout reference
+- [`references/workspaces.md`](references/workspaces.md) - workspaces reference

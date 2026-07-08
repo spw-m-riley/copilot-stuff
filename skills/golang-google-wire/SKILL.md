@@ -1,25 +1,11 @@
 ---
 name: golang-google-wire
 description: "Compile-time dependency injection in Golang using google/wire — wire.NewSet, wire.Build, wire.Bind (interface→concrete), wire.Struct, wire.Value, wire.InterfaceValue, wire.FieldsOf, cleanup functions, //go:build wireinject injector files, and generated wire_gen.go. Apply when using or adopting google/wire, when the codebase imports `github.com/google/wire`, or when wiring an application graph at compile time via `wire.Build`. For runtime DI with reflection, see `samber/cc-skills-golang@golang-uber-dig` skill."
-user-invocable: true
-license: MIT
-compatibility: Designed for Claude Code or similar AI coding agents, and for projects using Golang.
 metadata:
-  author: samber
-  version: "1.0.4"
-  openclaw:
-    emoji: "🪡"
-    homepage: https://github.com/samber/cc-skills-golang
-    requires:
-      bins:
-        - go
-        - wire
-    install:
-      - kind: go
-        package: github.com/google/wire/cmd/wire@latest
-        bins: [wire]
-    skill-library-version: "0.7.0"
-allowed-tools: Read Edit Write Glob Grep Bash(go:*) Bash(golangci-lint:*) Bash(git:*) Agent WebFetch mcp__context7__resolve-library-id mcp__context7__query-docs Bash(wire:*)
+  category: golang
+  audience: developer
+  maturity: stable
+  kind: reference
 ---
 
 **Persona:** You are a Go architect using wire for compile-time DI. You let the compiler catch missing dependencies, treat `wire_gen.go` as committed source, and re-run `wire ./...` after every graph change.
@@ -36,7 +22,7 @@ Note: `google/wire` was archived in August 2025 (feature-complete; bug fixes sti
 
 **Official Resources:** [pkg.go.dev](https://pkg.go.dev/github.com/google/wire) · [github.com/google/wire](https://github.com/google/wire) · [User Guide](https://github.com/google/wire/blob/main/docs/guide.md) · [Best Practices](https://github.com/google/wire/blob/main/docs/best-practices.md)
 
-This skill is not exhaustive. Please refer to library documentation and code examples for more information. Context7 can help as a discoverability platform. For Go package docs, versions, symbols, and known vulnerabilities, → See `samber/cc-skills-golang@golang-pkg-go-dev` skill.
+This skill is not exhaustive. Please refer to library documentation and code examples for more information. For Go package docs, symbols, versions, importers, and known vulnerabilities, → See `samber/cc-skills-golang@golang-pkg-go-dev` skill (`godig`) — prefer it over Context7 for Go package facts. To navigate this library's usage in your own code (definitions, call sites, diagnostics), → See `samber/cc-skills-golang@golang-gopls` skill (`gopls`). Context7 remains a fallback for docs not indexed on pkg.go.dev.
 
 ```bash
 go get -tool github.com/google/wire/cmd/wire@latest
@@ -227,3 +213,28 @@ Wire generates plain Go constructors, so unit tests use manual injection — no 
 - → See `samber/cc-skills-golang@golang-testing` skill for general testing patterns
 
 If you encounter a bug or unexpected behavior in google/wire, open an issue at <https://github.com/google/wire/issues>.
+
+## Use this skill when
+
+- Working with google wire in Go code.
+- Reviewing or writing Go code that involves google wire.
+
+## Do not use this skill when
+
+- The question is not specific to Go or this topic area.
+
+## Validation
+
+- Apply patterns consistently within the change scope.
+- Run existing tests after changes.
+
+## Examples
+
+- should trigger: "How should I handle google wire in Go?"
+- should not trigger: "How do I set up a new Go project from scratch?"
+
+## Reference files
+- [`evals/evals.json`](evals/evals.json) - evals reference
+- [`references/advanced.md`](references/advanced.md) - advanced reference
+- [`references/recipes.md`](references/recipes.md) - recipes reference
+- [`references/testing.md`](references/testing.md) - testing reference

@@ -36,19 +36,12 @@ Use this skill when the next step is figuring out what to read or touch before c
 
 ## Inputs to gather
 
-**Required before mapping**
-
 - The task or question you are trying to scope.
 - Any file, symbol, directory, or package hints already present in the request.
 - Whether the next phase is likely to be `answer`, `plan`, or `implement`.
 
-**Helpful if present**
-
 - Entry-point files, commands, or failing tests that anchor the investigation.
 - Similar existing features, modules, or prior art the request should follow.
-
-**Only investigate if encountered**
-
 - Build, configuration, or generated files that expand the blast radius.
 - Cross-package ownership boundaries that may change who should implement the work.
 

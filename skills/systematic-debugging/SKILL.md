@@ -15,11 +15,9 @@ Use this skill when the symptom is visible but the root cause is not yet proven.
 ## Use this skill when
 
 - You encounter a failing test, error message, or unexpected behavior.
-- Multiple fix attempts have failed.
 - The symptom is clear but the root cause is unclear.
 - You feel pressure to "just try something" or skip investigation.
 - Behavior changed after recent commits or configuration changes.
-- A production issue, intermittent failure, or blocking regression surfaces.
 - You are about to propose a fix without understanding why the problem exists.
 
 ## Do not use this skill when
@@ -42,7 +40,7 @@ Use this skill when the symptom is visible but the root cause is not yet proven.
 
 - Full error message or test failure output.
 - Exact reproduction command or user action.
-- Environment context: OS, tool versions, config, branch, and recent changes.
+- Environment context: OS, tool versions, config, branch, recent changes.
 - Timeline: when the behavior started and what changed.
 - Scope: which inputs, environments, or packages are affected.
 
@@ -50,16 +48,16 @@ Use this skill when the symptom is visible but the root cause is not yet proven.
 
 1. Capture the full error or failure output.
 2. Reproduce the issue consistently, or document why it is intermittent.
-3. Check recent changes and read the failure message end-to-end.
+3. Read the failure output end-to-end before proposing fixes.
 
 ## Workflow
 
-1. **Investigate root cause:** reproduce the failure, read the error, trace data flow, check boundaries, review recent diffs, and collect working examples.
-2. **Compare failing vs. working cases:** identify differences and ask which difference can explain the observed symptom.
-3. **State one hypothesis:** write one sentence explaining the cause and the evidence.
-4. **Test the hypothesis minimally:** change one variable, add one targeted assertion, or run one focused command.
-5. **Implement the fix only after the cause is supported:** prefer a failing test first, then the smallest fix.
-6. **Stop after repeated failed fixes:** after three failed attempts, reassess the design or escalate rather than guessing.
+1. **Investigate:** reproduce, trace data flow, check boundaries, inspect recent diffs.
+2. **Compare cases:** isolate differences between failing and working behavior.
+3. **State one hypothesis:** one sentence for cause + evidence.
+4. **Test minimally:** one focused check per hypothesis.
+5. **Fix only after cause is supported:** smallest possible fix.
+6. **Reassess after repeated misses:** stop guessing after three failed attempts.
 
 ## Outputs
 
@@ -84,7 +82,7 @@ Use this skill when the symptom is visible but the root cause is not yet proven.
 - The formerly failing path now passes, and relevant regression checks pass.
 - Smoke test:
   - should trigger: "This test still flakes; find the root cause before we change code."
-  - should not trigger: "Rerun the failing test to confirm the fix worked." (-> `verification-before-completion`)
+  - should not trigger: "Rerun the failing test to confirm the fix worked." (→ `verification-before-completion`)
 
 ## Examples
 

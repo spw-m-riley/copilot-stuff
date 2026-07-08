@@ -1,106 +1,42 @@
 ---
 name: golang-error-handling
-description: "Use when wrap or propagate go errors correctly; not when another Go skill is a better fit."
+description: "Idiomatic Golang error handling — creation, wrapping with %w, errors.Is/As, errors.Join, custom error types, sentinel errors, panic/recover, the single handling rule, structured logging with slog, HTTP request logging middleware, and samber/oops for production errors. Built to make logs usable at scale with log aggregation 3rd-party tools. Apply when creating, wrapping, inspecting, or logging errors in Go code. For samber/oops specifics → See `samber/cc-skills-golang@golang-samber-oops` skill; for slog handler ecosystem → See `samber/cc-skills-golang@golang-samber-slog` skill."
 metadata:
   category: go
   audience: general-coding-agent
-  maturity: draft
+  maturity: stable
   kind: reference
 ---
-
-# Go Error Handling
-
-Use this skill when you are creating or reviewing Go error creation, wrapping, propagation, or typed errors.
-
 ## Use this skill when
 
-- The code needs better error construction or wrapping.
-- You need to decide how errors should be propagated or classified.
-- The task is specifically about Go error behavior.
+- You are working on Go error handling concerns and need targeted guidance.
+- The task is primarily in this skill's domain rather than general Go troubleshooting.
 
 ## Do not use this skill when
 
-- The issue is a panic, deadlock, or concurrency problem.
-- You mainly need safety or debugging guidance.
-- The problem is unrelated to errors.
-
-## Routing boundary
-
-| Situation | Use this skill? | Route instead |
-| --- | --- | --- |
-| The request is specifically about go error handling. | Yes | - |
-| The request is better served by an adjacent Go skill. | No | Route debugging work to [`golang-troubleshooting`](../golang-troubleshooting/SKILL.md) and nil/slice/map safety work to [`golang-safety`](../golang-safety/SKILL.md). |
-
-## Guardrails
-
-- Keep the guidance focused on go error handling work.
-- Prefer the narrower Go skill when the request clearly fits one.
-- Do not turn this skill into a generic catch-all.
+- Another specialized Go skill is a clearer match for the task.
+- The request is unrelated to Go implementation, review, or architecture decisions.
 
 ## Validation
 
 - Run `node skills/skill-authoring/scripts/validate-skill-library.mjs skills/golang-error-handling/SKILL.md`.
-- Smoke test:
-  - should trigger: "Wrap or propagate Go errors correctly."
-  - should not trigger: "Set up a Go release pipeline."
+- Run the full validator when this package changes alongside others.
 
 ## Examples
 
-- "Review this Go function for error wrapping mistakes."
-- "Help me define typed errors for this API."
-- "Where should I convert and classify these Go errors?"
-
-# Go Error Handling
-
-Use this skill when you are creating or reviewing Go error creation, wrapping, propagation, or typed errors.
-
-## Use this skill when
-
-- The code needs better error construction or wrapping.
-- You need to decide how errors should be propagated or classified.
-- The task is specifically about Go error behavior.
-
-## Do not use this skill when
-
-- The issue is a panic, deadlock, or concurrency problem.
-- You mainly need safety or debugging guidance.
-- The problem is unrelated to errors.
-
-## Routing boundary
-
-| Situation | Use this skill? | Route instead |
-| --- | --- | --- |
-| The request is specifically about go error handling. | Yes | - |
-| The request is better served by an adjacent Go skill. | No | Route debugging work to [`golang-troubleshooting`](../golang-troubleshooting/SKILL.md) and nil/slice/map safety work to [`golang-safety`](../golang-safety/SKILL.md). |
-
-## Guardrails
-
-- Keep the guidance focused on go error handling work.
-- Prefer the narrower Go skill when the request clearly fits one.
-- Do not turn this skill into a generic catch-all.
-
-## Validation
-
-- Run `node skills/skill-authoring/scripts/validate-skill-library.mjs skills/golang-error-handling/SKILL.md`.
-- Smoke test:
-  - should trigger: "Wrap or propagate Go errors correctly."
-  - should not trigger: "Set up a Go release pipeline."
-
-## Examples
-
-- "Review this Go function for error wrapping mistakes."
-- "Help me define typed errors for this API."
-- "Where should I convert and classify these Go errors?"
+- "Help me apply error handling guidance in this Go codepath."
+- "Review this Go change for error handling issues."
 
 ## Reference files
 
-- [`references/error-creation.md`](./references/error-creation.md)
-- [`references/error-handling.md`](./references/error-handling.md)
-- [`references/error-wrapping.md`](./references/error-wrapping.md)
-- [`evals/evals.json`](./evals/evals.json)
+- [`evals/evals.json`](evals/evals.json) - support file
+- [`references/error-creation.md`](references/error-creation.md) - support file
+- [`references/error-handling.md`](references/error-handling.md) - support file
+- [`references/error-wrapping.md`](references/error-wrapping.md) - support file
 
-## Imported content
 **Persona:** You are a Go reliability engineer. You treat every error as an event that must either be handled or propagated with context — silent failures and duplicate logs are equally unacceptable.
+
+**Orchestration mode:** Use `ultracode` for auditing error handling across a large codebase — orchestrate the five category sub-agents described in the "Parallelizing Error Handling Audits" section (creation, wrapping, single-handling rule, panic/recover, structured logging) and consolidate their findings.
 
 **Modes:**
 
@@ -168,5 +104,3 @@ When auditing error handling across a large codebase, use up to 5 parallel sub-a
 - [samber/slog-http](https://github.com/samber/slog-http)
 - [samber/slog-sentry](https://github.com/samber/slog-sentry)
 - [log/slog package](https://pkg.go.dev/log/slog)
-
-

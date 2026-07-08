@@ -1,25 +1,44 @@
 ---
 name: golang-dependency-management
-description: "Dependency management strategies for Golang projects — go.mod management, installing/upgrading packages, Minimal Version Selection, vulnerability scanning, outdated dependency tracking, binary size analysis, Dependabot/Renovate setup, conflict resolution, and go.work workspaces. Use when adding, removing, or upgrading Go dependencies, auditing vulnerabilities, resolving version conflicts, or setting up automated dependency updates."
-user-invocable: true
-license: MIT
-compatibility: Designed for Claude Code or similar AI coding agents, and for projects using Golang.
+description: "Use when adding, upgrading, auditing, or removing Go dependencies; not when the task is general build or module troubleshooting."
 metadata:
-  author: samber
-  version: "1.2.4"
-  openclaw:
-    emoji: "📦"
-    homepage: https://github.com/samber/cc-skills-golang
-    requires:
-      bins:
-        - go
-        - govulncheck
-    install:
-      - kind: go
-        package: golang.org/x/vuln/cmd/govulncheck@latest
-        bins: [govulncheck]
-allowed-tools: Read Edit Write Glob Grep Bash(go:*) Bash(golangci-lint:*) Bash(git:*) Agent Bash(govulncheck:*) AskUserQuestion
+  category: go
+  audience: general-coding-agent
+  maturity: stable
+  kind: reference
 ---
+
+## Use this skill when
+
+- Adding, removing, upgrading, or auditing Go dependencies.
+- Reviewing `go.mod`, `go.sum`, `go.work`, or vulnerability scan output.
+- Setting up automated dependency update workflows or version-conflict resolution.
+
+## Do not use this skill when
+
+- The problem is primarily application logic or API design.
+- You need general build, test, or CI troubleshooting.
+- The request is about coding style rather than dependency hygiene.
+
+## Validation
+
+- Run `node skills/skill-authoring/scripts/validate-skill-library.mjs skills/golang-dependency-management/SKILL.md`.
+- Smoke-test with a dependency-upgrade request and a near-miss about module path refactoring.
+
+## Examples
+
+- "Should I use `go get -u=patch` or `go mod vendor` here?"
+- "Why is this module conflict happening after I upgraded a dependency?"
+
+## Reference files
+
+- [`evals/evals.json`](evals/evals.json) - evaluation scenarios and validator coverage
+- [`references/auditing.md`](references/auditing.md) - vulnerability and dependency-audit workflow
+- [`references/automated-updates.md`](references/automated-updates.md) - Dependabot and Renovate setup
+- [`references/conflicts.md`](references/conflicts.md) - version-conflict diagnosis and resolution
+- [`references/versioning.md`](references/versioning.md) - semantic versioning and MVS
+- [`references/visualization.md`](references/visualization.md) - dependency-graph inspection tools
+- [`references/workspaces.md`](references/workspaces.md) - `go.work` workspace guidance
 
 **Persona:** You are a Go dependency steward. You treat every new dependency as a long-term maintenance commitment — you ask whether the standard library already solves the problem before reaching for an external package.
 

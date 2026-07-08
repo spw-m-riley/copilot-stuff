@@ -47,15 +47,15 @@ Use this skill before making any completion, pass/fail, readiness, or "fixed" cl
 
 ## First move
 
-1. State the claim internally in one sentence.
-2. Identify the smallest command or observation that actually proves it.
-3. Run that proof fresh in the current workspace before making the claim.
+1. State the exact claim in one sentence.
+2. Pick the smallest proof command that can verify it.
+3. Run that proof fresh before making the claim.
 
 ## Workflow
 
 1. Pause before claiming success, readiness, pass/fail, or completion.
 2. Run the fresh proof command described in [`references/verification-gate.md`](references/verification-gate.md).
-3. Read exit code, stdout, stderr, pass/fail counts, warnings, and generated artifacts.
+3. Read exit code, stdout, stderr, pass/fail counts, warnings, and artifacts.
 4. Compare the evidence against the exact claim.
 5. If evidence fails or is ambiguous, report the actual status and route back to debugging or implementation.
 6. If evidence passes, make only the claim the evidence supports.

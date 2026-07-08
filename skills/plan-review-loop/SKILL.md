@@ -47,23 +47,18 @@ Use this skill to run structured plan reviews after `/plan` completes, with cust
 
 ## First move
 
-1. After `/plan` completes, invoke the skill explicitly: `Use the /plan-review-loop skill to review and refine the current plan`
-2. Reviewers analyze the plan according to their personas and rubrics
-3. Each reviewer returns a verdict token: `[PLAN-APPROVED]` or `[PLAN-REVISE-NEEDED]`
-4. If all return `[PLAN-APPROVED]` in the same round → plan is ready
-5. If any returns `[PLAN-REVISE-NEEDED]` → update your plan and invoke the skill again
-6. If you reach 3 rounds without unanimous approval → the skill exits and you decide the next step
+1. After `/plan`, invoke explicitly: `Use the /plan-review-loop skill to review and refine the current plan`.
+2. Collect reviewer verdict tokens: `[PLAN-APPROVED]` or `[PLAN-REVISE-NEEDED]`.
+3. Unanimous same-round approval means ready; any revise token means update and rerun.
+4. Stop at 3 rounds if unanimous approval is not reached.
 
 ## Workflow
 
-1. **Invoke:** After `/plan` finishes, explicitly request the review loop skill
-2. **Review Round:** Each configured reviewer (Jason and Freddy by default) analyzes the plan
-3. **Collect verdicts:** Reviewers return tokens; parse the explicit `[PLAN-APPROVED]` or `[PLAN-REVISE-NEEDED]`
-4. **Decision:**
-   - All reviewers return `[PLAN-APPROVED]` in the same round → ✅ plan is approved, proceed to implementation
-   - At least one returns `[PLAN-REVISE-NEEDED]` → ❌ plan needs revision; update it and request another review
-   - Round 3 completes without unanimous approval → ⏱️ max rounds reached; you decide next steps
-5. **Customize (optional):** Edit or create `references/personas/*.md` to replace or add reviewers
+1. Invoke after `/plan` finishes.
+2. Run one review round across configured reviewers (Jason/Freddy by default).
+3. Parse exact verdict tokens.
+4. Decide: unanimous approve in same round → proceed; any revise token → revise and rerun; after round 3 without unanimity → stop and decide next step outside skill.
+5. Optionally customize reviewers in `references/personas/*.md`.
 
 ## Outputs
 
@@ -93,27 +88,9 @@ The skill validates successfully when:
 
 ## Examples
 
-- **Approve path (happy path):**
-  ```
-  You: Use the /plan-review-loop skill to review and refine the current plan
-  Jason: [PLAN-APPROVED] The tasks are well-structured and validation is solid.
-  Freddy: [PLAN-APPROVED] Architecture is clear and risk mitigation is covered.
-  Result: ✅ Plan approved! Ready to proceed.
-  ```
-
-- **Revise path (iteration):**
-  ```
-  You: Use the /plan-review-loop skill to review and refine the current plan
-  Jason: [PLAN-REVISE-NEEDED] Missing rollback procedure in task 5.
-  Freddy: [PLAN-APPROVED] Architecture looks good.
-  Result: ❌ Not approved (Jason needs revision). Update the plan and request another round.
-  ```
-
-- **Customization:**
-  ```
-  Create or edit references/personas/alice.md to add a custom security reviewer.
-  Then invoke: Use the /plan-review-loop skill with Alice, Jason, and Freddy as reviewers.
-  ```
+- "Use Jason and Freddy to review this finished `/plan` before implementation."
+- "Re-run plan review after I revised rollback and validation details."
+- "Add `references/personas/alice.md` and run the loop with Alice included."
 
 ## Reference files
 

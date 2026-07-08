@@ -1,103 +1,15 @@
 ---
 name: golang-code-style
-description: "Use when review go code style and idioms; not when another Go skill is a better fit."
+description: "Golang code style conventions — line length and breaking, variable declarations, control flow clarity, when comments help vs hurt. Use when writing or reviewing Go code, asking about style or clarity, or establishing project coding standards. Not for naming conventions (→ See `samber/cc-skills-golang@golang-naming` skill), linter configuration (→ See `samber/cc-skills-golang@golang-lint` skill), or doc comments (→ See `samber/cc-skills-golang@golang-documentation` skill)."
 metadata:
-  category: go
-  audience: general-coding-agent
-  maturity: draft
+  category: golang
+  audience: developer
+  maturity: stable
   kind: reference
 ---
 
-# Go Code Style
+**Orchestration mode:** Use `ultracode` when reviewing code style across a large codebase — orchestrate the sub-agents described in the "Parallelizing Code Style Reviews" section, each covering an independent style concern, and merge their findings.
 
-Use this skill when you need to normalize Go style, idioms, package shape, or small structural conventions.
-
-## Use this skill when
-
-- The request is about idiomatic Go style rather than architecture or a specific bug.
-- You want a consistency pass over naming, formatting choices, or package organization.
-- The task is review-oriented and style is the main question.
-
-## Do not use this skill when
-
-- You need deeper naming guidance, not general style guidance.
-- The real problem is design, runtime behavior, or a compile/test failure.
-- The task belongs in a more specific Go skill.
-
-## Routing boundary
-
-| Situation | Use this skill? | Route instead |
-| --- | --- | --- |
-| The request is specifically about go code style. | Yes | - |
-| The request is better served by an adjacent Go skill. | No | Route naming questions to [`golang-naming`](../golang-naming/SKILL.md) and Go modernization questions to [`golang-modernize`](../golang-modernize/SKILL.md). |
-
-## Guardrails
-
-- Keep the guidance focused on go code style work.
-- Prefer the narrower Go skill when the request clearly fits one.
-- Do not turn this skill into a generic catch-all.
-
-## Validation
-
-- Run `node skills/skill-authoring/scripts/validate-skill-library.mjs skills/golang-code-style/SKILL.md`.
-- Smoke test:
-  - should trigger: "Review Go code style and idioms."
-  - should not trigger: "Fix a race condition in Go concurrency code."
-
-## Examples
-
-- "Review this Go package for style and idiomatic structure."
-- "Normalize the code style in these Go handlers without changing behavior."
-- "Tell me which style issues matter most in this Go diff."
-
-# Go Code Style
-
-Use this skill when you need to normalize Go style, idioms, package shape, or small structural conventions.
-
-## Use this skill when
-
-- The request is about idiomatic Go style rather than architecture or a specific bug.
-- You want a consistency pass over naming, formatting choices, or package organization.
-- The task is review-oriented and style is the main question.
-
-## Do not use this skill when
-
-- You need deeper naming guidance, not general style guidance.
-- The real problem is design, runtime behavior, or a compile/test failure.
-- The task belongs in a more specific Go skill.
-
-## Routing boundary
-
-| Situation | Use this skill? | Route instead |
-| --- | --- | --- |
-| The request is specifically about go code style. | Yes | - |
-| The request is better served by an adjacent Go skill. | No | Route naming questions to [`golang-naming`](../golang-naming/SKILL.md) and Go modernization questions to [`golang-modernize`](../golang-modernize/SKILL.md). |
-
-## Guardrails
-
-- Keep the guidance focused on go code style work.
-- Prefer the narrower Go skill when the request clearly fits one.
-- Do not turn this skill into a generic catch-all.
-
-## Validation
-
-- Run `node skills/skill-authoring/scripts/validate-skill-library.mjs skills/golang-code-style/SKILL.md`.
-- Smoke test:
-  - should trigger: "Review Go code style and idioms."
-  - should not trigger: "Fix a race condition in Go concurrency code."
-
-## Examples
-
-- "Review this Go package for style and idiomatic structure."
-- "Normalize the code style in these Go handlers without changing behavior."
-- "Tell me which style issues matter most in this Go diff."
-
-## Reference files
-
-- [`references/details.md`](./references/details.md)
-- [`evals/evals.json`](./evals/evals.json)
-
-## Imported content
 > **Community default.** A company skill that explicitly supersedes `samber/cc-skills-golang@golang-code-style` skill takes precedence.
 
 # Go Code Style
@@ -278,7 +190,7 @@ Pass small types (`string`, `int`, `bool`, `time.Time`) by value. Use pointers w
 - **One primary type per file** when it has significant methods
 - **Blank imports** (`_ "pkg"`) register side effects (init functions). Restricting them to `main` and test packages makes side effects visible at the application root, not hidden in library code
 - **Dot imports** pollute the namespace and make it impossible to tell where a name comes from — never use in library code
-- **Unexport aggressively** — you can always export later; unexporting is a breaking change
+- **Unexport aggressively** — you can always export later; unexporting is a breaking change. → See `samber/cc-skills-golang@golang-gopls` skill to unexport safely — its rename updates every call site atomically and refuses the change when lowercasing a method would break interface satisfaction, a breakage grep/sed silently ships.
 
 ## String Handling
 
@@ -315,5 +227,27 @@ Many rules are enforced automatically: `gofmt`, `gofumpt`, `goimports`, `gocriti
 - → See the `samber/cc-skills-golang@golang-design-patterns` skill for functional options, builders, constructors
 - → See the `samber/cc-skills-golang@golang-lint` skill for automated formatting enforcement
 - → See `samber/cc-skills-golang@golang-continuous-integration` skill for automated AI-driven code review in CI using these guidelines
+- → See `samber/cc-skills-golang@golang-refactoring` skill for mechanically applying guard-clause conversion, function extraction, and options-struct migration safely across many call sites once a review surfaces violations at scale
 
+## Use this skill when
 
+- Working with code style in Go code.
+- Reviewing or writing Go code that involves code style.
+
+## Do not use this skill when
+
+- The question is not specific to Go or this topic area.
+
+## Validation
+
+- Apply patterns consistently within the change scope.
+- Run existing tests after changes.
+
+## Examples
+
+- should trigger: "How should I handle code style in Go?"
+- should not trigger: "How do I set up a new Go project from scratch?"
+
+## Reference files
+- [`evals/evals.json`](evals/evals.json) - evals reference
+- [`references/details.md`](references/details.md) - details reference

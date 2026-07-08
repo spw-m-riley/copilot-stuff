@@ -1,106 +1,42 @@
 ---
 name: golang-concurrency
-description: "Use when fix a go race condition or deadlock; not when another Go skill is a better fit."
+description: "Golang concurrency patterns. Use when writing or reviewing concurrent Go code involving goroutines, channels, select, locks, sync primitives, errgroup, singleflight, worker pools, or fan-out/fan-in pipelines. Also triggers when you detect goroutine leaks, race conditions, channel ownership issues, or need to choose between channels and mutexes."
 metadata:
   category: go
   audience: general-coding-agent
-  maturity: draft
+  maturity: stable
   kind: reference
 ---
-
-# Go Concurrency
-
-Use this skill when you are working on goroutines, channels, sync primitives, cancellation, or race conditions in Go.
-
 ## Use this skill when
 
-- The task involves concurrent execution, synchronization, or coordination in Go.
-- You need to reason about deadlocks, races, worker pools, or pipeline patterns.
-- Cancellation and coordination are part of the API design.
+- You are working on Go concurrency concerns and need targeted guidance.
+- The task is primarily in this skill's domain rather than general Go troubleshooting.
 
 ## Do not use this skill when
 
-- The code is single-threaded and the bug is unrelated to concurrency.
-- You mainly need debugging methodology for a specific failure.
-- The problem is context propagation rather than concurrency itself.
-
-## Routing boundary
-
-| Situation | Use this skill? | Route instead |
-| --- | --- | --- |
-| The request is specifically about go concurrency. | Yes | - |
-| The request is better served by an adjacent Go skill. | No | Use [`golang-troubleshooting`](../golang-troubleshooting/SKILL.md) for a specific bug and [`golang-context`](../golang-context/SKILL.md) when cancellation or deadlines are the primary topic. |
-
-## Guardrails
-
-- Keep the guidance focused on go concurrency work.
-- Prefer the narrower Go skill when the request clearly fits one.
-- Do not turn this skill into a generic catch-all.
+- Another specialized Go skill is a clearer match for the task.
+- The request is unrelated to Go implementation, review, or architecture decisions.
 
 ## Validation
 
 - Run `node skills/skill-authoring/scripts/validate-skill-library.mjs skills/golang-concurrency/SKILL.md`.
-- Smoke test:
-  - should trigger: "Fix a Go race condition or deadlock."
-  - should not trigger: "Choose between Go slices and maps."
+- Run the full validator when this package changes alongside others.
 
 ## Examples
 
-- "Investigate this Go deadlock and explain the coordination bug."
-- "Review these goroutines and channels for race conditions."
-- "Help me design a worker pool with proper cancellation."
-
-# Go Concurrency
-
-Use this skill when you are working on goroutines, channels, sync primitives, cancellation, or race conditions in Go.
-
-## Use this skill when
-
-- The task involves concurrent execution, synchronization, or coordination in Go.
-- You need to reason about deadlocks, races, worker pools, or pipeline patterns.
-- Cancellation and coordination are part of the API design.
-
-## Do not use this skill when
-
-- The code is single-threaded and the bug is unrelated to concurrency.
-- You mainly need debugging methodology for a specific failure.
-- The problem is context propagation rather than concurrency itself.
-
-## Routing boundary
-
-| Situation | Use this skill? | Route instead |
-| --- | --- | --- |
-| The request is specifically about go concurrency. | Yes | - |
-| The request is better served by an adjacent Go skill. | No | Use [`golang-troubleshooting`](../golang-troubleshooting/SKILL.md) for a specific bug and [`golang-context`](../golang-context/SKILL.md) when cancellation or deadlines are the primary topic. |
-
-## Guardrails
-
-- Keep the guidance focused on go concurrency work.
-- Prefer the narrower Go skill when the request clearly fits one.
-- Do not turn this skill into a generic catch-all.
-
-## Validation
-
-- Run `node skills/skill-authoring/scripts/validate-skill-library.mjs skills/golang-concurrency/SKILL.md`.
-- Smoke test:
-  - should trigger: "Fix a Go race condition or deadlock."
-  - should not trigger: "Choose between Go slices and maps."
-
-## Examples
-
-- "Investigate this Go deadlock and explain the coordination bug."
-- "Review these goroutines and channels for race conditions."
-- "Help me design a worker pool with proper cancellation."
+- "Help me apply concurrency guidance in this Go codepath."
+- "Review this Go change for concurrency issues."
 
 ## Reference files
 
-- [`references/channels-and-select.md`](./references/channels-and-select.md)
-- [`references/pipelines.md`](./references/pipelines.md)
-- [`references/sync-primitives.md`](./references/sync-primitives.md)
-- [`evals/evals.json`](./evals/evals.json)
+- [`evals/evals.json`](evals/evals.json) - support file
+- [`references/channels-and-select.md`](references/channels-and-select.md) - support file
+- [`references/pipelines.md`](references/pipelines.md) - support file
+- [`references/sync-primitives.md`](references/sync-primitives.md) - support file
 
-## Imported content
 **Persona:** You are a Go concurrency engineer. You assume every goroutine is a liability until proven necessary — correctness and leak-freedom come before performance.
+
+**Orchestration mode:** Use `ultracode` for auditing concurrent code across a large codebase — orchestrate the five sub-agents described in the "Parallelizing Concurrency Audits" section and consolidate their findings into one report.
 
 **Modes:**
 
@@ -233,5 +169,3 @@ Keep existing tools:
 
 - [Go Concurrency Patterns: Pipelines](https://go.dev/blog/pipelines)
 - [Effective Go: Concurrency](https://go.dev/doc/effective_go#concurrency)
-
-

@@ -1,107 +1,13 @@
 ---
 name: golang-naming
-description: "Use when choose names for go identifiers or packages; not when another Go skill is a better fit."
+description: "Go (Golang) naming conventions — covers packages, constructors, structs, interfaces, constants, enums, errors, booleans, receivers, getters/setters, functional options, acronyms, test functions, and subtest names. Use this skill when writing new Go code, reviewing or refactoring, choosing between naming alternatives (New vs NewTypeName, isConnected vs connected, ErrNotFound vs NotFoundError, StatusReady vs StatusUnknown at iota 0), debating Go package names (utils/helpers anti-patterns), or asking about Go naming best practices. Also trigger when the user mentions MixedCaps vs snake_case, ALL_CAPS constants, Get-prefix on getters, or error string casing. Do NOT use for general Go implementation questions that don't involve naming decisions."
 metadata:
-  category: go
-  audience: general-coding-agent
-  maturity: draft
+  category: golang
+  audience: developer
+  maturity: stable
   kind: reference
 ---
 
-# Go Naming
-
-Use this skill when you are choosing names for Go packages, files, identifiers, tests, or exported APIs.
-
-## Use this skill when
-
-- The task is primarily about naming conventions or clarity.
-- You need to review package, type, function, or test names.
-- The request is about public API names or internal readability.
-
-## Do not use this skill when
-
-- The issue is about architecture or behavior rather than names.
-- You need a general style review instead of naming guidance.
-- The task is better handled by a broader design skill.
-
-## Routing boundary
-
-| Situation | Use this skill? | Route instead |
-| --- | --- | --- |
-| The request is specifically about go naming. | Yes | - |
-| The request is better served by an adjacent Go skill. | No | Route broad style work to [`golang-code-style`](../golang-code-style/SKILL.md) and architecture questions to [`golang-design-patterns`](../golang-design-patterns/SKILL.md). |
-
-## Guardrails
-
-- Keep the guidance focused on go naming work.
-- Prefer the narrower Go skill when the request clearly fits one.
-- Do not turn this skill into a generic catch-all.
-
-## Validation
-
-- Run `node skills/skill-authoring/scripts/validate-skill-library.mjs skills/golang-naming/SKILL.md`.
-- Smoke test:
-  - should trigger: "Choose names for Go identifiers or packages."
-  - should not trigger: "Write a Go integration test."
-
-## Examples
-
-- "What should I name this Go package and its exported types?"
-- "Review these Go function names for clarity."
-- "Suggest better names for these tests and files."
-
-# Go Naming
-
-Use this skill when you are choosing names for Go packages, files, identifiers, tests, or exported APIs.
-
-## Use this skill when
-
-- The task is primarily about naming conventions or clarity.
-- You need to review package, type, function, or test names.
-- The request is about public API names or internal readability.
-
-## Do not use this skill when
-
-- The issue is about architecture or behavior rather than names.
-- You need a general style review instead of naming guidance.
-- The task is better handled by a broader design skill.
-
-## Routing boundary
-
-| Situation | Use this skill? | Route instead |
-| --- | --- | --- |
-| The request is specifically about go naming. | Yes | - |
-| The request is better served by an adjacent Go skill. | No | Route broad style work to [`golang-code-style`](../golang-code-style/SKILL.md) and architecture questions to [`golang-design-patterns`](../golang-design-patterns/SKILL.md). |
-
-## Guardrails
-
-- Keep the guidance focused on go naming work.
-- Prefer the narrower Go skill when the request clearly fits one.
-- Do not turn this skill into a generic catch-all.
-
-## Validation
-
-- Run `node skills/skill-authoring/scripts/validate-skill-library.mjs skills/golang-naming/SKILL.md`.
-- Smoke test:
-  - should trigger: "Choose names for Go identifiers or packages."
-  - should not trigger: "Write a Go integration test."
-
-## Examples
-
-- "What should I name this Go package and its exported types?"
-- "Review these Go function names for clarity."
-- "Suggest better names for these tests and files."
-
-## Reference files
-
-- [`references/functions-methods.md`](./references/functions-methods.md)
-- [`references/identifiers.md`](./references/identifiers.md)
-- [`references/packages-files.md`](./references/packages-files.md)
-- [`references/testing.md`](./references/testing.md)
-- [`references/types-errors.md`](./references/types-errors.md)
-- [`evals/evals.json`](./evals/evals.json)
-
-## Imported content
 > **Community default.** A company skill that explicitly supersedes `samber/cc-skills-golang@golang-naming` skill takes precedence.
 
 # Go Naming Conventions
@@ -237,6 +143,8 @@ For complete rules, examples, and rationale, see:
 | Unnecessary import aliases | Aliases add cognitive load. Only alias on collision — `mrand "math/rand"` |
 | Inconsistent concept names | Using `user`/`account`/`person` for the same concept forces readers to track synonyms — pick one name |
 
+Applying these fixes means renaming existing identifiers — → See `samber/cc-skills-golang@golang-gopls` skill to do it safely: its rename updates every call site across the workspace and refuses a rename that would break interface satisfaction, which a grep/sed or manual Edit-based rename silently misses.
+
 ## Enforce with Linters
 
 Many naming convention issues are caught automatically by linters: `revive`, `predeclared`, `misspell`, `errname`. See `samber/cc-skills-golang@golang-lint` skill for configuration and usage.
@@ -246,5 +154,32 @@ Many naming convention issues are caught automatically by linters: `revive`, `pr
 - → See `samber/cc-skills-golang@golang-code-style` skill for broader formatting and style decisions
 - → See `samber/cc-skills-golang@golang-structs-interfaces` skill for interface naming depth and receiver design
 - → See `samber/cc-skills-golang@golang-lint` skill for automated enforcement (revive, predeclared, misspell, errname)
+- → See `samber/cc-skills-golang@golang-gopls` skill for safe rename when applying a naming fix
+- → See `samber/cc-skills-golang@golang-refactoring` skill for how to apply a rename safely at scale (gopls Rename/Inline, blast-radius mapping, staged PR workflow) once you've decided what to rename identifiers to
 
+## Use this skill when
 
+- Working with naming in Go code.
+- Reviewing or writing Go code that involves naming.
+
+## Do not use this skill when
+
+- The question is not specific to Go or this topic area.
+
+## Validation
+
+- Apply patterns consistently within the change scope.
+- Run existing tests after changes.
+
+## Examples
+
+- should trigger: "How should I handle naming in Go?"
+- should not trigger: "How do I set up a new Go project from scratch?"
+
+## Reference files
+- [`evals/evals.json`](evals/evals.json) - evals reference
+- [`references/functions-methods.md`](references/functions-methods.md) - functions methods reference
+- [`references/identifiers.md`](references/identifiers.md) - identifiers reference
+- [`references/packages-files.md`](references/packages-files.md) - packages files reference
+- [`references/testing.md`](references/testing.md) - testing reference
+- [`references/types-errors.md`](references/types-errors.md) - types errors reference
