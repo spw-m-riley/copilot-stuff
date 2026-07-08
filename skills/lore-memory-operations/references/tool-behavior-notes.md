@@ -69,6 +69,22 @@ Neither format currently supports import — both are export-only, and both only
 
 *(Added alongside `extensions/lore` PR #52, the OKF export bridge.)*
 
+## OKF import via memory_portable_bundle action=import (format=okf only)
+
+`memory_portable_bundle` can also import an OKF bundle directory back into Lore's own semantic memory, making its concepts retrievable via `memory_search`:
+
+```
+memory_portable_bundle({ action: "import", bundlePath: "path/to/bundle", format: "okf" })
+```
+
+- Each concept is retained as a `type: "okf_concept"` row, tagged `okf_import`, at a lower default confidence (`0.7`) than self-authored memory (`memory_save`'s default is `0.9`) — this is externally sourced content the assistant did not verify itself.
+- **Always a manual, explicit tool call.** Never wire this into a hook, schedule, or any automatic trigger — importing arbitrary bundle content (potentially from another tool or person) as retrievable memory is a deliberate trust decision, not ambient background work.
+- Re-importing the same bundle reinforces existing rows (matched by a stable `repository::conceptId` canonical key) instead of duplicating them — but a later import does **not** overwrite already-stored content; the first import's content wins.
+- Use this when a teammate or another tool hands you an OKF bundle and you want the assistant to actually be able to recall it in future sessions, not just view it in the visualizer.
+- To revert an unwanted import: `memory_search(query: "okf_import", type: "okf_concept")` to find the affected rows, then `memory_forget(id: ..., supersededBy: "reverted okf import")` per row.
+
+*(Added alongside `extensions/lore` PR to close the export-only gap in the original OKF bridge.)*
+
 ## Baseline capture and validation hygiene
 
 - Before reloading the Lore extension to capture a baseline ahead of extraction/ranking changes, account for `autoProcessOnSessionStart` — a reload can consume deferred extraction jobs and mutate the would-be baseline under unchanged logic.
