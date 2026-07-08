@@ -32,6 +32,7 @@ permissions-config.json
 
 # Runtime scratch and Copilot CLI state directories
 .tmp/
+run/
 restart/
 ide/
 plugin-data/
