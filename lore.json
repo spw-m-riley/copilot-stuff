@@ -1,6 +1,20 @@
 {
   "$schema": "./extensions/lore/schemas/lore.schema.json",
   "enabled": true,
+  "localInference": {
+    "enabled": true,
+    "baseUrl": "http://127.0.0.1:12434/v1",
+    "model": "docker.io/ai/gemma4:latest",
+    "timeoutMs": 120000,
+    "maxInputChars": 24000,
+    "maxOutputTokens": 1200,
+    "temperature": 0,
+    "embeddings": {
+      "enabled": true,
+      "model": "docker.io/ai/nomic-embed-text-v2-moe:latest",
+      "maxInputs": 12
+    }
+  },
   "latencyTargetsMs": {
     "sessionStartP95": 100,
     "userPromptSubmittedP95": 150
@@ -13,7 +27,8 @@
     "enabled": true,
     "autoEnqueueOnSessionEnd": true,
     "autoProcessOnSessionStart": true,
-    "processCurrentRepositoryOnly": true
+    "processCurrentRepositoryOnly": true,
+    "useLocalInference": true
   },
   "maintenanceScheduler": {
     "enabled": true,
