@@ -7,12 +7,49 @@
     "model": "docker.io/ai/gemma4:latest",
     "timeoutMs": 120000,
     "maxInputChars": 24000,
-    "maxOutputTokens": 1200,
+    "maxOutputTokens": 2400,
     "temperature": 0,
+    "reflection": {
+      "enabledByDefault": true
+    },
+    "queryExpansion": {
+      "enabled": true,
+      "maxTerms": 6
+    },
+    "contextCompression": {
+      "enabled": true,
+      "minInputTokens": 900,
+      "targetTokens": 700,
+      "maxSections": 8
+    },
+    "analysis": {
+      "consolidation": {
+        "enabled": true,
+        "maxItems": 4
+      },
+      "contradictions": {
+        "enabled": true,
+        "maxItems": 4
+      },
+      "trends": {
+        "enabled": true,
+        "maxItems": 4,
+        "minOccurrences": 2
+      },
+      "qualityEvaluation": {
+        "enabled": true,
+        "minSupport": 0.8,
+        "minSpecificity": 0.6,
+        "minUsefulness": 0.6
+      }
+    },
     "embeddings": {
       "enabled": true,
-      "model": "docker.io/ai/nomic-embed-text-v2-moe:latest",
-      "maxInputs": 12
+      "model": "docker.io/ai/embeddinggemma:latest",
+      "maxInputs": 41,
+      "topK": 6,
+      "minSimilarity": 0.2,
+      "groundingMinSimilarity": 0.35
     }
   },
   "latencyTargetsMs": {

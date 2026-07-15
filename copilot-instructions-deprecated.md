@@ -288,3 +288,16 @@ Example format:
 
 **Current guidance:** Use rule Y instead, or see [link to updated approach].
 ```
+
+---
+
+### Rule 137 (Deprecated: Incorrect signature diagnosis)
+
+**Original text:**
+```
+137. [GIT] Never use `rtk git commit` when a repository requires signed commits unless its signature preservation has been verified; run `git commit -S` through the configured trusted signer and verify the resulting commit signature before pushing - RTK created an unsigned commit despite `commit.gpgsign=true`
+```
+
+**Reason for deprecation:** The commit object contained a valid SSH `gpgsig` block. `git log --show-signature` printed `No signature` because `gpg.ssh.allowedSignersFile` was not configured, so the rule blamed RTK for a verifier-configuration limitation.
+
+**Current guidance:** See Rule 138 in `copilot-instructions.md`; inspect the commit object for the SSH signature payload and distinguish signature presence from trusted identity verification.
