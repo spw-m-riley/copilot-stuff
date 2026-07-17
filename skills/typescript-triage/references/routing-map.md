@@ -17,7 +17,7 @@ Reference for the `typescript-triage` entry skill. Use this when symptom descrip
 | --- | --- |
 | Remove or replace `any` in application code | [`typescript-any-eliminator`](../../typescript-any-eliminator/SKILL.md) |
 | Validate untrusted JSON, request bodies, or stored records | [`schema-boundary-typing`](../../schema-boundary-typing/SKILL.md) |
-| Add compile-time tests for a type contract or regression | [`type-test-authoring`](../../type-test-authoring/SKILL.md) |
+| Add compile-time tests for a type contract or regression | [`test-driven-development`](../../test-driven-development/SKILL.md) |
 | Clean up `tsconfig`, enable stricter flags | [`tsconfig-hardening`](../../tsconfig-hardening/SKILL.md) |
 | Set up project references across packages | [`project-references-migration`](../../project-references-migration/SKILL.md) |
 
@@ -29,7 +29,7 @@ These are the typical multi-skill flows. Use them when a single routing is not e
 | --- | --- |
 | `tsconfig-hardening` → `tsc-error-triage` | Config change causes new compiler errors |
 | `typescript-any-eliminator` → `schema-boundary-typing` | Removing `any` exposes an unvalidated external input |
-| `schema-boundary-typing` → `type-test-authoring` | Boundary is now typed; lock it with compile-time tests |
+| `schema-boundary-typing` → `test-driven-development` | Boundary is now typed; lock it with compile-time tests |
 | `project-references-migration` → `tsc-error-triage` | References added but source-level errors remain |
 | `tsc-error-triage` → `tsconfig-hardening` | Fixing errors reveals a config root cause |
 

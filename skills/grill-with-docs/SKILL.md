@@ -1,6 +1,7 @@
 ---
 name: grill-with-docs
 description: "Use when stress-testing a plan against the project's domain model, when domain terminology is fuzzy or inconsistent, or when the user says 'grill me' about a design that should produce or update CONTEXT.md and ADRs."
+disable-model-invocation: true
 metadata:
   category: planning
   audience: general-coding-agent
@@ -116,7 +117,7 @@ Use this skill to stress-test a plan or design through relentless interrogation 
 
 ## Reference files
 
+- [references/session-playbook.md](references/session-playbook.md) — shared interrogation patterns: question sequencing, scenario construction, contradiction surfacing, fuzzy-term resolution, and session completion criteria
 - [references/context-format.md](references/context-format.md) — CONTEXT.md format specification: structure, rules, single vs. multi-context repos
 - [references/adr-format.md](references/adr-format.md) — ADR format, offering criteria, qualifying categories, and optional sections
-- [references/session-playbook.md](references/session-playbook.md) — interrogation patterns: scenario construction, contradiction surfacing, fuzzy-term resolution
 - [assets/context-template.md](assets/context-template.md) — starter template for a new CONTEXT.md

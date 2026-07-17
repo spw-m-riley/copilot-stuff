@@ -70,7 +70,7 @@ Use this skill when the task is to produce a structured review result for a code
 1. Identify the review target and classify the overall scope as `focused`, `mixed`, or `broad`.
 2. Mark each suspicious area as `primary`, `secondary`, or `pre-existing` using [`references/diff-scope.md`](references/diff-scope.md).
 3. Review the primary surface first. Prefer correctness, safety, and merge-blocking concerns over style or speculative cleanup.
-4. For each possible finding, apply the confidence anchors and evidence rules in [`references/confidence-and-evidence.md`](references/confidence-and-evidence.md). Drop or downgrade any claim that cannot meet the evidence bar.
+4. For each possible finding, apply the confidence anchors and evidence rules in [`references/confidence-and-evidence.md`](references/confidence-and-evidence.md) and the shared review mechanics in [`references/shared-review-operations.md`](references/shared-review-operations.md). Drop or downgrade any claim that cannot meet the evidence bar.
 5. Record surviving findings in the JSON shape documented by [`references/findings-schema.md`](references/findings-schema.md) and defined by [`assets/findings.schema.json`](assets/findings.schema.json).
 6. Route specialist questions only when needed using [`references/persona-routing.md`](references/persona-routing.md), and record that routing on the affected finding.
 7. Run a second-pass validator using the prompt contract in [`references/validator-subagent.md`](references/validator-subagent.md). The validator may confirm, reject, or request more proof, but it must not invent an unrelated new finding set.
@@ -118,6 +118,7 @@ Use this skill when the task is to produce a structured review result for a code
 - [`references/findings-schema.md`](references/findings-schema.md) - field-by-field guidance for the findings artifact and the meaning of each machine-readable field
 - [`references/diff-scope.md`](references/diff-scope.md) - how to classify overall review breadth and per-finding ownership of the changed surface
 - [`references/confidence-and-evidence.md`](references/confidence-and-evidence.md) - confidence anchors, evidence bars, and suppression rules for weak claims
+- [`references/shared-review-operations.md`](references/shared-review-operations.md) - scope-first, evidence-first, and common guardrails shared with review-comment-resolution
 - [`references/validator-subagent.md`](references/validator-subagent.md) - second-pass validator prompt and when to use each validator mode
 - [`references/persona-routing.md`](references/persona-routing.md) - always-on vs conditional specialist routing mapped only to real local agents
 - [`assets/findings.schema.json`](assets/findings.schema.json) - JSON Schema for structured review findings output

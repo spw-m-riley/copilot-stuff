@@ -31,7 +31,12 @@ const VALID_KINDS = new Set(["task", "reference"]);
 
 // Metadata contract: only these top-level keys are permitted in skill frontmatter.
 // See skills/skill-authoring/references/metadata-contract.md for rationale.
-const ALLOWED_TOP_LEVEL_KEYS = new Set(["name", "description", "metadata"]);
+const ALLOWED_TOP_LEVEL_KEYS = new Set([
+  "name",
+  "description",
+  "metadata",
+  "disable-model-invocation",
+]);
 
 // Upstream provenance keys that must not appear inside the metadata block.
 const FORBIDDEN_METADATA_KEYS = new Set([
@@ -209,16 +214,20 @@ function stripFencedCodeBlocks(body) {
 }
 
 function findHeadingLineIndex(lines, heading) {
+  return findHeadingLineIndexes(lines, heading)[0] ?? -1;
+}
+
+function findHeadingLineIndexes(lines, heading) {
+  const indexes = [];
   for (let index = 0; index < lines.length; index += 1) {
     const line = lines[index];
     const leadingSpaces = line.length - line.trimStart().length;
     const normalizedHeadingLine = line.trim().replace(/\s+#+\s*$/, "");
     if (leadingSpaces < 4 && normalizedHeadingLine === heading) {
-      return index;
+      indexes.push(index);
     }
   }
-
-  return -1;
+  return indexes;
 }
 
 function getSectionText(body, heading) {
@@ -409,6 +418,7 @@ async function validateSkillContent(filePath, frontmatter, body) {
   validateSkillName(frontmatter, skillDir, errors);
   validateSkillDescription(frontmatter, errors);
   validateTopLevelFrontmatterKeys(frontmatter, errors);
+  validateDisableModelInvocation(frontmatter, errors);
   validateSkillMetadata(frontmatter.metadata, errors);
 
   const { searchableBody, errors: fenceErrors } = stripFencedCodeBlocks(body);
@@ -478,9 +488,20 @@ function validateTopLevelFrontmatterKeys(frontmatter, errors) {
   for (const key of Object.keys(frontmatter)) {
     if (!ALLOWED_TOP_LEVEL_KEYS.has(key)) {
       errors.push(
-        `forbidden top-level frontmatter key: ${key}; allowed keys are name, description, metadata — see skills/skill-authoring/references/metadata-contract.md`,
+        `forbidden top-level frontmatter key: ${key}; allowed keys are name, description, metadata, disable-model-invocation — see skills/skill-authoring/references/metadata-contract.md`,
       );
     }
+  }
+}
+
+function validateDisableModelInvocation(frontmatter, errors) {
+  if (
+    "disable-model-invocation" in frontmatter &&
+    typeof frontmatter["disable-model-invocation"] !== "boolean"
+  ) {
+    errors.push(
+      "disable-model-invocation must be a boolean when present; use true for explicit user-invocation skills",
+    );
   }
 }
 
@@ -542,9 +563,8 @@ function shouldValidateHeading(heading, metadata) {
 function validateHeadingOrder(lines, requiredHeadings, errors) {
   let previousIndex = -1;
   for (const heading of requiredHeadings) {
-    const index = findHeadingLineIndex(lines, heading);
+    const index = validateHeadingOccurrence(lines, heading, errors);
     if (index === -1) {
-      errors.push(`missing heading ${heading}`);
       continue;
     }
     if (index < previousIndex) {
@@ -553,6 +573,18 @@ function validateHeadingOrder(lines, requiredHeadings, errors) {
     }
     previousIndex = index;
   }
+}
+
+function validateHeadingOccurrence(lines, heading, errors) {
+  const indexes = findHeadingLineIndexes(lines, heading);
+  if (indexes.length === 0) {
+    errors.push(`missing heading ${heading}`);
+    return -1;
+  }
+  if (indexes.length > 1) {
+    errors.push(`duplicate heading ${heading}; expected exactly one occurrence`);
+  }
+  return indexes[0];
 }
 
 function validateTaskOutputsHeading(lines, metadata, errors) {

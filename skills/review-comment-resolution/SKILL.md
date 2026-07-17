@@ -53,7 +53,7 @@ metadata:
 
 1. Inventory comments by file/root cause.
 2. Classify each comment (valid, partially valid, not valid, superseded, not actionable yet).
-3. Verify each accepted concern against current code/tests before editing.
+3. Verify each accepted concern against current code/tests before editing, using the shared review mechanics in [`../code-review/references/shared-review-operations.md`](../code-review/references/shared-review-operations.md).
 4. Fix accepted concerns in small coherent batches.
 5. Re-run relevant validation for touched scope.
 6. Commit only intended fixes, then push.
@@ -97,6 +97,7 @@ metadata:
 
 ## Reference files
 
+- [`../code-review/references/shared-review-operations.md`](../code-review/references/shared-review-operations.md) - shared scope-first, evidence-first, and guardrail rules used by both review workflows
 - [`references/comment-disposition.md`](references/comment-disposition.md) - how to classify review comments before fixing or rejecting them.
 - [`references/push-and-workflow-wait.md`](references/push-and-workflow-wait.md) - how to commit, push, and wait for workflows or checks on the updated branch.
 - [`references/review-resolution-scenarios.md`](references/review-resolution-scenarios.md) - compact routing and handoff scenarios for maintaining the review-resolution workflow.

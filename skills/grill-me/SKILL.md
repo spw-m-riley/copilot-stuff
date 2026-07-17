@@ -1,6 +1,7 @@
 ---
 name: grill-me
 description: "Use when the user wants to be interviewed or stress-tested about a plan, design, or decision — or when the user explicitly says 'grill me'. Not for domain-doc maintenance; route to grill-with-docs when CONTEXT.md or ADRs should be updated."
+disable-model-invocation: true
 metadata:
   category: planning
   audience: general-coding-agent
@@ -85,4 +86,4 @@ Use this skill to relentlessly interrogate a plan or design until every branch o
 
 ## Reference files
 
-- [references/interrogation-patterns.md](references/interrogation-patterns.md) — lightweight interrogation patterns: question sequencing, when to explore vs. ask, session completion criteria
+- [references/session-playbook.md](references/session-playbook.md) — shared interrogation patterns: question sequencing, scenario construction, contradiction surfacing, fuzzy-term resolution, and session completion criteria

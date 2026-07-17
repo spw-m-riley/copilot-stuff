@@ -18,6 +18,7 @@ Use this skill when implementing any feature, bugfix, or behavior change that sh
 - Fixing a bug or regression and you need a test that reproduces it first.
 - Refactoring behavior-sensitive code and you want a safety net before changes.
 - Adding edge-case handling where failure modes should be locked in with tests.
+- Locking down compile-time TypeScript contracts with test fixtures or inline assertions.
 
 ## Do not use this skill when
 
@@ -94,3 +95,5 @@ See [`references/tdd-scenarios.md`](references/tdd-scenarios.md) for full walkth
 ## Reference files
 
 - [`references/tdd-scenarios.md`](references/tdd-scenarios.md) - Detailed scenario walkthroughs with TypeScript examples.
+- [`references/type-test-scenarios.md`](references/type-test-scenarios.md) - choosing the lightest durable compile-time type-test shape.
+- [`references/assertion-patterns.md`](references/assertion-patterns.md) - positive and negative compile-time assertion patterns.

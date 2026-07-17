@@ -72,7 +72,7 @@ metadata:
 ## Routing boundary
 
 - Route here from [`typescript-any-eliminator`](../typescript-any-eliminator/SKILL.md) when replacing `any` requires runtime boundary validation to make types truthful.
-- After boundary types are stable, route compile-time contract locking to [`type-test-authoring`](../type-test-authoring/SKILL.md).
+- After boundary types are stable, route compile-time contract locking to [`test-driven-development`](../test-driven-development/SKILL.md).
 - For runtime behavior coverage of boundary handlers/controllers, route test implementation to [`typescript-api-test-generator`](../../agents/typescript-api-test-generator.agent.md).
 - If the TypeScript problem is vague or it's unclear which skill applies, route to [`typescript-triage`](../typescript-triage/SKILL.md).
 
@@ -86,7 +86,7 @@ metadata:
 
 - Smoke test:
   - should trigger: "Validate this JSON request body at the API edge and export the safe type."
-  - should not trigger: "Add compile-time tests for this inferred API type." (→ `type-test-authoring`)
+  - should not trigger: "Add compile-time tests for this inferred API type." (→ `test-driven-development`)
 
 ## Examples
 

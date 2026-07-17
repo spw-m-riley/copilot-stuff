@@ -113,5 +113,27 @@
     "enabled": true,
     "selectedModel": "nemotron-speech-streaming-en-0.6b-generic-cpu:3"
   },
-  "model": "gpt-5.4"
+  "model": "gpt-5.6-luna",
+  "effortLevel": "xhigh",
+  "sandbox": {
+    "enabled": false,
+    "sandboxMcpServers": false,
+    "sandboxLspServers": true,
+    "allowBypass": false,
+    "addCurrentWorkingDirectory": true,
+    "userPolicy": {
+      "filesystem": {
+        "readwritePaths": [],
+        "readonlyPaths": [],
+        "deniedPaths": []
+      },
+      "network": {
+        "allowOutbound": true,
+        "allowLocalNetwork": false
+      },
+      "seatbelt": {
+        "keychainAccess": true
+      }
+    }
+  }
 }

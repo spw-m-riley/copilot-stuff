@@ -149,7 +149,7 @@ The categories below describe the current repo-tracked skills in this worktree. 
 - `tsconfig-hardening` — Enable stricter TypeScript without your codebase exploding
 - `schema-boundary-typing` — Untrusted input? Validate at runtime before treating it as typed
 - `typescript-any-eliminator` — Replace that `any` with the narrowest truthful type
-- `type-test-authoring` — Write compile-time tests so your generic helpers don't regress
+- `test-driven-development` — Write tests first, including compile-time regression tests for TypeScript contracts
 - `project-references-migration` — Layer a monorepo with TypeScript project references safely
 
 **Migrations (3 skills)** — Framework and tool transitions handled in staged batches

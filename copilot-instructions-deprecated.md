@@ -301,3 +301,52 @@ Example format:
 **Reason for deprecation:** The commit object contained a valid SSH `gpgsig` block. `git log --show-signature` printed `No signature` because `gpg.ssh.allowedSignersFile` was not configured, so the rule blamed RTK for a verifier-configuration limitation.
 
 **Current guidance:** See Rule 138 in `copilot-instructions.md`; inspect the commit object for the SSH signature payload and distinguish signature presence from trusted identity verification.
+
+---
+
+## Rules moved to scoped instruction files (2026-07-15)
+
+These rules remain active, but their operational scope is narrower than the global user-level contract. The original text is preserved here so the root ledger can stay concise without losing provenance.
+
+### Skills
+
+- **Rule 47:** `[INSTRUCTIONS] When cherry-picking a later skill-improvement lane onto a newer integration branch, compare any touched \`SKILL.md\` files against the current integration content before continuing; keep additive validator or scenario hooks without regressing earlier benchmark or guardrail guidance.`
+  - Current guidance: `instructions/skills.instructions.md`, learned rule 1.
+- **Rule 129:** `[WORKFLOW] When imported \`golang-*\` skills regress to upstream frontmatter with nested arrays (\`metadata.openclaw.requires.bins: - go\`), normalize frontmatter and re-add the required reference-skill headings with explicit support-file links before rerunning the full validator.`
+  - Current guidance: `instructions/skills.instructions.md`, learned rule 2.
+
+### Agents
+
+- **Rule 104:** `[WORKFLOW] After creating or changing any custom agent under \`agents/*.agent.md\`, always verify the agent loads successfully in the runtime before treating the work as complete.`
+  - Current guidance: `instructions/agents.instructions.md`, learned rule 1.
+- **Rule 105:** `[DOCS] When removing a custom agent at Matt's request, remove its related documentation and glossary/context entries in the same change unless Matt explicitly asks to keep them.`
+  - Current guidance: `instructions/agents.instructions.md`, learned rule 2.
+- **Rule 125:** `[EXTENSIONS] \`/agent <name>\` joins every token after the command into one string used as the exact agent lookup id; appending a prompt on the same line makes the whole trailing text the lookup string. Invoke the agent name first, then send the task separately.`
+  - Current guidance: `instructions/agents.instructions.md`, learned rule 3, and `agents/research-fleet.agent.md`.
+- **Rule 126:** `[SHELL] \`herdr pane run <pane> "<text>"\` can leave text unsubmitted in a pane input box; re-read the pane and submit with \`herdr pane send-keys <pane> Enter\` when needed.`
+  - Current guidance: `instructions/agents.instructions.md`, learned rule 4.
+- **Rule 127:** `[SHELL] Do not trust a \`herdr wait output\` marker when the same marker appears in the prompt; cross-check pane status or transcript position.`
+  - Current guidance: `instructions/agents.instructions.md`, learned rule 5.
+
+### Extensions
+
+- **Rule 28:** `[EXTENSIONS] Never batch \`extensions_reload\` with follow-up extension tool invocations; reload first, then run extension tools in a separate step and report the pause up front.`
+- **Rule 52:** `[DOCS] When updating root \`~/.copilot\` docs for a nested extension repo, keep the root README high-level and move detailed setup, rollout, maintenance, and product documentation into that extension repo's own docs.`
+- **Rule 61:** `[EXTENSIONS] In this environment, \`api.githubcopilot.com\` is blocked by the corporate firewall; do not suggest tools that call it directly.`
+- **Rule 72:** `[EXTENSIONS] In files under \`extensions/\`, never reference branded model names or specific model IDs unless Matt explicitly asks.`
+- **Rule 78:** `[RESEARCH] When asked about Copilot CLI or extension-runtime capabilities, inspect bundled CLI/SDK source or other authoritative runtime source first.`
+- **Rule 84:** `[WORKFLOW] When a repo-local extension or test surface moves to a new path, update the tracked README and CI/test-command references in the same slice before promotion.`
+- **Rule 85:** `[EXTENSIONS] Before implementing a Copilot CLI hook, verify the hook name exists in the shipped SDK docs/types; unknown hook keys are silently ignored.`
+- **Rule 86:** `[EXTENSIONS] In Copilot CLI session hooks, normalize \`toolArgs\` before reading fields because interactive payloads can arrive as JSON strings.`
+- **Rule 139:** `[WORKFLOW] When live-testing a tool handler directly, pass the structured arguments implied by the natural-language request before diagnosing routing.`
+  - Current guidance: `instructions/extensions.instructions.md`, learned rules 1-9.
+
+### Existing file-scoped instructions
+
+- **Rule 91:** `[WORKFLOW] Always honor the active \`.fallowrc\` scope, especially \`ignorePatterns\`, before choosing analysis targets or remediation plans.`
+- **Rule 98:** `[WORKFLOW] When making non-trivial JavaScript or TypeScript changes where Fallow is available, run a Fallow maintainability pass before calling the slice maintainable.`
+- **Rule 100:** `[WORKFLOW] Never run repository health analyzers like \`fallow health\` in parallel with tests that scaffold or generate workspace files.`
+- **Rule 101:** `[WORKFLOW] When adding local audit configuration for tools like Knip or Fallow, include each repo's real runtime or framework entrypoints instead of relying only on broad project globs.`
+  - Current guidance: `instructions/javascript.instructions.md`, learned rules 24-27.
+- **Rule 133:** `[DOCS] Only add generated screenshots or VHS demos to user-facing documentation when they clarify the actual reader workflow; do not include validation-command recordings as decorative media.`
+  - Current guidance: `instructions/markdown.instructions.md`, learned rule 5.

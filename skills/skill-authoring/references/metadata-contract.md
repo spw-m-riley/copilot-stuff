@@ -4,13 +4,14 @@ This document defines the canonical frontmatter contract for every skill under `
 
 ## Allowed top-level keys
 
-Only three top-level keys are valid in a skill frontmatter block:
+The following top-level keys are valid in a skill frontmatter block:
 
 | Key | Status | Notes |
 | --- | --- | --- |
 | `name` | **Required** | Kebab-case, matches the directory name exactly. |
 | `description` | **Required** | Single-line YAML string. Minimum 20 characters. Trigger-phrase required. |
 | `metadata` | **Required** (block) | Contains all skill lifecycle and classification fields. |
+| `disable-model-invocation` | **Optional** | Boolean runtime control. When `true`, the skill remains explicitly user-invoked instead of being selected implicitly by the model. Use for interactive or side-effectful workflows. |
 
 **Any other top-level key is forbidden.** The following keys are explicitly banned because they belong elsewhere:
 
@@ -97,6 +98,23 @@ metadata:
 ---
 ```
 
+### Explicit user-invocation frontmatter
+
+Use `disable-model-invocation: true` when a skill should only run after an explicit user request, such as an interactive grilling workflow or a workflow that changes durable project state.
+
+```yaml
+---
+name: interactive-skill
+description: "Use when the user explicitly asks for the interactive workflow."
+disable-model-invocation: true
+metadata:
+  category: workflow
+  audience: general-coding-agent
+  maturity: stable
+  kind: task
+---
+```
+
 ### Minimal valid frontmatter (new draft skill)
 
 ```yaml
@@ -139,4 +157,5 @@ The validator (`scripts/validate-skill-library.mjs`) currently enforces:
 | **Forbidden top-level keys** | All skills | **Error** (added wave 2) |
 | **Forbidden provenance keys in `metadata`** | All skills | **Error** (added wave 2) |
 | **`metadata.kind` required for `draft` skills** | Draft skills | **Error** (added wave 2) |
-| Required headings and support-file links | All skills | Error |
+| Required headings must exist, occur exactly once, and stay in order | All skills | Error |
+| Support-file links and orphaned support files | All skills | Error |

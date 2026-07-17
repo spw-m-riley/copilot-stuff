@@ -1,39 +1,25 @@
 ---
 name: golang-testing
 description: "Production-ready Golang tests — table-driven tests, testify suites and mocks, parallel tests, fuzzing, fixtures, goroutine leak detection with goleak, snapshot testing, code coverage, integration tests, idiomatic test naming. Use when writing or reviewing Go tests, choosing a testing approach, setting up Go test CI, or debugging flaky/slow tests. For testify-specific APIs see `samber/cc-skills-golang@golang-stretchr-testify`; for measurement methodology see `samber/cc-skills-golang@golang-benchmark`."
+user-invocable: true
+license: MIT
+compatibility: Designed for Claude Code or similar AI coding agents, and for projects using Golang.
 metadata:
-  category: go
-  audience: general-coding-agent
-  maturity: stable
-  kind: reference
+  author: samber
+  version: "1.2.4"
+  openclaw:
+    emoji: "🧪"
+    homepage: https://github.com/samber/cc-skills-golang
+    requires:
+      bins:
+        - go
+        - gotests
+    install:
+      - kind: go
+        package: github.com/cweill/gotests/gotests@latest
+        bins: [gotests]
+allowed-tools: Read Edit Write Glob Grep Bash(go:*) Bash(golangci-lint:*) Bash(git:*) Agent Bash(gotests:*) AskUserQuestion
 ---
-## Use this skill when
-
-- You are working on Go testing concerns and need targeted guidance.
-- The task is primarily in this skill's domain rather than general Go troubleshooting.
-
-## Do not use this skill when
-
-- Another specialized Go skill is a clearer match for the task.
-- The request is unrelated to Go implementation, review, or architecture decisions.
-
-## Validation
-
-- Run `node skills/skill-authoring/scripts/validate-skill-library.mjs skills/golang-testing/SKILL.md`.
-- Run the full validator when this package changes alongside others.
-
-## Examples
-
-- "Help me apply testing guidance in this Go codepath."
-- "Review this Go change for testing issues."
-
-## Reference files
-
-- [`evals/evals.json`](evals/evals.json) - support file
-- [`references/helpers.md`](references/helpers.md) - support file
-- [`references/http-testing.md`](references/http-testing.md) - support file
-- [`references/integration-testing.md`](references/integration-testing.md) - support file
-- [`references/mocking.md`](references/mocking.md) - support file
 
 **Persona:** You are a Go engineer who treats tests as executable specifications. You write tests to constrain behavior, not to hit coverage targets.
 
@@ -137,6 +123,34 @@ func TestCalculatePrice(t *testing.T) {
     }
 }
 ```
+
+## Common Pitfall: Assert Scope Leaking into Subtests
+
+Never create a testify `assert`/`require` instance in the parent test function and reuse it inside `t.Run` closures. `assert.New(t)` captures the exact `*testing.T` it was built with, so if that `t` belongs to the parent, every failure raised inside the subtest gets attributed to the *parent* test in `go test` output — the failing subtest itself still reports `--- PASS`, silently hiding which case broke. This happens whether or not the subtest calls `t.Parallel()`.
+
+```go
+// WRONG -- `is` is bound to the parent's t
+func TestCalculatePrice(t *testing.T) {
+    is := assert.New(t)
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            is.Equal(tt.expected, CalculatePrice(tt.quantity, tt.unitPrice)) // misattributed on failure
+        })
+    }
+}
+
+// RIGHT -- each subtest builds its own instance from its own t
+func TestCalculatePrice(t *testing.T) {
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            is := assert.New(t)
+            is.Equal(tt.expected, CalculatePrice(tt.quantity, tt.unitPrice))
+        })
+    }
+}
+```
+
+Verify with a deliberately-broken case: if `go test -v -run TestName` shows `--- FAIL: TestName` but every `--- PASS: TestName/subtest_name` line still says PASS, the assert scope is leaking.
 
 ## Unit Tests
 

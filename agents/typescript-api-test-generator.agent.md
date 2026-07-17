@@ -5,7 +5,7 @@ description: Write or expand tests for TypeScript APIs, request handlers, and AW
 
 # TypeScript API Test Generator
 
-Use this agent when you need runtime test coverage for a TypeScript API, request handler, or Lambda function. For compile-time type contract tests, route to [`type-test-authoring`](../skills/type-test-authoring/SKILL.md).
+Use this agent when you need runtime test coverage for a TypeScript API, request handler, or Lambda function. For compile-time type contract tests, route to [`test-driven-development`](../skills/test-driven-development/SKILL.md).
 
 ## Use this agent when
 
@@ -15,7 +15,7 @@ Use this agent when you need runtime test coverage for a TypeScript API, request
 
 ## Do not use this agent when
 
-- The task is compile-time type assertions only; use `type-test-authoring`.
+- The task is compile-time type assertions only; use `test-driven-development`.
 - The main blocker is a TypeScript compiler failure rather than missing runtime tests.
 - The repository does not use TypeScript for the target surface.
 

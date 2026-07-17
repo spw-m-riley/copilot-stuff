@@ -45,14 +45,14 @@ Read the symptom table and route immediately — do not implement TypeScript fix
 | Multi-package workspace needs `composite` / `references` / `tsc -b` migration | [`project-references-migration`](../project-references-migration/SKILL.md) |
 | Explicit `any` in application code, helpers, DTOs, or API layers | [`typescript-any-eliminator`](../typescript-any-eliminator/SKILL.md) |
 | Untrusted input at an API, storage, or parsing boundary needs runtime validation + types | [`schema-boundary-typing`](../schema-boundary-typing/SKILL.md) |
-| Lock down a type-inference contract or regression with compile-time tests | [`type-test-authoring`](../type-test-authoring/SKILL.md) |
+| Lock down a type-inference contract or regression with compile-time tests | [`test-driven-development`](../test-driven-development/SKILL.md) |
 
 ## Common ambiguous prompts
 
 - "Fix the TypeScript issues" → run typecheck; if errors exist route to `tsc-error-triage`, if config is suspect route to `tsconfig-hardening`
 - "Sort out the any types" → `typescript-any-eliminator`; after `any` is removed, route untrusted-boundary gaps to `schema-boundary-typing`
 - "Our types are a mess" → start with `tsconfig-hardening` for config; then `typescript-any-eliminator` for code
-- "Add type safety to this API" → `schema-boundary-typing` first; `type-test-authoring` after the boundary is stable
+- "Add type safety to this API" → `schema-boundary-typing` first; `test-driven-development` after the boundary is stable
 
 ## Workflow
 
@@ -77,7 +77,7 @@ Read the symptom table and route immediately — do not implement TypeScript fix
 
 - "Our TypeScript is really messy after the last merge" → run typecheck; burst of errors → `tsc-error-triage`
 - "Can you make this file not use any?" → `typescript-any-eliminator`
-- "I want to add type safety to our request handlers" → `schema-boundary-typing`, then `type-test-authoring`
+- "I want to add type safety to our request handlers" → `schema-boundary-typing`, then `test-driven-development`
 
 ## Reference files
 

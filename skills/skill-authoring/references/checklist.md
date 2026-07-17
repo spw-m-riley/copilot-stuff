@@ -21,7 +21,7 @@ Use this checklist before considering a skill complete.
 - The first move is obvious.
 - The workflow is sequential and actionable.
 - Outputs or end-state expectations are explicit enough for the skill kind.
-- Section headings are stable enough to find the activation, workflow, validation, and support-file guidance quickly.
+- Required section headings occur exactly once and are stable enough to find the activation, workflow, validation, and support-file guidance quickly.
 
 ## Progressive disclosure
 
