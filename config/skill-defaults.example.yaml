@@ -18,7 +18,7 @@ skillDefaults:
       includeExecutedChecksInSummary: true
 
   skills:
-    review-comment-resolution:
+    github-cli-pr-workflow:
       output:
         format: markdown
         includeResolvedThreads: true

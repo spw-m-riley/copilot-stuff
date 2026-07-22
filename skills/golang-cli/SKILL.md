@@ -29,8 +29,8 @@ Use this skill when you are building, modifying, or reviewing a Go command-line 
 | Situation | Use this skill? | Route instead |
 | --- | --- | --- |
 | Design or review a general Go CLI command tree and shell contract. | Yes | - |
-| Implement Cobra-specific command behavior. | No | [`golang-spf13-cobra`](../golang-spf13-cobra/SKILL.md) |
-| Implement Viper-specific configuration loading. | No | [`golang-spf13-viper`](../golang-spf13-viper/SKILL.md) |
+| Implement Cobra-specific command behavior. | Yes | [`references/cobra-guide.md`](references/cobra-guide.md) |
+| Implement Viper-specific configuration loading. | Yes | [`references/viper-guide.md`](references/viper-guide.md) |
 
 ## Guardrails
 
@@ -54,6 +54,20 @@ Use this skill when you are building, modifying, or reviewing a Go command-line 
 ## Reference files
 
 - [`references/imported-guide.md`](./references/imported-guide.md) - comprehensive Go CLI design and implementation guide
+- [`references/cobra-guide.md`](./references/cobra-guide.md) - Cobra command-tree, flags, completions, generators, and testing guide
+- [`references/cobra-commands-and-args.md`](./references/cobra-commands-and-args.md) - Cobra hook lifecycle and argument validators
+- [`references/cobra-completions.md`](./references/cobra-completions.md) - Cobra shell completion reference
+- [`references/cobra-flags.md`](./references/cobra-flags.md) - Cobra flags and pflag reference
+- [`references/cobra-generators.md`](./references/cobra-generators.md) - Cobra documentation and scaffolding generators
+- [`references/cobra-testing.md`](./references/cobra-testing.md) - Cobra command testing patterns
+- [`references/cobra-evals.json`](./references/cobra-evals.json) - Cobra activation evaluation cases
+- [`references/viper-guide.md`](./references/viper-guide.md) - Viper configuration layering, binding, unmarshaling, reload, and testing guide
+- [`references/viper-binding-and-env.md`](./references/viper-binding-and-env.md) - Viper environment and flag binding reference
+- [`references/viper-sources-and-formats.md`](./references/viper-sources-and-formats.md) - Viper config sources, formats, and remote KV reference
+- [`references/viper-testing-and-isolation.md`](./references/viper-testing-and-isolation.md) - Viper test isolation reference
+- [`references/viper-unmarshal.md`](./references/viper-unmarshal.md) - Viper unmarshaling and struct mapping reference
+- [`references/viper-watch-and-reload.md`](./references/viper-watch-and-reload.md) - Viper hot-reload reference
+- [`references/viper-evals.json`](./references/viper-evals.json) - Viper activation evaluation cases
 - [`assets/examples/args.go`](./assets/examples/args.go) - argument validation example
 - [`assets/examples/cli_test.go`](./assets/examples/cli_test.go) - CLI test example
 - [`assets/examples/completion.go`](./assets/examples/completion.go) - shell completion example

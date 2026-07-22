@@ -46,7 +46,7 @@ Escalate instead of guessing when the root cause depends on:
 
 - Route to `circleci-to-github-actions-migration` if the real problem is migration parity or staged cutover design.
 - Route to `ci-migration-orchestrator` if the work is broad, high-touch, or spans multiple workflows and environments.
-- Route to `review-comment-resolution` if the primary task is handling review comments rather than diagnosing a failing run directly.
+- Route to `github-cli-pr-workflow` if the primary task is handling review comments rather than diagnosing a failing run directly.
 - Route to `git-worktrees` if isolated parallel work is the blocker rather than diagnosis.
 
 ## How to report a blocker

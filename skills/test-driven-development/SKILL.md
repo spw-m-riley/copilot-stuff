@@ -34,7 +34,7 @@ Use this skill when implementing any feature, bugfix, or behavior change that sh
 | New feature request | Yes — write desired behavior test first | N/A |
 | Bug report | Yes — reproduce with a failing test first | `github-actions-failure-triage` if the issue is CI plumbing |
 | Refactor request | Yes — pin behavior first, then refactor | N/A |
-| Code review asks for behavior change | Yes | `review-comment-resolution` for thread/process handling |
+| Code review asks for behavior change | Yes | `github-cli-pr-workflow` for thread/process handling |
 | Config/docs-only task | No | Handle directly without this skill |
 
 ## Inputs to gather

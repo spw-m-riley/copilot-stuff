@@ -2,42 +2,11 @@
 name: golang-benchmark
 description: "Golang benchmarking, profiling, and performance measurement. Use when writing, running, or comparing Go benchmarks, profiling hot paths with pprof, interpreting CPU/memory/trace profiles, analyzing results with benchstat, setting up CI benchmark regression detection, or investigating production performance with Prometheus runtime metrics. Also use when the developer needs deep analysis on a specific performance indicator - this skill provides the measurement methodology, while `samber/cc-skills-golang@golang-performance` provides the optimization patterns."
 metadata:
-  category: go
-  audience: general-coding-agent
+  category: golang
+  audience: developer
   maturity: stable
   kind: reference
 ---
-## Use this skill when
-
-- You are working on Go benchmark concerns and need targeted guidance.
-- The task is primarily in this skill's domain rather than general Go troubleshooting.
-
-## Do not use this skill when
-
-- Another specialized Go skill is a clearer match for the task.
-- The request is unrelated to Go implementation, review, or architecture decisions.
-
-## Validation
-
-- Run `node skills/skill-authoring/scripts/validate-skill-library.mjs skills/golang-benchmark/SKILL.md`.
-- Run the full validator when this package changes alongside others.
-
-## Examples
-
-- "Help me apply benchmark guidance in this Go codepath."
-- "Review this Go change for benchmark issues."
-
-## Reference files
-
-- [`evals/evals.json`](evals/evals.json) - support file
-- [`references/benchstat.md`](references/benchstat.md) - support file
-- [`references/ci-regression.md`](references/ci-regression.md) - support file
-- [`references/compiler-analysis.md`](references/compiler-analysis.md) - support file
-- [`references/investigation-session.md`](references/investigation-session.md) - support file
-- [`references/pprof.md`](references/pprof.md) - support file
-- [`references/prometheus-go-metrics.md`](references/prometheus-go-metrics.md) - support file
-- [`references/tools.md`](references/tools.md) - support file
-- [`references/trace.md`](references/trace.md) - support file
 
 **Persona:** You are a Go performance measurement engineer. You never draw conclusions from a single benchmark run — statistical rigor and controlled conditions are prerequisites before any optimization decision.
 
@@ -53,7 +22,44 @@ Performance improvement does not exist without measures — if you can measure i
 
 This skill covers the full measurement workflow: write a benchmark, run it, profile the result, compare before/after with statistical rigor, and track regressions in CI. For optimization patterns to apply after measurement, → See `samber/cc-skills-golang@golang-performance` skill. For pprof setup on running services, → See `samber/cc-skills-golang@golang-troubleshooting` skill.
 
+## Use this skill when
+
+- You need to measure Go performance with benchmarks, profiles, traces, or runtime metrics.
+- You need statistically defensible before-and-after comparisons or CI regression gates.
+- You need to interpret pprof, execution traces, compiler output, or benchmark noise.
+
+## Do not use this skill when
+
+- You need optimization patterns without first measuring a bottleneck; use `golang-performance`.
+- You need general production observability or pprof endpoint setup; use `golang-observability` or `golang-troubleshooting`.
+- You are writing ordinary unit tests without benchmark or profiling concerns.
+
+## Inputs to gather
+
+- The benchmark or production symptom being measured and the package or command that exercises it.
+- A reproducible baseline, target variant, benchmark flags, and relevant hardware or runtime context.
+- The decision threshold: expected speedup, regression tolerance, allocation budget, or profiling question.
+
+## First move
+
+1. Establish a repeatable baseline with the existing benchmark or runtime measurement.
+2. Record Go version, OS, architecture, CPU, benchmark flags, and environmental controls.
+3. Choose the smallest measurement tool that can answer the question before reaching for broad profiling.
+
+## Workflow
+
+1. Run multiple controlled baseline and candidate measurements.
+2. Compare results with statistical tooling such as `benchstat`, filtering unrelated rows.
+3. Use pprof, trace, compiler analysis, or runtime metrics to explain meaningful differences.
+4. Record the evidence, uncertainty, and follow-up optimization or regression decision.
+
 ## Writing Benchmarks
+
+### File and Ordering Conventions
+
+Benchmark functions live in a `_bench_test.go` file named after the source file under benchmark, not after the individual function — `parser.go` -> `parser_bench_test.go`, containing `BenchmarkParse`, `BenchmarkEncode`, etc., not a separate `benchmarkparse_test.go` per function. Keeping benchmarks in their own file (instead of mixed into `parser_test.go`) keeps `go test -bench=. ./pkg/parser` output free of unrelated `Test*` noise, and separates fixtures sized for measurement (large inputs, long-lived setup) from those sized for correctness — the two rarely share the same shape. The file still follows Go's one-test-file-per-source-file convention (→ See `samber/cc-skills-golang@golang-testing` skill), just with the `_bench` suffix marking its narrower purpose.
+
+Order `Benchmark*` functions inside `parser_bench_test.go` to mirror the order of the functions/methods they measure in `parser.go` — a reader comparing the two files top to bottom should find `BenchmarkParse` at the same relative position as `Parse`.
 
 ### `b.Loop()` (Go 1.24+) — preferred
 
@@ -183,7 +189,21 @@ go tool trace trace.out
 
 For full pprof CLI reference (all commands, non-interactive mode, profile interpretation), see [pprof Reference](./references/pprof.md). For execution trace interpretation, see [Trace Reference](./references/trace.md). For statistical comparison, see [benchstat Reference](./references/benchstat.md).
 
-## Reference Files
+## Validation
+
+- Run the relevant benchmark repeatedly under controlled conditions.
+- Use `benchstat` or the repository's existing comparison tool for before-and-after claims.
+- Confirm profiles and traces are interpreted alongside benchmark results, not as standalone proof.
+
+## Examples
+
+- "Compare these Go benchmarks and tell me whether the allocation reduction is statistically meaningful."
+- "Profile this hot path and explain whether CPU time or GC is the dominant bottleneck."
+- "Add a CI gate that detects meaningful benchmark regressions."
+
+## Reference files
+
+- [`evals/evals.json`](./evals/evals.json) - benchmark and profiling evaluation cases
 
 - **[pprof Reference](./references/pprof.md)** — Interactive and non-interactive analysis of CPU, memory, and goroutine profiles. Full CLI commands, profile types (CPU vs alloc*objects vs inuse_space), web UI navigation, and interpretation patterns. Use this to dive deep into \_where* time and memory are being spent in your code.
 

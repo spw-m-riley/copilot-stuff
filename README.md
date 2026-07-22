@@ -152,10 +152,9 @@ The categories below describe the current repo-tracked skills in this worktree. 
 - `test-driven-development` — Write tests first, including compile-time regression tests for TypeScript contracts
 - `project-references-migration` — Layer a monorepo with TypeScript project references safely
 
-**Migrations (3 skills)** — Framework and tool transitions handled in staged batches
+**Migrations (2 skills)** — Framework and tool transitions handled in staged batches
 - `aws-sdk-v2-to-v3-migration` — Migrate AWS SDK v2 → v3 modular clients without breaking things
 - `circleci-to-github-actions-migration` — Move from CircleCI → GitHub Actions with parity checking
-- `mocha-to-jest-migration` — Migrate test suites from Mocha/Chai/Sinon → Jest incrementally
 
 **Testing & Development (4 skills)** — Test authoring, debugging, and verification
 - `test-driven-development` — Failing test first. Implementation after. Always.
@@ -163,15 +162,13 @@ The categories below describe the current repo-tracked skills in this worktree. 
 - `verification-before-completion` — Don't claim "tests pass" without running them fresh
 - `api-smoke-validation` — Quick, repeatable smoke validation of API endpoints with hurl after changes
 
-**Workflow & Planning (12 skills)** — Planning, handoff docs, discovery, and decision support
+**Workflow & Planning (10 skills)** — Planning, handoff docs, discovery, and decision support
 - `acquire-codebase-knowledge` — Produce traceable codebase knowledge packs for onboarding and repo discovery
 - `context-map` — Map likely files, dependencies, tests, and reference patterns before multi-file work
 - `plan-review-loop` — Run explicit Jason/Freddy plan review rounds after `/plan`
 - `reverse-prompt` — Turn a vague request into an executable task brief (explicit user trigger)
 - `workflow-contracts` — Create versioned markdown handoff artifacts for multi-turn work
-- `finishing-a-development-branch` — Branch is done. Now what? Merge, PR, stash, or discard?
 - `doc-coauthoring` — Write docs collaboratively with context gathering and reader feedback loops
-- `code-tour` — Create a `.tour` walkthrough for onboarding, PR review, or architecture explanation
 - `grill-me` — Stress-test a plan or design through structured interrogation
 - `grill-with-docs` — Stress-test a plan while updating domain docs such as `CONTEXT.md` and ADRs
 - `to-prd` — Turn repository and conversation context into a product requirements document
@@ -186,12 +183,8 @@ The categories below describe the current repo-tracked skills in this worktree. 
 - `agent-supply-chain` — Generate and verify integrity manifests for agent plugins and tools
 - `secret-scan-triage` — Triage gitleaks findings with containment and false-positive adjudication before merging
 
-**Code Review (1 skill)** — Pull request integration
-- `review-comment-resolution` — Resolve PR review comments and push to completion
-
-**CI/CD (2 skills)** — GitHub Actions troubleshooting and local reproduction
+**CI/CD (1 skill)** — GitHub Actions troubleshooting, diagnosis, and local reproduction
 - `github-actions-failure-triage` — GitHub Actions broke. Find the root cause and fix it.
-- `github-actions-local-repro` — Reproduce a GitHub Actions failure locally with `act` before pushing
 
 **Code Quality (2 skills)** — JS/TS code-health analysis, cleanup, and structural search
 - `fallow` — Use Fallow for dead code, duplication, complexity, boundary, and cleanup workflows in JS/TS repos
@@ -204,7 +197,7 @@ The categories below describe the current repo-tracked skills in this worktree. 
 **Version Control (3 skills)** — Worktree, branching, and PR workflows
 - `git-worktrees` — Create and manage isolated Git worktrees for parallel lanes
 - `worktrunk` — Advanced worktree lifecycle, LLM-generated commits, and coordination
-- `github-cli-pr-workflow` — PR lifecycle with `gh` CLI: create or update a PR, watch checks, prepare review handoff
+- `github-cli-pr-workflow` — Complete PR lifecycle with `gh`: create/update, resolve review comments, watch checks, and choose merge, keep, or discard
 
 **Utilities (3 skills)** — Context reduction, code navigation, and web patterns
 - `ma` — Reduce large local files for understanding before deciding whether a full-fidelity read is necessary

@@ -1,13 +1,3 @@
----
-name: go-error-patterns
-description: "Use when Go error-handling design or function-type mismatches surface — including `func(string) error` vs concrete constructors, package-local type aliases, or concrete-vs-interface error choices, but not when the immediate task is a build or test failure."
-metadata:
-  category: go
-  audience: general-coding-agent
-  maturity: stable
-  kind: task
----
-
 # Go error patterns
 
 Use this skill when a Go task is really about error-type design, shared helper signatures, or architecture boundaries around Go services and lambdas, and the next step is to normalize types instead of treating the problem as a generic build failure.
@@ -33,9 +23,9 @@ Use this skill when a Go task is really about error-type design, shared helper s
 | A helper accepts `func(string) error`, but the package constructor returns `*DomainError` | Yes | - |
 | A local alias like `type OptionalString = optional.String` is being proposed as the finished design | Yes | Stay here and use the shared owning type directly |
 | The question is whether to keep one lambda per area/category or merge binaries | Yes | Stay here and keep one lambda per area unless a merge is explicitly requested |
-| `go test ./...` is failing and the root cause may be toolchain or CI isolation | No | [`go-build-and-test`](../go-build-and-test/SKILL.md) |
-| The real problem is request validation or typing untrusted API input | No | [`schema-boundary-typing`](../schema-boundary-typing/SKILL.md) |
-| No one yet understands the cause of the error or bug | No | [`systematic-debugging`](../systematic-debugging/SKILL.md) |
+| `go test ./...` is failing and the root cause may be toolchain or CI isolation | No | [`go-build-and-test`](../../go-build-and-test/SKILL.md) |
+| The real problem is request validation or typing untrusted API input | No | [`schema-boundary-typing`](../../schema-boundary-typing/SKILL.md) |
+| No one yet understands the cause of the error or bug | No | [`systematic-debugging`](../../systematic-debugging/SKILL.md) |
 
 ## Inputs to gather
 
@@ -62,7 +52,7 @@ Use this skill when a Go task is really about error-type design, shared helper s
 
 1. Read the exact expected function signature or interface type instead of reasoning from memory.
 2. Identify the owning package for the shared type or error so you can remove aliases rather than multiply them.
-3. Decide whether the task is a design question here or an immediate build/test failure that belongs in [`go-build-and-test`](../go-build-and-test/SKILL.md).
+3. Decide whether the task is a design question here or an immediate build/test failure that belongs in [`go-build-and-test`](../../go-build-and-test/SKILL.md).
 
 ## Workflow
 
@@ -77,7 +67,7 @@ Use this skill when a Go task is really about error-type design, shared helper s
 
 - A concrete decision on constructor wrapping, alias removal, interface return types, or lambda granularity.
 - The smallest code change needed to make the chosen Go contract truthful and compilable.
-- A routing note when the work should move to [`go-build-and-test`](../go-build-and-test/SKILL.md), [`schema-boundary-typing`](../schema-boundary-typing/SKILL.md), or [`systematic-debugging`](../systematic-debugging/SKILL.md).
+- A routing note when the work should move to [`go-build-and-test`](../../go-build-and-test/SKILL.md), [`schema-boundary-typing`](../../schema-boundary-typing/SKILL.md), or [`systematic-debugging`](../../systematic-debugging/SKILL.md).
 
 ## Guardrails
 
@@ -103,8 +93,8 @@ Use this skill when a Go task is really about error-type design, shared helper s
 
 ## Reference files
 
-- [`references/error-constructor-patterns.md`](references/error-constructor-patterns.md) — Go code examples for closure wrapping, alias removal, and the concrete-vs-interface decision table
-- [`../../instructions/go.instructions.md`](../../instructions/go.instructions.md) — source rules for Go error-pattern decisions, shared-type ownership, and lambda granularity
-- [`../go-build-and-test/SKILL.md`](../go-build-and-test/SKILL.md) — adjacent Go skill for build, test, toolchain, and CI parity failures
-- [`../schema-boundary-typing/SKILL.md`](../schema-boundary-typing/SKILL.md) — route here when the real task is boundary validation rather than Go error design
-- [`../systematic-debugging/SKILL.md`](../systematic-debugging/SKILL.md) — route here when the root cause is still unknown
+- [`error-patterns-constructor.md`](error-patterns-constructor.md) — Go code examples for closure wrapping, alias removal, and the concrete-vs-interface decision table
+- [`../../../instructions/go.instructions.md`](../../../instructions/go.instructions.md) — source rules for Go error-pattern decisions, shared-type ownership, and lambda granularity
+- [`../../go-build-and-test/SKILL.md`](../../go-build-and-test/SKILL.md) — adjacent Go skill for build, test, toolchain, and CI parity failures
+- [`../../schema-boundary-typing/SKILL.md`](../../schema-boundary-typing/SKILL.md) — route here when the real task is boundary validation rather than Go error design
+- [`../../systematic-debugging/SKILL.md`](../../systematic-debugging/SKILL.md) — route here when the root cause is still unknown

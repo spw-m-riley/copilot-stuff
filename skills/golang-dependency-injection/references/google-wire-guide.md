@@ -1,13 +1,3 @@
----
-name: golang-google-wire
-description: "Compile-time dependency injection in Golang using google/wire — wire.NewSet, wire.Build, wire.Bind (interface→concrete), wire.Struct, wire.Value, wire.InterfaceValue, wire.FieldsOf, cleanup functions, //go:build wireinject injector files, and generated wire_gen.go. Apply when using or adopting google/wire, when the codebase imports `github.com/google/wire`, or when wiring an application graph at compile time via `wire.Build`. For runtime DI with reflection, see `samber/cc-skills-golang@golang-uber-dig` skill."
-metadata:
-  category: golang
-  audience: developer
-  maturity: stable
-  kind: reference
----
-
 **Persona:** You are a Go architect using wire for compile-time DI. You let the compiler catch missing dependencies, treat `wire_gen.go` as committed source, and re-run `wire ./...` after every graph change.
 
 **Dependencies:**
@@ -39,7 +29,7 @@ go get github.com/google/wire
 | Lifecycle hooks   | Not built in              | fx: OnStart/OnStop     |
 | Generated files   | `wire_gen.go` (committed) | None                   |
 
-For lifecycle, lazy loading, and a full matrix see `samber/cc-skills-golang@golang-dependency-injection`.
+For lifecycle, lazy loading, and a full matrix see the parent `golang-dependency-injection` skill.
 
 ## Providers
 
@@ -129,7 +119,7 @@ wire.InterfaceValue(new(io.Reader), os.Stdin) // interface-typed literal
 wire.FieldsOf(new(Config), "DSN", "Addr")    // promote struct fields as graph nodes
 ```
 
-See [advanced.md](references/advanced.md) for the `wire:"-"` exclusion tag and `wire.FieldsOf` details.
+See [google-wire-advanced.md](google-wire-advanced.md) for the `wire:"-"` exclusion tag and `wire.FieldsOf` details.
 
 ## Disambiguating Duplicate Types
 
@@ -162,7 +152,7 @@ func main() {
 }
 ```
 
-Wire generates `wire_gen.go` (plain Go, committed, DO NOT EDIT). For a full example with per-package sets, cleanup-heavy graphs, and generated output, see [recipes.md](references/recipes.md).
+Wire generates `wire_gen.go` (plain Go, committed, DO NOT EDIT). For a full example with per-package sets, cleanup-heavy graphs, and generated output, see [google-wire-recipes.md](google-wire-recipes.md).
 
 ## Codegen Workflow
 
@@ -195,17 +185,17 @@ Run `wire ./...` after every constructor signature change. Add `//go:generate go
 
 ## Testing
 
-Wire generates plain Go constructors, so unit tests use manual injection — no container to clone or reset. For testing patterns (test injectors swapping real providers for fakes, CI stale-check for `wire_gen.go`), see [testing.md](references/testing.md).
+Wire generates plain Go constructors, so unit tests use manual injection — no container to clone or reset. For testing patterns (test injectors swapping real providers for fakes, CI stale-check for `wire_gen.go`), see [google-wire-testing.md](google-wire-testing.md).
 
 ## Further Reading
 
-- [advanced.md](references/advanced.md) — cleanup chains, multiple injectors, set nesting, error catalogue, codegen flags, quick reference
-- [recipes.md](references/recipes.md) — HTTP server, multi-injector build, cleanup-heavy graph, CLI embedding
-- [testing.md](references/testing.md) — test injectors, fake bindings, CI stale check
+- [google-wire-advanced.md](google-wire-advanced.md) — cleanup chains, multiple injectors, set nesting, error catalogue, codegen flags, quick reference
+- [google-wire-recipes.md](google-wire-recipes.md) — HTTP server, multi-injector build, cleanup-heavy graph, CLI embedding
+- [google-wire-testing.md](google-wire-testing.md) — test injectors, fake bindings, CI stale check
 
 ## Cross-References
 
-- → See `samber/cc-skills-golang@golang-dependency-injection` skill for DI concepts and library comparison
+- → See the parent `golang-dependency-injection` skill for DI concepts and library comparison
 - → See `samber/cc-skills-golang@golang-uber-dig` skill for runtime reflection-based DI without lifecycle
 - → See `samber/cc-skills-golang@golang-uber-fx` skill for runtime DI with lifecycle hooks, modules, and signal-aware Run()
 - → See `samber/cc-skills-golang@golang-samber-do` skill for generics-based DI without reflection
@@ -213,28 +203,3 @@ Wire generates plain Go constructors, so unit tests use manual injection — no 
 - → See `samber/cc-skills-golang@golang-testing` skill for general testing patterns
 
 If you encounter a bug or unexpected behavior in google/wire, open an issue at <https://github.com/google/wire/issues>.
-
-## Use this skill when
-
-- Working with google wire in Go code.
-- Reviewing or writing Go code that involves google wire.
-
-## Do not use this skill when
-
-- The question is not specific to Go or this topic area.
-
-## Validation
-
-- Apply patterns consistently within the change scope.
-- Run existing tests after changes.
-
-## Examples
-
-- should trigger: "How should I handle google wire in Go?"
-- should not trigger: "How do I set up a new Go project from scratch?"
-
-## Reference files
-- [`evals/evals.json`](evals/evals.json) - evals reference
-- [`references/advanced.md`](references/advanced.md) - advanced reference
-- [`references/recipes.md`](references/recipes.md) - recipes reference
-- [`references/testing.md`](references/testing.md) - testing reference

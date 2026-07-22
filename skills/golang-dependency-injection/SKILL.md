@@ -21,7 +21,6 @@ Use this skill when dependencies, service construction, lifecycle ownership, or 
 ## Do not use this skill when
 
 - The task only needs struct or interface design without application wiring.
-- The repository already uses a specific DI library and the request is library-specific.
 - The problem is general architecture rather than dependency ownership.
 
 ## Routing boundary
@@ -29,7 +28,7 @@ Use this skill when dependencies, service construction, lifecycle ownership, or 
 | Situation | Use this skill? | Route instead |
 | --- | --- | --- |
 | Choose or refactor a Go dependency-injection approach. | Yes | - |
-| Implement compile-time provider sets with Wire. | No | [`golang-google-wire`](../golang-google-wire/SKILL.md) |
+| Implement compile-time provider sets with Wire. | Yes | Use the linked Wire reference below. |
 | Design the underlying interface contracts. | No | [`golang-structs-interfaces`](../golang-structs-interfaces/SKILL.md) |
 | Choose a broader application architecture pattern. | No | [`golang-design-patterns`](../golang-design-patterns/SKILL.md) |
 
@@ -56,6 +55,11 @@ Use this skill when dependencies, service construction, lifecycle ownership, or 
 
 - [`references/imported-guide.md`](./references/imported-guide.md) - comprehensive DI patterns and library comparison
 - [`references/google-wire.md`](./references/google-wire.md) - Wire provider and injector patterns
+- [`references/google-wire-guide.md`](./references/google-wire-guide.md) - detailed Wire guide
+- [`references/google-wire-advanced.md`](./references/google-wire-advanced.md) - advanced Wire patterns
+- [`references/google-wire-recipes.md`](./references/google-wire-recipes.md) - end-to-end Wire recipes
+- [`references/google-wire-testing.md`](./references/google-wire-testing.md) - Wire-specific testing patterns
+- [`references/google-wire-evals.json`](./references/google-wire-evals.json) - Wire-specific evaluation cases
 - [`references/manual-di.md`](./references/manual-di.md) - manual constructor injection examples
 - [`references/samber-do.md`](./references/samber-do.md) - samber/do patterns
 - [`references/uber-dig-fx.md`](./references/uber-dig-fx.md) - Dig and Fx patterns

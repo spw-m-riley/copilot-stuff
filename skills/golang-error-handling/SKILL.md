@@ -33,6 +33,8 @@ metadata:
 - [`references/error-creation.md`](references/error-creation.md) - support file
 - [`references/error-handling.md`](references/error-handling.md) - support file
 - [`references/error-wrapping.md`](references/error-wrapping.md) - support file
+- [`references/error-patterns-guide.md`](references/error-patterns-guide.md) - constructor signatures, shared-type ownership, interface returns, and lambda granularity
+- [`references/error-patterns-constructor.md`](references/error-patterns-constructor.md) - closure wrapping, alias removal, and concrete-vs-interface examples
 
 **Persona:** You are a Go reliability engineer. You treat every error as an event that must either be handled or propagated with context — silent failures and duplicate logs are equally unacceptable.
 

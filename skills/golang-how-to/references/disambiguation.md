@@ -31,7 +31,7 @@ Start with `golang-dependency-injection` for library selection. Then use the lib
 | Skill | Unique territory |
 | --- | --- |
 | `samber/cc-skills-golang@golang-dependency-injection` | Concepts (why DI, manual injection), constructor patterns, library comparison table |
-| `samber/cc-skills-golang@golang-google-wire` | Compile-time codegen: `wire.Build`, `wire.NewSet`, `wire.Bind`, `ProviderSet` |
+| `golang-dependency-injection` (Wire reference) | Compile-time codegen: `wire.Build`, `wire.NewSet`, `wire.Bind`, `ProviderSet` |
 | `samber/cc-skills-golang@golang-uber-dig` | Runtime reflection: `dig.Provide`, `dig.In`/`dig.Out`, value groups, `Decorate` |
 | `samber/cc-skills-golang@golang-uber-fx` | Full application framework on top of dig: `fx.New`, `fx.Module`, lifecycle hooks, `fx.Annotate` |
 | `samber/cc-skills-golang@golang-samber-do` | Type-safe container, `do.Provide`, scopes, health checks, graceful shutdown |
@@ -39,7 +39,7 @@ Start with `golang-dependency-injection` for library selection. Then use the lib
 **Routing examples:**
 
 - "Should I use DI in my project?" → `golang-dependency-injection`.
-- "My project uses google/wire, `wire.Build` is failing" → `golang-google-wire`.
+- "My project uses google/wire, `wire.Build` is failing" → `golang-dependency-injection` and its Wire reference.
 - "I want lifecycle hooks with my DI container" → `golang-uber-fx` (not `golang-uber-dig` — dig is lower-level).
 - "I want type-safe DI without code generation" → `golang-samber-do` or `golang-uber-dig`.
 
@@ -106,16 +106,14 @@ These four skills each own a distinct slice of "code quality". Source descriptio
 
 | Skill | Unique territory |
 | --- | --- |
-| `samber/cc-skills-golang@golang-cli` | Exit codes, signal handling (SIGTERM), stdin/stdout/stderr patterns, progress bars, terminal detection |
-| `samber/cc-skills-golang@golang-spf13-cobra` | `cobra.Command`, `PersistentPreRunE`, `Args` validators, `ValidArgsFunction`, `SetArgs` in tests |
-| `samber/cc-skills-golang@golang-spf13-viper` | `viper.BindPFlag`, `AutomaticEnv`, `ReadInConfig`, `OnConfigChange`, test isolation with `viper.Reset()` |
+| `samber/cc-skills-golang@golang-cli` | Exit codes, signal handling (SIGTERM), stdin/stdout/stderr patterns, progress bars, terminal detection, Cobra and Viper integration |
 
 **Routing examples:**
 
 - "My CLI should exit with code 2 on bad args" → `golang-cli`.
-- "How do I add shell completion to my cobra command?" → `golang-spf13-cobra`.
-- "How do I override config values with env vars?" → `golang-spf13-viper`.
-- "I'm building a new CLI from scratch" → `golang-cli` (architecture) + `golang-spf13-cobra` (command tree) + `golang-spf13-viper` (config).
+- "How do I add shell completion to my cobra command?" → `golang-cli` (Cobra guide).
+- "How do I override config values with env vars?" → `golang-cli` (Viper guide).
+- "I'm building a new CLI from scratch" → `golang-cli`.
 
 ---
 
@@ -124,12 +122,12 @@ These four skills each own a distinct slice of "code quality". Source descriptio
 | Skill | Unique territory |
 | --- | --- |
 | `samber/cc-skills-golang@golang-testing` | Test strategy, table-driven patterns, `t.Parallel()`, `testcontainers`, goleak, coverage, fuzz |
-| `samber/cc-skills-golang@golang-stretchr-testify` | `assert.Equal`, `require.NoError`, `mock.On`, `mock.AssertExpectations`, `testify/suite` lifecycle |
+| `golang-testing` Testify references | `assert.Equal`, `require.NoError`, `mock.On`, `mock.AssertExpectations`, `testify/suite` lifecycle |
 
 **Routing examples:**
 
 - "How do I write a table-driven test in Go?" → `golang-testing`.
-- "How do I assert a mock was called with specific args?" → `golang-stretchr-testify`.
+- "How do I assert a mock was called with specific args?" → `golang-testing` and its Testify mock reference.
 - "How do I detect goroutine leaks in tests?" → `golang-testing` (goleak).
 
 ---

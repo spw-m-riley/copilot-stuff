@@ -27,8 +27,8 @@ worktree_required: true
 - skills/github-actions-failure-triage/references/triage-scenarios.md
 - skills/workflow-contracts/SKILL.md
 - skills/workflow-contracts/references/examples.md
-- skills/review-comment-resolution/SKILL.md
-- skills/review-comment-resolution/references/comment-disposition.md
+- skills/github-cli-pr-workflow/SKILL.md
+- skills/github-cli-pr-workflow/references/comment-disposition.md
 
 ## constraints
 

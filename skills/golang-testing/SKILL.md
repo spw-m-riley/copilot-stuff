@@ -1,24 +1,11 @@
 ---
 name: golang-testing
-description: "Production-ready Golang tests — table-driven tests, testify suites and mocks, parallel tests, fuzzing, fixtures, goroutine leak detection with goleak, snapshot testing, code coverage, integration tests, idiomatic test naming. Use when writing or reviewing Go tests, choosing a testing approach, setting up Go test CI, or debugging flaky/slow tests. For testify-specific APIs see `samber/cc-skills-golang@golang-stretchr-testify`; for measurement methodology see `samber/cc-skills-golang@golang-benchmark`."
-user-invocable: true
-license: MIT
-compatibility: Designed for Claude Code or similar AI coding agents, and for projects using Golang.
+description: "Production-ready Golang tests — table-driven tests, testify suites and mocks, parallel tests, fuzzing, fixtures, goroutine leak detection with goleak, snapshot testing, code coverage, integration tests, idiomatic test naming. Use when writing or reviewing Go tests, choosing a testing approach, setting up Go test CI, or debugging flaky/slow tests. Testify API guidance is included in this skill's references; for measurement methodology see `samber/cc-skills-golang@golang-benchmark`."
 metadata:
-  author: samber
-  version: "1.2.4"
-  openclaw:
-    emoji: "🧪"
-    homepage: https://github.com/samber/cc-skills-golang
-    requires:
-      bins:
-        - go
-        - gotests
-    install:
-      - kind: go
-        package: github.com/cweill/gotests/gotests@latest
-        bins: [gotests]
-allowed-tools: Read Edit Write Glob Grep Bash(go:*) Bash(golangci-lint:*) Bash(git:*) Agent Bash(gotests:*) AskUserQuestion
+  category: golang
+  audience: developer
+  maturity: stable
+  kind: reference
 ---
 
 **Persona:** You are a Go engineer who treats tests as executable specifications. You write tests to constrain behavior, not to hit coverage targets.
@@ -44,6 +31,37 @@ allowed-tools: Read Edit Write Glob Grep Bash(go:*) Bash(golangci-lint:*) Bash(g
 
 This skill guides the creation of production-ready tests for Go applications. Follow these principles to write maintainable, fast, and reliable tests.
 
+## Use this skill when
+
+- You are writing, reviewing, or debugging Go unit, integration, fuzz, benchmark, or race-enabled tests.
+- You need guidance on test structure, fixtures, mocks, suites, coverage, or goroutine leak detection.
+- You need to choose a testing strategy that constrains observable behavior without coupling to implementation details.
+
+## Do not use this skill when
+
+- The primary task is production performance measurement; use `golang-benchmark`.
+- The primary task is general Go debugging outside test setup or failure analysis; use `golang-troubleshooting`.
+- You need only a library recommendation without test design; use `golang-popular-libraries`.
+
+## Inputs to gather
+
+- The behavior or regression under test and the public API or package boundary involved.
+- Existing test conventions, build tags, fixtures, mocks, and the repository's supported Go version.
+- Whether the work is unit, integration, fuzz, race, coverage, or flaky-test diagnosis.
+
+## First move
+
+1. Read the code under test and nearby tests before choosing a test shape.
+2. Identify the observable contract, success and failure paths, and isolation requirements.
+3. Run the narrowest existing test command that reproduces the current behavior.
+
+## Workflow
+
+1. Choose table-driven, focused, integration, fuzz, or suite structure based on the behavior under test.
+2. Add named cases and assertions for both expected results and meaningful error paths.
+3. Keep dependencies injectable, tests independently runnable, and integration resources isolated.
+4. Run the targeted test, then the relevant race, coverage, or integration command.
+
 ## Best Practices Summary
 
 1. Table-driven tests MUST use named subtests -- every test case needs a `name` field passed to `t.Run`
@@ -57,6 +75,8 @@ This skill guides the creation of production-ready tests for Go applications. Fo
 9. Keep unit tests fast (< 1ms), use build tags for integration tests
 10. Run tests with race detection in CI
 11. Include examples as executable documentation
+12. Test files MUST be named after the source file under test, not after the function or method being tested
+13. Test functions SHOULD appear in the same order as the functions/methods they test in the source file
 
 ## Test Structure and Organization
 
@@ -69,6 +89,20 @@ package mypackage
 // mypackage_test.go - tests in test package (black-box, public API only)
 package mypackage_test
 ```
+
+Name the test file after the source file it tests, not after the function or method under test. Go's convention is one test file per source file (`foo.go` -> `foo_test.go`), because tools (`go test`, coverage reports, IDE "jump to test" navigation, `gotests`) and reviewers all resolve tests by source file, not by symbol. A source file usually declares several functions/methods; splitting its tests by symbol name scatters them across many files and breaks that file-to-file mapping.
+
+```
+// ✓ Good — one test file per source file
+helloworld.go       -> helloworld_test.go   // contains TestHelloWorld, TestAbcd, TestXyz, ...
+
+// ✗ Bad — test file named after the function/method instead of the source file
+helloworld.go       -> abcd_test.go         // wrong: should be helloworld_test.go
+```
+
+Exception: very large source files MAY be split into multiple `_test.go` files by concern (e.g. `foo_test.go` + `foo_edgecases_test.go`), but each split file's name MUST still be derived from the source file name, never from an individual function name. Prefer keeping a single `_test.go` file per source file even when it grows large — splitting adds navigation overhead and is rarely worth it; reach for the exception only when a single file becomes genuinely unwieldy to browse or review.
+
+Within a test file, order test functions to match the order their tested functions/methods appear in the source file. A reader (human or agent) scrolling `foo.go` alongside `foo_test.go` can then find the matching test by position instead of searching; drift between the two orderings compounds every time either file grows.
 
 ### Naming Conventions
 
@@ -431,7 +465,7 @@ Many test best practices are enforced automatically by linters: `thelper`, `para
 
 ## Cross-References
 
-- -> See `samber/cc-skills-golang@golang-stretchr-testify` skill for detailed testify API (assert, require, mock, suite)
+- -> See the Testify references below for detailed `assert`, `require`, `mock`, and `suite` APIs
 - -> See `samber/cc-skills-golang@golang-database` skill (testing.md) for database integration test patterns
 - -> See `samber/cc-skills-golang@golang-concurrency` skill for goroutine leak detection with goleak
 - -> See `samber/cc-skills-golang@golang-continuous-integration` skill for CI test configuration and GitHub Actions workflows
@@ -456,3 +490,26 @@ go test -bench=. -benchmem ./...       # benchmarks
 go test -fuzz=FuzzName ./...           # fuzzing
 go test -tags=integration ./...        # integration tests
 ```
+
+## Validation
+
+- Run the narrowest relevant `go test` command first.
+- Run `-race`, coverage, fuzz, or integration-tagged checks when the changed behavior requires them.
+- Confirm tests assert observable behavior and do not rely on execution order or leaked shared state.
+
+## Examples
+
+- "Write table-driven Go tests for the success, validation, and dependency-error paths."
+- "Review this Go test suite for flaky parallelism, weak assertions, and missing integration isolation."
+- "Diagnose why this Go test passes alone but fails in the full suite."
+
+## Reference files
+
+- [`evals/evals.json`](./evals/evals.json) - Go testing evaluation cases
+- [`references/helpers.md`](./references/helpers.md) - test helper patterns
+- [`references/http-testing.md`](./references/http-testing.md) - HTTP handler testing
+- [`references/integration-testing.md`](./references/integration-testing.md) - integration test patterns
+- [`references/mocking.md`](./references/mocking.md) - mocks, fixtures, and time mocking
+- [`references/testify.md`](./references/testify.md) - Testify assertions, suites, and advanced patterns
+- [`references/testify-mock.md`](./references/testify-mock.md) - Testify mock expectations and matchers
+- [`references/testify-evals.json`](./references/testify-evals.json) - Testify-specific evaluation cases

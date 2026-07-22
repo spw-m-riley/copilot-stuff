@@ -124,6 +124,6 @@ See [Worktrunk command equivalents](references/worktrunk-commands.md) and the `w
 **Pairs with:**
 - [`worktrunk`](../worktrunk/SKILL.md) — use `wt switch --create` / `wt merge` / `wt remove` instead of raw git commands when Worktrunk is installed; the `worktrunk` skill covers hooks, LLM commits, and merge pipeline
 - [`github-cli-pr-workflow`](../github-cli-pr-workflow/SKILL.md) — after pushing from a worktree, use this for PR creation/update and check-watch workflow
-- [`review-comment-resolution`](../review-comment-resolution/SKILL.md) — after pushing a branch from a worktree, address PR review comments in the same worktree before cleanup
+- [`github-cli-pr-workflow`](../github-cli-pr-workflow/SKILL.md) — after pushing a branch from a worktree, address PR review comments in the same worktree before cleanup
 - [`github-actions-failure-triage`](../github-actions-failure-triage/SKILL.md) — if a pushed branch fails CI, diagnose the failure before removing the worktree
-- [`finishing-a-development-branch`](../finishing-a-development-branch/SKILL.md) — when implementation in a worktree is complete, use this to decide how to integrate (merge, PR, keep, or discard)
+- [`github-cli-pr-workflow`](../github-cli-pr-workflow/SKILL.md) — when implementation in a worktree is complete, use this to decide how to integrate (merge, PR, keep, or discard)

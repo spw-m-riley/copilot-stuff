@@ -121,4 +121,4 @@ metadata:
 ## Reference files
 
 - [`copilot-instructions.md`](../../copilot-instructions.md) - learned rules for extension reloads, SDK hooks, payload normalization, and RTK use.
-- [`../copilot-sdk/references/runtime-validation.md`](../copilot-sdk/references/runtime-validation.md) - validation patterns for runtime-provided `@github/copilot-sdk` imports.
+- [`references/runtime-validation.md`](references/runtime-validation.md) - validation patterns for runtime-provided `@github/copilot-sdk` imports.

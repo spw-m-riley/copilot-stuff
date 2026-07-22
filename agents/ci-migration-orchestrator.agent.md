@@ -18,7 +18,7 @@ Use this agent when CI migration or workflow-modernization work is bigger than a
 
 - One failing workflow just needs root-cause diagnosis; use `github-actions-failure-triage`.
 - The work is a single repo's straightforward parity translation; use `circleci-to-github-actions-migration`.
-- The blocker is only local reproduction of an existing failure; use `github-actions-local-repro`.
+- The blocker is only local reproduction of an existing failure; use the `act` reproduction guide in `github-actions-failure-triage`.
 
 ## Core behavior
 

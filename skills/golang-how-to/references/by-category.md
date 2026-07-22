@@ -108,7 +108,7 @@ Use when: writing SQL queries, designing repository patterns, or configuring dat
 
 Dependency injection patterns in Golang — constructor injection, interface-based DI, wire/dig/fx comparison, and when DI is worth the complexity.
 
-Use when: deciding whether to use DI, designing constructor signatures, or comparing DI libraries. For a specific DI library → `golang-google-wire`, `golang-uber-dig`, `golang-uber-fx`, or `golang-samber-do`.
+Use when: deciding whether to use DI, designing constructor signatures, or comparing DI libraries. The dependency-injection skill includes the local Wire, Dig, Fx, and samber/do references.
 
 ---
 
@@ -158,7 +158,7 @@ Use when: applying optimization patterns after profiling. Not for measurement me
 
 Production-ready Golang tests — table-driven tests, fuzzing, fixtures, goroutine leak detection (goleak), snapshot testing, code coverage, integration tests, parallel tests.
 
-Use when: writing or reviewing tests. For testify-specific APIs → `golang-stretchr-testify`. For measurement methodology → `golang-benchmark`.
+Use when: writing or reviewing tests. Testify-specific APIs are covered in the testing skill's references. For measurement methodology → `golang-benchmark`.
 
 ---
 
@@ -176,7 +176,7 @@ Use when: debugging a panic, unexpected output, or hard-to-reproduce bug. Not fo
 
 Golang CLI application development — project layout, exit codes, signal handling, I/O patterns, argument parsing, terminal UX.
 
-Use when: building a CLI tool from scratch. For cobra-specific APIs → `golang-spf13-cobra`. For viper configuration → `golang-spf13-viper`.
+Use when: building a CLI tool from scratch, including Cobra command trees and Viper configuration layering.
 
 ---
 
@@ -262,14 +262,6 @@ See "Architecture & Design" section above.
 
 ---
 
-### `samber/cc-skills-golang@golang-google-wire`
-
-Compile-time dependency injection with google/wire — provider sets, injector generation, wire.Build, and structured DI patterns.
-
-Use when: the codebase imports `github.com/google/wire` or the team has chosen compile-time DI. For runtime DI with reflection → `golang-uber-dig`.
-
----
-
 ### `samber/cc-skills-golang@golang-uber-dig`
 
 Reflection-based DI with uber-go/dig — Provide/Invoke, dig.In/dig.Out, named values, value groups, optional dependencies, Decorate.
@@ -291,24 +283,6 @@ Use when: the codebase imports `go.uber.org/fx`. For raw DI without lifecycle �
 Dependency injection with samber/do — type-safe service containers, lifecycle management, scopes, health checks, graceful shutdown.
 
 Use when: the codebase imports `github.com/samber/do`.
-
----
-
-## Frameworks
-
-### `samber/cc-skills-golang@golang-spf13-cobra`
-
-CLI command trees with spf13/cobra — command hierarchy, RunE hooks, flag management, shell completion, usage templates, testing with SetArgs.
-
-Use when: the codebase imports `github.com/spf13/cobra`. For configuration layering → `golang-spf13-viper`. For general CLI architecture → `golang-cli`.
-
----
-
-### `samber/cc-skills-golang@golang-spf13-viper`
-
-Layered configuration with spf13/viper — flag > env > file > KV > default precedence, BindPFlag, hot reload, test isolation, remote KV integration.
-
-Use when: the codebase imports `github.com/spf13/viper`. For CLI command structure → `golang-spf13-cobra`. For general CLI architecture → `golang-cli`.
 
 ---
 
@@ -369,14 +343,6 @@ Use when: the codebase imports any `github.com/samber/slog-*` package.
 ---
 
 ## Testing
-
-### `samber/cc-skills-golang@golang-stretchr-testify`
-
-Testing with stretchr/testify — assert, require, mock, and suite packages. Assertions, mock expectations, argument matchers, suite lifecycle, custom matchers.
-
-Use when: the codebase imports `github.com/stretchr/testify`. For test architecture and strategy → `golang-testing`.
-
----
 
 ### `samber/cc-skills-golang@golang-testing` ⭐️ 🧠 ⚙️
 

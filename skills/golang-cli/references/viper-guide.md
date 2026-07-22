@@ -1,13 +1,3 @@
----
-name: golang-spf13-viper
-description: "Golang configuration library using spf13/viper — layered precedence (flag > env > file > KV > default), BindPFlag/BindPFlags, SetEnvPrefix + SetEnvKeyReplacer + AutomaticEnv, ReadInConfig + ConfigFileNotFoundError, Unmarshal + mapstructure struct tags, Sub for sub-trees, WatchConfig + OnConfigChange for hot reload, viper.New() for test isolation, and remote KV integration. Apply when using or adopting spf13/viper, or when the codebase imports `github.com/spf13/viper`. For CLI command structure alongside viper, see the `samber/cc-skills-golang@golang-spf13-cobra` skill. For general CLI architecture, see `samber/cc-skills-golang@golang-cli`."
-metadata:
-  category: golang
-  audience: developer
-  maturity: stable
-  kind: reference
----
-
 **Persona:** You are a Go engineer who treats configuration as a layered system. Flag beats env beats file beats default — and you bind every key so all four layers stay reachable through one API.
 
 # Using spf13/viper for layered configuration in Go
@@ -29,7 +19,7 @@ go get github.com/spf13/viper@latest
 
 Cobra owns the command tree — subcommands, flags, arg validation, completions. Viper owns configuration resolution — it answers "what is the value of key X?" by walking its source layers. Viper has no user-facing surface; it is purely a key-value resolver. Use cobra alone for flag-only CLIs; viper alone for config-file daemons; both when you need both, binding flags at `PersistentPreRunE` via `BindPFlag`.
 
-→ See `samber/cc-skills-golang@golang-spf13-cobra` for the cobra side of this integration.
+→ See [cobra-guide.md](cobra-guide.md) for the Cobra side of this integration.
 
 ## The precedence pipeline
 
@@ -61,7 +51,7 @@ if err := viper.ReadInConfig(); err != nil {
 
 `ConfigFileNotFoundError` must be handled gracefully — config files are usually optional. An unhandled error from a missing file crashes programs that are perfectly valid when run with only flags or env vars.
 
-For supported formats (JSON, TOML, YAML, HCL, INI, properties), `MergeInConfig`, and remote KV, see [sources-and-formats.md](references/sources-and-formats.md).
+For supported formats (JSON, TOML, YAML, HCL, INI, properties), `MergeInConfig`, and remote KV, see [viper-sources-and-formats.md](viper-sources-and-formats.md).
 
 ## Env binding and key replacers
 
@@ -76,7 +66,7 @@ viper.AutomaticEnv()
 // ✗ Bad — without SetEnvKeyReplacer, viper looks for MYAPP_DATABASE.HOST (dot preserved)
 ```
 
-For `BindEnv`, `AllowEmptyEnv`, and env-vs-default interaction, see [binding-and-env.md](references/binding-and-env.md).
+For `BindEnv`, `AllowEmptyEnv`, and env-vs-default interaction, see [viper-binding-and-env.md](viper-binding-and-env.md).
 
 ## Flag binding (the cobra seam)
 
@@ -90,7 +80,7 @@ func init() {
 }
 ```
 
-For `AllowEmptyEnv` and flag/env interaction details, see [binding-and-env.md](references/binding-and-env.md).
+For `AllowEmptyEnv` and flag/env interaction details, see [viper-binding-and-env.md](viper-binding-and-env.md).
 
 ## Unmarshaling into structs
 
@@ -109,7 +99,7 @@ viper.Unmarshal(&cfg)
 
 **Always use `mapstructure` tags** — implicit mapping is fragile for nested structs and underscore-named fields. Prefer `UnmarshalKey("database", &dbCfg)` over `Sub("database").Unmarshal` — it avoids the nil-check `Sub` requires when the key is missing.
 
-For `time.Duration` / `net.IP` / slice decoders and custom `DecodeHook` registration, see [unmarshal.md](references/unmarshal.md).
+For `time.Duration` / `net.IP` / slice decoders and custom `DecodeHook` registration, see [viper-unmarshal.md](viper-unmarshal.md).
 
 ## Sub-trees
 
@@ -122,7 +112,7 @@ viper.WatchConfig()
 viper.OnConfigChange(func(e fsnotify.Event) { /* re-apply changed values */ })
 ```
 
-`WatchConfig` uses fsnotify and watches inodes. Editors that write atomically via rename (vim, neovim) replace the inode — the callback may not fire. Test hot-reload with `echo >> config.yaml`, not editor saves. For race-safe reload patterns, see [watch-and-reload.md](references/watch-and-reload.md).
+`WatchConfig` uses fsnotify and watches inodes. Editors that write atomically via rename (vim, neovim) replace the inode — the callback may not fire. Test hot-reload with `echo >> config.yaml`, not editor saves. For race-safe reload patterns, see [viper-watch-and-reload.md](viper-watch-and-reload.md).
 
 ## Test isolation
 
@@ -134,7 +124,7 @@ v.SetConfigFile("testdata/config.yaml")
 require.NoError(t, v.ReadInConfig())
 ```
 
-For `t.Setenv` interactions and `Reset()` limitations, see [testing-and-isolation.md](references/testing-and-isolation.md).
+For `t.Setenv` interactions and `Reset()` limitations, see [viper-testing-and-isolation.md](viper-testing-and-isolation.md).
 
 ## Best Practices
 
@@ -155,16 +145,16 @@ For `t.Setenv` interactions and `Reset()` limitations, see [testing-and-isolatio
 
 ## Further Reading
 
-- [sources-and-formats.md](references/sources-and-formats.md) — supported file formats, multi-path search, MergeInConfig, remote KV (etcd/Consul)
-- [binding-and-env.md](references/binding-and-env.md) — BindEnv, AutomaticEnv, SetEnvPrefix, SetEnvKeyReplacer, AllowEmptyEnv, timing rules
-- [unmarshal.md](references/unmarshal.md) — Unmarshal, UnmarshalKey, mapstructure tags, custom DecodeHooks (Duration, IP, slice)
-- [watch-and-reload.md](references/watch-and-reload.md) — WatchConfig, OnConfigChange, fsnotify caveats, atomic-rename trap, race-safe patterns
-- [testing-and-isolation.md](references/testing-and-isolation.md) — viper.New() per test, t.Setenv interactions, Reset() limitations, snapshot/restore
+- [viper-sources-and-formats.md](viper-sources-and-formats.md) — supported file formats, multi-path search, MergeInConfig, remote KV (etcd/Consul)
+- [viper-binding-and-env.md](viper-binding-and-env.md) — BindEnv, AutomaticEnv, SetEnvPrefix, SetEnvKeyReplacer, AllowEmptyEnv, timing rules
+- [viper-unmarshal.md](viper-unmarshal.md) — Unmarshal, UnmarshalKey, mapstructure tags, custom DecodeHooks (Duration, IP, slice)
+- [viper-watch-and-reload.md](viper-watch-and-reload.md) — WatchConfig, OnConfigChange, fsnotify caveats, atomic-rename trap, race-safe patterns
+- [viper-testing-and-isolation.md](viper-testing-and-isolation.md) — viper.New() per test, t.Setenv interactions, Reset() limitations, snapshot/restore
 
 ## Cross-References
 
-- → See `samber/cc-skills-golang@golang-cli` skill for general CLI architecture — project layout, exit codes, signal handling, cobra+viper integration
-- → See `samber/cc-skills-golang@golang-spf13-cobra` skill for the cobra side of this integration (flag definition and binding)
+- → See [`../SKILL.md`](../SKILL.md) for general CLI architecture — project layout, exit codes, signal handling, cobra+viper integration
+- → See [cobra-guide.md](cobra-guide.md) for the Cobra side of this integration (flag definition and binding)
 - → See `samber/cc-skills-golang@golang-testing` skill for general Go testing patterns
 
 If you encounter a bug or unexpected behavior in spf13/viper, open an issue at <https://github.com/spf13/viper/issues>.
@@ -189,9 +179,9 @@ If you encounter a bug or unexpected behavior in spf13/viper, open an issue at <
 - should not trigger: "How do I set up a new Go project from scratch?"
 
 ## Reference files
-- [`evals/evals.json`](evals/evals.json) - evals reference
-- [`references/binding-and-env.md`](references/binding-and-env.md) - binding and env reference
-- [`references/sources-and-formats.md`](references/sources-and-formats.md) - sources and formats reference
-- [`references/testing-and-isolation.md`](references/testing-and-isolation.md) - testing and isolation reference
-- [`references/unmarshal.md`](references/unmarshal.md) - unmarshal reference
-- [`references/watch-and-reload.md`](references/watch-and-reload.md) - watch and reload reference
+- [`viper-evals.json`](viper-evals.json) - evals reference
+- [`viper-binding-and-env.md`](viper-binding-and-env.md) - binding and env reference
+- [`viper-sources-and-formats.md`](viper-sources-and-formats.md) - sources and formats reference
+- [`viper-testing-and-isolation.md`](viper-testing-and-isolation.md) - testing and isolation reference
+- [`viper-unmarshal.md`](viper-unmarshal.md) - unmarshal reference
+- [`viper-watch-and-reload.md`](viper-watch-and-reload.md) - watch and reload reference

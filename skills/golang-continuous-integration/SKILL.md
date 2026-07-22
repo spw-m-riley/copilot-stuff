@@ -72,3 +72,5 @@ Use this skill when you are setting up or fixing CI checks, release jobs, lint g
 - [`assets/security.yml`](./assets/security.yml) - security workflow example
 - [`assets/test.yml`](./assets/test.yml) - test workflow example
 - [`evals/evals.json`](./evals/evals.json) - activation evaluation cases
+- [`references/goreleaser-guide.md`](./references/goreleaser-guide.md) - Release Please and GoReleaser v2 release-pipeline guide
+- [`references/goreleaser-release-please-config.md`](./references/goreleaser-release-please-config.md) - annotated Release Please and GoReleaser workflow configuration

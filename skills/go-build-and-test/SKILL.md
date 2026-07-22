@@ -34,7 +34,7 @@ Use this skill when a Go repository is failing to build or test and the next mov
 | `go build ./...` or `go test ./...` fails in one or more packages | Yes | - |
 | `govulncheck` reports only standard-library findings fixed in a later Go patch | Yes | Stay here and update the pinned Go toolchain before changing workflow policy |
 | Linux CI fails with a late `TempDir` cleanup or background-event race | Yes | Stay here and investigate test isolation |
-| The problem is `func(string) *DomainError` vs `func(string) error` or error-type design | No | [`go-error-patterns`](../go-error-patterns/SKILL.md) |
+| The problem is `func(string) *DomainError` vs `func(string) error` or error-type design | No | [`golang-error-handling`](../golang-error-handling/SKILL.md) |
 | The failure signal is vague and no one knows whether the cause is Go code, config, or infrastructure | No | [`systematic-debugging`](../systematic-debugging/SKILL.md) |
 | Go toolchain version upgrade itself fails (not the build after upgrading) | No | [`tooling-upgrade-triage`](../tooling-upgrade-triage/SKILL.md) |
 
@@ -79,7 +79,7 @@ Use this skill when a Go repository is failing to build or test and the next mov
 
 - A confirmed diagnosis of whether the failure was caused by toolchain state, CI/test isolation, tracked-file assumptions, or package code.
 - The smallest validated fix, such as an unset override, updated Go pin, isolated test change, or package code change.
-- A note when the issue should be rerouted to [`go-error-patterns`](../go-error-patterns/SKILL.md) or [`systematic-debugging`](../systematic-debugging/SKILL.md) instead of continuing here.
+- A note when the issue should be rerouted to [`golang-error-handling`](../golang-error-handling/SKILL.md) or [`systematic-debugging`](../systematic-debugging/SKILL.md) instead of continuing here.
 
 ## Guardrails
 
@@ -96,7 +96,7 @@ Use this skill when a Go repository is failing to build or test and the next mov
 - Confirm any fixture files used by tests are tracked in git and present in CI.
 - Smoke test:
   - should trigger: "GitHub Actions says `go test ./...` passes locally but fails on Linux with a TempDir cleanup error in our Go package."
-  - should not trigger: "Why does `func(string) *ValidationError` not satisfy `func(string) error` in Go?" (→ `go-error-patterns`)
+  - should not trigger: "Why does `func(string) *ValidationError` not satisfy `func(string) error` in Go?" (→ `golang-error-handling`)
 
 ## Examples
 
@@ -108,5 +108,5 @@ Use this skill when a Go repository is failing to build or test and the next mov
 
 - [`references/toolchain-environment-checklist.md`](references/toolchain-environment-checklist.md) — `go env` key matrix, stale-override reset commands, `govulncheck` stdlib-finding triage steps, and CI fixture-file audit
 - [`../../instructions/go.instructions.md`](../../instructions/go.instructions.md) — source rules for toolchain checks, stdlib-first preferences, and Go test isolation
-- [`../go-error-patterns/SKILL.md`](../go-error-patterns/SKILL.md) — adjacent Go skill for covariance and error-design questions
+- [`../golang-error-handling/SKILL.md`](../golang-error-handling/SKILL.md) — adjacent Go skill for covariance and error-design questions
 - [`../systematic-debugging/SKILL.md`](../systematic-debugging/SKILL.md) — route here when the failure is too ambiguous for a Go-specific triage workflow

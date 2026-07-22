@@ -39,7 +39,7 @@ The core pattern is: **Generate → Evaluate → Critique → Refine → Output*
 | Running `npm test` to confirm a fix works | No | `verification-before-completion` |
 | Tracing why a specific assertion fails | No | `systematic-debugging` |
 | Writing Jest or pytest test coverage for a module | No | `javascript-testing-expert` / `test-driven-development` |
-| Reviewing a PR diff once, no iteration | No | `review-comment-resolution` |
+| Reviewing a PR diff once, no iteration | No | `github-cli-pr-workflow` |
 
 ## Navigation
 

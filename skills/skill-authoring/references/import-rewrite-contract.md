@@ -1,6 +1,6 @@
 # Import rewrite contract
 
-Use this document when rewriting an upstream skill into this local library. All three wave 1 imports — `code-tour`, `autoresearch`, and `agentic-eval` — must satisfy this contract before their packages are considered complete.
+Use this document when rewriting an upstream skill into this local library. Wave 1 imports such as `autoresearch` and `agentic-eval` must satisfy this contract before their packages are considered complete.
 
 ## Preserve vs. discard
 
@@ -147,16 +147,6 @@ Example format (record these in `## Validation` inside the skill):
 Read the completed `SKILL.md` as the target agent. The next action must be obvious within a few seconds of reading it. If it is not obvious, the workflow or first-move sections need tightening.
 
 ## Per-skill notes
-
-### code-tour
-
-- **Kind:** `task`
-- **Category:** `workflow`
-- **Preserve:** The `.tour` JSON format concept and file schema, persona-targeting approach, step types (file/line, selection, pattern, uri, commands, view), and the discover-then-write workflow phases.
-- **Support file decision:** The upstream schema JSON (`codetour-schema.json`) is worth keeping in `references/` as a look-up artifact. The upstream `examples.md` is worth keeping in `references/` as real-world tour examples. The two Python scripts (`validate_tour.py`, `generate_from_docs.py`) need evaluation — keep them only if they stay generic, self-contained, and earn a clear callout in `SKILL.md`; otherwise summarize their checks in a `references/validation-notes.md` instead.
-- **Remove from upstream:** The hardcoded `~/.agents/skills/code-tour/scripts/...` paths, the long inline table of production GitHub repo URLs (move to `references/examples.md` or an assets file), and the `CRITICAL: Only create .tour JSON files` warning styled as uppercase — convert to a guardrail bullet.
-- **Routing:** Route against `acquire-codebase-knowledge` (exploration without a tour output) and `context-map` (pre-edit mapping rather than a narrative walkthrough).
-- **Safety rule:** Do not modify any non-`.tour` file during skill execution. Keep this as a guardrail, not a CRITICAL all-caps warning.
 
 ### autoresearch
 

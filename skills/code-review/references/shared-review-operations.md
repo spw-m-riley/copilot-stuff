@@ -1,6 +1,6 @@
 # Shared review operations
 
-This file captures the review mechanics used by both `code-review` and `review-comment-resolution` without merging their distinct outcomes.
+This file captures review mechanics shared by `code-review` and the PR lifecycle workflow without merging their distinct outcomes.
 
 ## Scope first
 

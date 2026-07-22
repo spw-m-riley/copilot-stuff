@@ -46,7 +46,7 @@ Address the open PR review comments, push fixes, and wait for checks.
 ### Pass criteria
 
 - The agent does not invoke `code-review`.
-- The request routes to `review-comment-resolution` instead.
+- The request routes to `github-cli-pr-workflow` instead.
 
 ## Scenario 4: CI specialist routing
 

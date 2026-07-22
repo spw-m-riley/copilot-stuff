@@ -1,13 +1,3 @@
----
-name: goreleaser-release-pipeline
-description: "Use when setting up, debugging, or fixing a GoReleaser v2 release pipeline — especially Release Please tag issues, missing release assets, or publish jobs that fail after a release is created, not when the main task is generic CI triage or PR handling."
-metadata:
-  category: ci
-  audience: general-coding-agent
-  maturity: stable
-  kind: task
----
-
 # GoReleaser release pipeline
 
 Use this skill when a repository already has, or is adding, a GoReleaser v2 release flow and the important question is how Release Please, tags, GitHub releases, and publish jobs fit together without losing versioned releases or assets.
@@ -32,9 +22,9 @@ Use this skill when a repository already has, or is adding, a GoReleaser v2 rele
 | Situation | Use this skill? | Route instead |
 | --- | --- | --- |
 | Release Please and GoReleaser need to publish versioned Go artifacts from the same workflow | Yes | - |
-| GitHub Actions run is failing for runner, cache, permissions, or environment reasons outside the release design itself | No | [`github-actions-failure-triage`](../github-actions-failure-triage/SKILL.md) |
-| The implementation is done and the question is how to integrate or clean up the branch | No | [`finishing-a-development-branch`](../finishing-a-development-branch/SKILL.md) |
-| The main task is PR creation, update, or checks-watching | No | [`github-cli-pr-workflow`](../github-cli-pr-workflow/SKILL.md) |
+| GitHub Actions run is failing for runner, cache, permissions, or environment reasons outside the release design itself | No | [`../../github-actions-failure-triage/SKILL.md`](../../github-actions-failure-triage/SKILL.md) |
+| The implementation is done and the question is how to integrate or clean up the branch | No | [`../../github-cli-pr-workflow/SKILL.md`](../../github-cli-pr-workflow/SKILL.md) |
+| The main task is PR creation, update, or checks-watching | No | [`../../github-cli-pr-workflow/SKILL.md`](../../github-cli-pr-workflow/SKILL.md) |
 
 ## Inputs to gather
 
@@ -110,8 +100,7 @@ Use this skill when a repository already has, or is adding, a GoReleaser v2 rele
 
 ## Reference files
 
-- [`references/release-please-goreleaser-config.md`](references/release-please-goreleaser-config.md) — annotated workflow template, `include-component-in-tag` setting, `release_created` job gate, `fetch-depth: 0` note, and `goreleaser check` command
-- [`../../instructions/github-workflows.instructions.md`](../../instructions/github-workflows.instructions.md) — source rules for Release Please chaining, semver tag shape, and preserving numbered releases
-- [`../github-actions-failure-triage/SKILL.md`](../github-actions-failure-triage/SKILL.md) — route here when the failure is generic workflow or runner triage instead of release-pipeline design
-- [`../finishing-a-development-branch/SKILL.md`](../finishing-a-development-branch/SKILL.md) — route here when the question is branch integration rather than release publishing
-- [`../github-cli-pr-workflow/SKILL.md`](../github-cli-pr-workflow/SKILL.md) — route here when the work is PR lifecycle rather than release pipeline behavior
+- [`goreleaser-release-please-config.md`](goreleaser-release-please-config.md) — annotated workflow template, `include-component-in-tag` setting, `release_created` job gate, `fetch-depth: 0` note, and `goreleaser check` command
+- [`../../../instructions/github-workflows.instructions.md`](../../../instructions/github-workflows.instructions.md) — source rules for Release Please chaining, semver tag shape, and preserving numbered releases
+- [`../../github-actions-failure-triage/SKILL.md`](../../github-actions-failure-triage/SKILL.md) — route here when the failure is generic workflow or runner triage instead of release-pipeline design
+- [`../../github-cli-pr-workflow/SKILL.md`](../../github-cli-pr-workflow/SKILL.md) — route here when the question is branch integration or PR lifecycle rather than release publishing

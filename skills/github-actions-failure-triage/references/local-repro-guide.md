@@ -1,13 +1,3 @@
----
-name: github-actions-local-repro
-description: Use when a GitHub Actions failure needs local reproduction with act before pushing, especially for workflow logic or step-level regressions, but not when the failure depends on org-managed runner or secret policy.
-metadata:
-  category: ci
-  audience: general-coding-agent
-  maturity: stable
-  kind: task
----
-
 # GitHub Actions local repro
 
 Use this skill when you need to reproduce a GitHub Actions failure locally with `act` to shorten debug loops and avoid speculative workflow edits.
@@ -30,8 +20,8 @@ Use this skill when you need to reproduce a GitHub Actions failure locally with 
 | Situation | Use this skill? | Route instead |
 | --- | --- | --- |
 | Concrete Actions failure where local job execution is feasible | Yes | - |
-| Failure tied to org policy, runner fleet labels, or protected environment gates | No | `github-actions-failure-triage` |
-| Main goal is CircleCI migration or parity rollout | No | `circleci-to-github-actions-migration` |
+| Failure tied to org policy, runner fleet labels, or protected environment gates | No | [`../SKILL.md`](../SKILL.md) |
+| Main goal is CircleCI migration or parity rollout | No | [`../../circleci-to-github-actions-migration/SKILL.md`](../../circleci-to-github-actions-migration/SKILL.md) |
 
 ## Inputs to gather
 
@@ -79,7 +69,7 @@ Use this skill when you need to reproduce a GitHub Actions failure locally with 
 
 - Smoke test:
   - should trigger: "Reproduce the failing Actions job locally with act before I push again."
-  - should not trigger: "Read the workflow logs and find the root cause first." (→ `github-actions-failure-triage`)
+  - should not trigger: "Read the workflow logs and find the root cause first." (→ [`../SKILL.md`](../SKILL.md))
 
 ## Examples
 
@@ -88,4 +78,4 @@ Use this skill when you need to reproduce a GitHub Actions failure locally with 
 
 ## Reference files
 
-- [`references/act-command-patterns.md`](references/act-command-patterns.md) - safe command patterns for targeting events, jobs, and matrix legs with `act`
+- [`act-command-patterns.md`](act-command-patterns.md) - safe command patterns for targeting events, jobs, and matrix legs with `act`

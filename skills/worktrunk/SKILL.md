@@ -37,7 +37,7 @@ Use this skill when a user needs to configure `wt`, set up LLM commit messages, 
 | User needs PR/check workflow after pushing branch | No | `github-cli-pr-workflow` skill |
 | `wt --version` fails | No | Suggest `brew install worktrunk` |
 | Disposable clone, not a worktree | No | `git clone` directly |
-| Implementation complete; deciding how to integrate branch | No | [`finishing-a-development-branch`](../finishing-a-development-branch/SKILL.md) |
+| Implementation complete; deciding how to integrate branch | No | [`github-cli-pr-workflow`](../github-cli-pr-workflow/SKILL.md) |
 
 ## Inputs to gather
 

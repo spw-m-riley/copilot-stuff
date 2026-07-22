@@ -32,7 +32,7 @@ Use this skill when local Git signing is the blocker and the job is to diagnose 
 | Situation | Use this skill? | Route instead |
 | --- | --- | --- |
 | Local commit, tag, or push fails because the trusted signing path is broken or uncertain | Yes | - |
-| Signing works and the next question is how to integrate the branch | No | [`finishing-a-development-branch`](../finishing-a-development-branch/SKILL.md) |
+| Signing works and the next question is how to integrate the branch | No | [`github-cli-pr-workflow`](../github-cli-pr-workflow/SKILL.md) |
 | The work is PR creation, update, or check watching after the branch is already signed and pushed | No | [`github-cli-pr-workflow`](../github-cli-pr-workflow/SKILL.md) |
 | The push is blocked by secret scanning or leaked-secret policy, not signing | No | [`secret-scan-triage`](../secret-scan-triage/SKILL.md) |
 
@@ -110,7 +110,7 @@ Use this skill when local Git signing is the blocker and the job is to diagnose 
 ## Reference files
 
 - [`references/op-ssh-sign-diagnostics.md`](references/op-ssh-sign-diagnostics.md) — diagnostic command sequences, 1Password SSH agent states, `op whoami` false-negative pattern, and when to stop
-- [`finishing-a-development-branch`](../finishing-a-development-branch/SKILL.md) — route here when signing works and the remaining question is branch integration
+- [`github-cli-pr-workflow`](../github-cli-pr-workflow/SKILL.md) — route here when signing works and the remaining question is branch integration
 - [`github-cli-pr-workflow`](../github-cli-pr-workflow/SKILL.md) — route here when the signed branch is ready and the remaining work is PR lifecycle
 - [`secret-scan-triage`](../secret-scan-triage/SKILL.md) — route here when push rejection is caused by secret scanning rather than signing
 - [`copilot-instructions.md`](../../copilot-instructions.md) — source rules for never bypassing trusted signing, fields-only 1Password metadata checks, and treating real Git commands as the source of truth

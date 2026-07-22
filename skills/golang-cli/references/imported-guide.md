@@ -29,7 +29,7 @@ Use this skill when you are building, modifying, or reviewing a Go command-line 
 | Situation | Use this skill? | Route instead |
 | --- | --- | --- |
 | The request is specifically about go cli applications. | Yes | - |
-| The request is better served by an adjacent Go skill. | No | Route Cobra-specific work to [`golang-spf13-cobra`](../../golang-spf13-cobra/SKILL.md) and Viper configuration work to [`golang-spf13-viper`](../../golang-spf13-viper/SKILL.md). |
+| The request is better served by a narrower guide in this package. | No | Route Cobra-specific work to [`cobra-guide.md`](cobra-guide.md) and Viper configuration work to [`viper-guide.md`](viper-guide.md). |
 
 ## Guardrails
 
@@ -71,7 +71,7 @@ Use this skill when you are building, modifying, or reviewing a Go command-line 
 | Situation | Use this skill? | Route instead |
 | --- | --- | --- |
 | The request is specifically about go cli applications. | Yes | - |
-| The request is better served by an adjacent Go skill. | No | Route Cobra-specific work to [`golang-spf13-cobra`](../../golang-spf13-cobra/SKILL.md) and Viper configuration work to [`golang-spf13-viper`](../../golang-spf13-viper/SKILL.md). |
+| The request is better served by a narrower guide in this package. | No | Route Cobra-specific work to [`cobra-guide.md`](cobra-guide.md) and Viper configuration work to [`viper-guide.md`](viper-guide.md). |
 
 ## Guardrails
 

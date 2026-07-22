@@ -22,7 +22,7 @@ Use this skill when the task is to produce a structured review result for a code
 
 ## Do not use this skill when
 
-- The task is to address existing review comments or GitHub review threads that already exist; route to [`review-comment-resolution`](../review-comment-resolution/SKILL.md).
+- The task is to address existing review comments or GitHub review threads that already exist; route to [`github-cli-pr-workflow`](../github-cli-pr-workflow/SKILL.md).
 - The main task is diagnosing a known failing test, runtime error, or incident rather than reviewing a proposed change; route to `systematic-debugging`.
 - The request is only to push a branch, update a PR, or wait for checks without reviewing code quality; route to `github-cli-pr-workflow`.
 - The user only wants a lightweight thumbs-up or casual summary with no structured findings output.
@@ -32,7 +32,7 @@ Use this skill when the task is to produce a structured review result for a code
 | Situation | Use this skill? | Route instead |
 | --- | --- | --- |
 | Structured review of a diff or PR with findings, evidence, and a clear verdict | Yes | - |
-| Existing review threads need to be classified, fixed, and pushed | No | [`review-comment-resolution`](../review-comment-resolution/SKILL.md) |
+| Existing review threads need to be classified, fixed, and pushed | No | [`github-cli-pr-workflow`](../github-cli-pr-workflow/SKILL.md) |
 | Known failure needs root-cause debugging before any review verdict matters | No | `systematic-debugging` |
 | The next step is PR lifecycle work, not review | No | `github-cli-pr-workflow` |
 | Review findings need a durable follow-on contract after the verdict | Pairs | [`workflow-contracts`](../workflow-contracts/SKILL.md) |
@@ -105,7 +105,7 @@ Use this skill when the task is to produce a structured review result for a code
 
 - Smoke test:
   - should trigger: "Review this patch and return a findings JSON with confidence scores and validator confirmation."
-  - should not trigger: "Address the open PR review comments, push fixes, and wait for checks." (→ [`review-comment-resolution`](../review-comment-resolution/SKILL.md))
+  - should not trigger: "Address the open PR review comments, push fixes, and wait for checks." (→ [`github-cli-pr-workflow`](../github-cli-pr-workflow/SKILL.md))
 
 ## Examples
 
@@ -118,7 +118,7 @@ Use this skill when the task is to produce a structured review result for a code
 - [`references/findings-schema.md`](references/findings-schema.md) - field-by-field guidance for the findings artifact and the meaning of each machine-readable field
 - [`references/diff-scope.md`](references/diff-scope.md) - how to classify overall review breadth and per-finding ownership of the changed surface
 - [`references/confidence-and-evidence.md`](references/confidence-and-evidence.md) - confidence anchors, evidence bars, and suppression rules for weak claims
-- [`references/shared-review-operations.md`](references/shared-review-operations.md) - scope-first, evidence-first, and common guardrails shared with review-comment-resolution
+- [`references/shared-review-operations.md`](references/shared-review-operations.md) - scope-first and evidence-first review mechanics shared with the PR lifecycle workflow
 - [`references/validator-subagent.md`](references/validator-subagent.md) - second-pass validator prompt and when to use each validator mode
 - [`references/persona-routing.md`](references/persona-routing.md) - always-on vs conditional specialist routing mapped only to real local agents
 - [`assets/findings.schema.json`](assets/findings.schema.json) - JSON Schema for structured review findings output

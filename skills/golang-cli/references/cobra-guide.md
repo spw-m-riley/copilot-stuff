@@ -1,13 +1,3 @@
----
-name: golang-spf13-cobra
-description: "Golang CLI command tree library using spf13/cobra — cobra.Command, RunE vs Run, PersistentPreRunE hook chain, Args validators (NoArgs, ExactArgs, MatchAll, custom), persistent vs local flags, command groups, ValidArgsFunction, RegisterFlagCompletionFunc, ShellCompDirective, usage/help template customization, man-page and markdown doc generation, and testing with SetArgs/SetOut/SetErr. Apply when using or adopting spf13/cobra, or when the codebase imports `github.com/spf13/cobra`. For configuration layering alongside cobra, see the `samber/cc-skills-golang@golang-spf13-viper` skill. For general CLI architecture (project layout, exit codes, signal handling, I/O patterns), see `samber/cc-skills-golang@golang-cli`."
-metadata:
-  category: golang
-  audience: developer
-  maturity: stable
-  kind: reference
----
-
 **Persona:** You are a Go CLI engineer building command trees that feel native to the Unix shell. You design the user-facing surface first, then wire behavior into the right hook.
 
 **Modes:**
@@ -45,7 +35,7 @@ These libraries do fundamentally different things and can be used independently.
 
 **Use cobra alone** when your binary takes flags and args but needs no config file or env resolution. **Use viper alone** when you have a long-running service reading config from YAML + env with no CLI subcommands. Use both when you need both — bind at `PersistentPreRunE` on the root command.
 
-→ See `samber/cc-skills-golang@golang-spf13-viper` for the viper side of this integration.
+→ See [viper-guide.md](viper-guide.md) for the Viper side of this integration.
 
 ## Command tree
 
@@ -76,7 +66,7 @@ Always use `*E` variants — the non-`E` forms cannot return errors. Key rules:
 - A child `PersistentPreRunE` **replaces** the parent's entirely — call the parent explicitly if you need both.
 - `PostRunE` runs only if `RunE` succeeded.
 
-For the full lifecycle and inheritance rules, see [commands-and-args.md](references/commands-and-args.md).
+For the full lifecycle and inheritance rules, see [cobra-commands-and-args.md](cobra-commands-and-args.md).
 
 ## Args validators
 
@@ -84,7 +74,7 @@ Cobra validates positional arguments before `RunE` runs. Never write `len(args)`
 
 Built-ins: `NoArgs`, `ExactArgs(n)`, `MinimumNArgs(n)`, `MaximumNArgs(n)`, `RangeArgs(min,max)`, `OnlyValidArgs`, `ExactValidArgs(n)`. Compose with `MatchAll(v1, v2)`. Custom validator: `func(cmd *cobra.Command, args []string) error`.
 
-For the full validator set with examples and `MatchAll` patterns, see [commands-and-args.md](references/commands-and-args.md).
+For the full validator set with examples and `MatchAll` patterns, see [cobra-commands-and-args.md](cobra-commands-and-args.md).
 
 ## Flags primer
 
@@ -97,7 +87,7 @@ serveCmd.MarkFlagRequired("port")
 serveCmd.MarkFlagsMutuallyExclusive("json", "yaml")
 ```
 
-For pflag types, custom flag values, flag groups, and viper binding, see [flags.md](references/flags.md).
+For pflag types, custom flag values, flag groups, and viper binding, see [cobra-flags.md](cobra-flags.md).
 
 ## Completions primer
 
@@ -107,7 +97,7 @@ Cobra generates shell completions automatically. Extend them with:
 - **`ValidArgsFunction`** — dynamic: `func(cmd, args, toComplete string) ([]string, ShellCompDirective)`. Return `ShellCompDirectiveNoFileComp` to suppress file fallback.
 - **`RegisterFlagCompletionFunc(name, fn)`** — flag value completion.
 
-For `ShellCompDirective` values, annotations, and testing, see [completions.md](references/completions.md).
+For `ShellCompDirective` values, annotations, and testing, see [cobra-completions.md](cobra-completions.md).
 
 ## Testing commands
 
@@ -123,7 +113,7 @@ func TestServeCmd(t *testing.T) {
 }
 ```
 
-Cobra accumulates flag state across `Execute()` calls — build a fresh command tree per test. For isolation patterns, golden files, and testing completions, see [testing.md](references/testing.md).
+Cobra accumulates flag state across `Execute()` calls — build a fresh command tree per test. For isolation patterns, golden files, and testing completions, see [cobra-testing.md](cobra-testing.md).
 
 ## Best Practices
 
@@ -145,16 +135,16 @@ Cobra accumulates flag state across `Execute()` calls — build a fresh command 
 
 ## Further Reading
 
-- [commands-and-args.md](references/commands-and-args.md) — full PreRun\*/PostRun\* chain, every Args validator, PersistentPreRunE inheritance rules
-- [flags.md](references/flags.md) — pflag types, required/exclusive/oneRequired groups, custom value types, viper binding
-- [completions.md](references/completions.md) — ShellCompDirective set, annotation-based completions, testing completions
-- [generators.md](references/generators.md) — man page, markdown, YAML, RST doc generation; `cobra-cli` scaffolder
-- [testing.md](references/testing.md) — isolation patterns, golden files, testing completions, table-driven command tests
+- [cobra-commands-and-args.md](cobra-commands-and-args.md) — full PreRun\*/PostRun\* chain, every Args validator, PersistentPreRunE inheritance rules
+- [cobra-flags.md](cobra-flags.md) — pflag types, required/exclusive/oneRequired groups, custom value types, viper binding
+- [cobra-completions.md](cobra-completions.md) — ShellCompDirective set, annotation-based completions, testing completions
+- [cobra-generators.md](cobra-generators.md) — man page, markdown, YAML, RST doc generation; `cobra-cli` scaffolder
+- [cobra-testing.md](cobra-testing.md) — isolation patterns, golden files, testing completions, table-driven command tests
 
 ## Cross-References
 
-- → See `samber/cc-skills-golang@golang-cli` skill for general CLI architecture — project layout, exit codes, signal handling, I/O patterns
-- → See `samber/cc-skills-golang@golang-spf13-viper` skill for configuration layering alongside cobra (flag → env → file → default precedence)
+- → See [`../SKILL.md`](../SKILL.md) for general CLI architecture — project layout, exit codes, signal handling, I/O patterns
+- → See [viper-guide.md](viper-guide.md) for configuration layering alongside cobra (flag → env → file → default precedence)
 - → See `samber/cc-skills-golang@golang-testing` skill for general Go testing patterns
 
 If you encounter a bug or unexpected behavior in spf13/cobra, open an issue at <https://github.com/spf13/cobra/issues>.
@@ -179,9 +169,9 @@ If you encounter a bug or unexpected behavior in spf13/cobra, open an issue at <
 - should not trigger: "How do I set up a new Go project from scratch?"
 
 ## Reference files
-- [`evals/evals.json`](evals/evals.json) - evals reference
-- [`references/commands-and-args.md`](references/commands-and-args.md) - commands and args reference
-- [`references/completions.md`](references/completions.md) - completions reference
-- [`references/flags.md`](references/flags.md) - flags reference
-- [`references/generators.md`](references/generators.md) - generators reference
-- [`references/testing.md`](references/testing.md) - testing reference
+- [`cobra-evals.json`](cobra-evals.json) - evals reference
+- [`cobra-commands-and-args.md`](cobra-commands-and-args.md) - commands and args reference
+- [`cobra-completions.md`](cobra-completions.md) - completions reference
+- [`cobra-flags.md`](cobra-flags.md) - flags reference
+- [`cobra-generators.md`](cobra-generators.md) - generators reference
+- [`cobra-testing.md`](cobra-testing.md) - testing reference

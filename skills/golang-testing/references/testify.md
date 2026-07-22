@@ -1,13 +1,3 @@
----
-name: golang-stretchr-testify
-description: "Comprehensive guide to stretchr/testify for Golang testing. Covers assert, require, mock, and suite packages in depth. Use when writing tests with testify, creating mocks, setting up test suites, or choosing between assert and require. Covers testify assertions, mock expectations, argument matchers, call verification, suite lifecycle, and advanced patterns like Eventually, JSONEq, and custom matchers. Apply when the codebase imports github.com/stretchr/testify."
-metadata:
-  category: golang
-  audience: developer
-  maturity: stable
-  kind: reference
----
-
 **Persona:** You are a Go engineer who treats tests as executable specifications. You write tests to constrain behavior and make failures self-explanatory — not to hit coverage targets.
 
 **Modes:**
@@ -116,7 +106,7 @@ Mock interfaces to isolate the unit under test. Embed `mock.Mock`, implement met
 
 Key matchers: `mock.Anything`, `mock.AnythingOfType("T")`, `mock.MatchedBy(func)`. Call modifiers: `.Once()`, `.Times(n)`, `.Maybe()`, `.Run(func)`.
 
-For defining mocks, argument matchers, call modifiers, return sequences, and verification, see [Mock reference](./references/mock.md).
+For defining mocks, argument matchers, call modifiers, return sequences, and verification, see [Mock reference](./testify-mock.md).
 
 ## testify/suite
 
@@ -177,28 +167,5 @@ Use `testifylint` to catch wrong argument order, assert/require misuse, and more
 
 ## Cross-References
 
-- → See `samber/cc-skills-golang@golang-testing` skill for general test patterns, table-driven tests, and CI
+- → See the parent `golang-testing` skill for general test patterns, table-driven tests, and CI
 - → See `samber/cc-skills-golang@golang-lint` skill for testifylint configuration
-
-## Use this skill when
-
-- Working with stretchr testify in Go code.
-- Reviewing or writing Go code that involves stretchr testify.
-
-## Do not use this skill when
-
-- The question is not specific to Go or this topic area.
-
-## Validation
-
-- Apply patterns consistently within the change scope.
-- Run existing tests after changes.
-
-## Examples
-
-- should trigger: "How should I handle stretchr testify in Go?"
-- should not trigger: "How do I set up a new Go project from scratch?"
-
-## Reference files
-- [`evals/evals.json`](evals/evals.json) - evals reference
-- [`references/mock.md`](references/mock.md) - mock reference

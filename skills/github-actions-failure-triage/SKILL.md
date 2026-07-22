@@ -37,9 +37,9 @@ Use this skill when a repository already uses GitHub Actions and you need to dia
 | CircleCI migration planning, parity checks, or staged cutover | No | [`circleci-to-github-actions-migration`](../circleci-to-github-actions-migration/SKILL.md) |
 | Broad multi-workflow or multi-environment CI migration orchestration | No | `ci-migration-orchestrator` |
 | Workflow cleanup is about readability of inline Bash, shell branching, or sprawling conditions rather than a live failure | No | [`workflow-bash-refactor`](../../agents/workflow-bash-refactor.agent.md) |
-| PR review-comment adjudication and fix batching | No | [`review-comment-resolution`](../review-comment-resolution/SKILL.md) |
+| PR review-comment adjudication and fix batching | No | [`github-cli-pr-workflow`](../github-cli-pr-workflow/SKILL.md) |
 | Worktree or isolated branch setup for parallel changes | No | [`git-worktrees`](../git-worktrees/SKILL.md) |
-| Root cause found; local reproduction with `act` is feasible | No | [`github-actions-local-repro`](../github-actions-local-repro/SKILL.md) |
+| Root cause found; local reproduction with `act` is feasible | Yes | [`references/local-repro-guide.md`](references/local-repro-guide.md) |
 | Upgrade tool failure (`topgrade`, `uv`, Homebrew, Go toolchain) outside of a CI job | No | [`tooling-upgrade-triage`](../tooling-upgrade-triage/SKILL.md) |
 
 ## Inputs to gather
@@ -71,6 +71,7 @@ Do not collect secret values. Only confirm whether the expected names, scopes, a
 1. Anchor the exact failing run, attempt, job, step, SHA, branch or ref, and event.
 2. Read the failed-step logs and surrounding setup context before editing anything.
 3. Map the failure to the exact workflow file, called reusable workflow, action version, or repository script that ran for that commit.
+4. If local reproduction is feasible, use the focused `act` workflow in [`references/local-repro-guide.md`](references/local-repro-guide.md) after capturing the hosted evidence.
 
 ## Workflow
 
@@ -115,7 +116,8 @@ Do not collect secret values. Only confirm whether the expected names, scopes, a
 - If no change is made, provide a precise evidence-backed explanation of the root cause or blocker.
 - Smoke test:
   - should trigger: "Diagnose why the deploy job started failing after a workflow edit."
-  - should not trigger: "Reproduce this failing Actions job locally with act." (→ `github-actions-local-repro`)
+  - should trigger: "Reproduce this failing Actions job locally with act after reading the hosted failure evidence."
+  - should not trigger: "Add a new Go release workflow to a repository with no failing run." (→ `golang-continuous-integration`)
 
 ## Examples
 
@@ -131,3 +133,5 @@ Do not collect secret values. Only confirm whether the expected names, scopes, a
 - [`references/debug-and-escalation.md`](references/debug-and-escalation.md) - when to rerun, enable extra debugging, or hand off
 - [`references/triage-scenarios.md`](references/triage-scenarios.md) - compact scenario matrix for validation and fast bucket recognition
 - [`assets/triage-summary-template.md`](assets/triage-summary-template.md) - concise format for reporting root cause, fix, validation, and blockers
+- [`references/local-repro-guide.md`](references/local-repro-guide.md) - focused `act` reproduction workflow
+- [`references/act-command-patterns.md`](references/act-command-patterns.md) - safe `act` command patterns

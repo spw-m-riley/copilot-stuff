@@ -62,7 +62,7 @@ See [`contract-spec.md`](../../workflow-contracts/references/contract-spec.md) f
 
 ## Relationship to review disposition
 
-This gate assumes the finding is already considered actionable. If the open item is actually outdated, not valid, superseded, or not actionable yet, classify it first using [`comment-disposition.md`](../../review-comment-resolution/references/comment-disposition.md) instead of forcing it through the residual gate.
+This gate assumes the finding is already considered actionable. If the open item is actually outdated, not valid, superseded, or not actionable yet, classify it first using [`comment-disposition.md`](comment-disposition.md) instead of forcing it through the residual gate.
 
 ## Compact summary shape
 
