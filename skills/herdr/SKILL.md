@@ -2,9 +2,6 @@
 name: herdr
 description: "Use when running inside herdr (HERDR_ENV=1) and you need to inspect panes, split panes, create tabs or workspaces, wait for pane output, or coordinate with sibling agents; not when you're outside a herdr-managed pane."
 metadata:
-  category: workflow
-  audience: general-coding-agent
-  maturity: draft
   kind: task
 ---
 

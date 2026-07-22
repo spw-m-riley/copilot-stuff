@@ -2,9 +2,6 @@
 name: golang-safety
 description: "Use when preventing nil, bounds, slice, map, pointer, conversion, or resource-lifecycle mistakes in Go; not for adversarial security review."
 metadata:
-  category: go
-  audience: general-coding-agent
-  maturity: draft
   kind: reference
 ---
 

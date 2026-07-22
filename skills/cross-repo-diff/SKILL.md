@@ -2,9 +2,6 @@
 name: cross-repo-diff
 description: Use when comparing two or more repositories for feature parity, functional drift, implementation differences, or to use one repo as a reference guide for how another should be built or migrated — especially when the comparison spans CI configs, API surfaces, dependency sets, or code patterns.
 metadata:
-  category: workflow
-  audience: general-coding-agent
-  maturity: draft
   kind: task
 ---
 

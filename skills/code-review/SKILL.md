@@ -2,9 +2,6 @@
 name: code-review
 description: "Use when asked to review a diff, pull request, branch, or patch with explicit evidence, confidence scoring, validator confirmation, and machine-readable findings output — not when the work is already about resolving existing review comments."
 metadata:
-  category: code-review
-  audience: general-coding-agent
-  maturity: draft
   kind: task
 ---
 

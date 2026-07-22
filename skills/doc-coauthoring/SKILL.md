@@ -2,9 +2,6 @@
 name: doc-coauthoring
 description: "Use when user wants to write, refactor, or expand documentation (README, guides, API docs, runbooks, specification documents)."
 metadata:
-  category: authoring
-  audience: general-coding-agent
-  maturity: stable
   kind: task
   reader_testing: required
 ---

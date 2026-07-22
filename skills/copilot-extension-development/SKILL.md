@@ -2,9 +2,6 @@
 name: copilot-extension-development
 description: "Use when adding, modifying, debugging, or registering Copilot CLI extensions under extensions/<name>/."
 metadata:
-  category: authoring
-  audience: general-coding-agent
-  maturity: stable
   kind: task
 ---
 

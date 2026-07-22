@@ -2,9 +2,6 @@
 name: systematic-debugging
 description: "Use when encountering any bug, test failure, unexpected behavior, or persistent error before proposing fixes."
 metadata:
-  category: debugging
-  audience: general-coding-agent
-  maturity: stable
   kind: task
 ---
 

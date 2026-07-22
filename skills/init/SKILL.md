@@ -2,9 +2,6 @@
 name: init
 description: "Use when creating or updating agent instruction files, per-path guides, or stale instruction routers."
 metadata:
-  category: authoring
-  audience: general-coding-agent
-  maturity: stable
   kind: task
 ---
 

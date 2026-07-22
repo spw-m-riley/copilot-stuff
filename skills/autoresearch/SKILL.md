@@ -2,9 +2,6 @@
 name: autoresearch
 description: "Use when running autonomous iterative experiments to optimize a measurable metric on an existing codebase — not for writing tests or diagnosing a specific failure."
 metadata:
-  category: research
-  audience: general-coding-agent
-  maturity: stable
   kind: task
 ---
 

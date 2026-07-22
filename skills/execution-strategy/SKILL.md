@@ -2,9 +2,6 @@
 name: execution-strategy
 description: "Use when deciding whether to handle work inline, serially, or in parallel before dispatching subagents, especially when file overlap or shared mutable state might make parallelism unsafe."
 metadata:
-  category: workflow
-  audience: general-coding-agent
-  maturity: draft
   kind: task
 ---
 

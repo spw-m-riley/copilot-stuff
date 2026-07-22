@@ -2,9 +2,6 @@
 name: lore-memory-operations
 description: "Use when writing, reflecting on, or verifying Lore memories (lore_retain, lore_reflect, memory_backfill, domain scoping) and need the tool's real persistence, scoping, or coverage semantics. Not when the stabilisation-guard blocked the session on open_loop items."
 metadata:
-  category: memory
-  audience: general-coding-agent
-  maturity: draft
   kind: task
 ---
 

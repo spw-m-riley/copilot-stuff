@@ -2,9 +2,6 @@
 name: acquire-codebase-knowledge
 description: "Use when the user explicitly asks to map, document, onboard into, or create codebase docs for an existing repo."
 metadata:
-  category: documentation
-  audience: general-coding-agent
-  maturity: stable
   kind: task
 ---
 

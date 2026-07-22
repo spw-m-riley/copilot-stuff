@@ -2,9 +2,6 @@
 name: context-map
 description: Use when a task may span multiple files, when dependencies or tests are unclear, or when you need a pre-edit map of likely files and patterns before planning or implementation.
 metadata:
-  category: planning
-  audience: general-coding-agent
-  maturity: stable
   kind: task
 ---
 

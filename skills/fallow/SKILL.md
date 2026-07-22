@@ -2,9 +2,6 @@
 name: fallow
 description: "Use when auditing JS/TS code health with Fallow - dead code, duplication, boundaries, or cleanup; not for debugging failures."
 metadata:
-  category: code-quality
-  audience: general-coding-agent
-  maturity: stable
   kind: reference
 ---
 

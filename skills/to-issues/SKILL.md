@@ -2,9 +2,6 @@
 name: to-issues
 description: "Use when the user wants to turn a plan, spec, PRD, or approved idea into independently grabbable issue-tracker slices. Not when the work still needs a PRD, repository discovery, or a generic handoff artifact."
 metadata:
-  category: planning
-  audience: general-coding-agent
-  maturity: stable
   kind: task
 ---
 

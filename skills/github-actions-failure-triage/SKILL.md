@@ -2,9 +2,6 @@
 name: github-actions-failure-triage
 description: Use when a GitHub Actions run, job, or check is failing and root-cause diagnosis is needed before touching any files — especially after workflow edits, action version bumps, runner changes, cache invalidation, or matrix changes in a repo already on Actions. Also use when deprecation warnings in CI logs (e.g. Node.js runtime warnings from setup-node or configure-nodejs) require proactive action version updates.
 metadata:
-  category: ci
-  audience: general-coding-agent
-  maturity: stable
   kind: task
 ---
 

@@ -2,9 +2,6 @@
 name: golang-popular-libraries
 description: "Recommends production-ready Golang libraries and frameworks. Apply when the user explicitly asks for library suggestions, wants to compare alternatives, needs to choose a library for a specific task, or when a new dependency is being added to the project."
 metadata:
-  category: golang
-  audience: developer
-  maturity: stable
   kind: reference
 ---
 

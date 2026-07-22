@@ -2,9 +2,6 @@
 name: improve
 description: "Use when asked to audit a codebase, identify high-leverage improvement opportunities, and produce self-contained implementation plans for another agent to execute; not when the user wants direct implementation in this session."
 metadata:
-  category: workflow
-  audience: general-coding-agent
-  maturity: draft
   kind: task
 ---
 

@@ -2,9 +2,6 @@
 name: golang-continuous-integration
 description: "Use when setting up or fixing Go CI workflows, quality gates, release jobs, or repository automation; not for generic non-Go Actions failures."
 metadata:
-  category: go
-  audience: general-coding-agent
-  maturity: draft
   kind: reference
 ---
 

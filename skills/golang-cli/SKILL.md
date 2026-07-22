@@ -2,9 +2,6 @@
 name: golang-cli
 description: "Use when building or reviewing a Go CLI command tree, flags, exits, configuration layering, or shell behavior; not for non-CLI Go code."
 metadata:
-  category: go
-  audience: general-coding-agent
-  maturity: draft
   kind: reference
 ---
 

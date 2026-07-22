@@ -2,9 +2,6 @@
 name: agent-governance
 description: "Use this skill when building tool-calling agents that need policy controls, audit trails, trust scoring, or rate limits."
 metadata:
-  category: security
-  audience: general-coding-agent
-  maturity: stable
   kind: reference
 ---
 

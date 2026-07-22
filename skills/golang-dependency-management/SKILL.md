@@ -2,9 +2,6 @@
 name: golang-dependency-management
 description: "Use when adding, upgrading, auditing, or removing Go dependencies; not when the task is general build or module troubleshooting."
 metadata:
-  category: go
-  audience: general-coding-agent
-  maturity: stable
   kind: reference
 ---
 

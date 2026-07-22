@@ -2,9 +2,6 @@
 name: golang-database
 description: "Use when writing or reviewing Go SQL queries, row scanning, transactions, connection pools, or persistence tests; not for general application debugging."
 metadata:
-  category: go
-  audience: general-coding-agent
-  maturity: draft
   kind: reference
 ---
 

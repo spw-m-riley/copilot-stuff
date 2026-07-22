@@ -2,9 +2,6 @@
 name: git-signing-troubleshoot
 description: "Use when commits, tags, or pushes are blocked by GPG or SSH signing failures — including 1Password op-ssh-sign errors, failed to fill whole buffer, or misleading op whoami output, not when the main task is branch integration, PR handling, or secret-scan triage."
 metadata:
-  category: version-control
-  audience: general-coding-agent
-  maturity: stable
   kind: task
 ---
 

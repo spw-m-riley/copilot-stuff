@@ -2,9 +2,6 @@
 name: golang-documentation
 description: "Use when writing or reviewing Go doc comments, examples, READMEs, contribution guides, changelogs, package docs, or documentation sites."
 metadata:
-  category: go
-  audience: general-coding-agent
-  maturity: stable
   kind: reference
 ---
 

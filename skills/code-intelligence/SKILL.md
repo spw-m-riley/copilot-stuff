@@ -2,9 +2,6 @@
 name: code-intelligence
 description: "Use when navigating or refactoring code — choosing between LSP, rg, or semantic search tools; an LSP call returns empty and you need to know if it failed; or a tool substitution needs disclosure."
 metadata:
-  category: code-navigation
-  audience: general-coding-agent
-  maturity: stable
   kind: reference
 ---
 

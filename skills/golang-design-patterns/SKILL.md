@@ -2,9 +2,6 @@
 name: golang-design-patterns
 description: "Use when choosing an idiomatic Go architecture or implementation pattern, including constructors, functional options, lifecycle, resilience, streaming, or graceful shutdown."
 metadata:
-  category: golang
-  audience: developer
-  maturity: stable
   kind: reference
 ---
 

@@ -2,9 +2,6 @@
 name: golang-troubleshooting
 description: "Troubleshoot Golang programs systematically - find and fix the root cause. Use when encountering bugs, crashes, deadlocks, or unexpected behavior in Go code. Covers debugging methodology, common Go pitfalls, test-driven debugging, pprof setup and capture, Delve debugger, race detection, GODEBUG tracing, and production debugging. Start here for any 'something is wrong' situation. Not for interpreting profiles or benchmarking (→ See `samber/cc-skills-golang@golang-benchmark` skill) or applying optimization patterns (→ See `samber/cc-skills-golang@golang-performance` skill)."
 metadata:
-  category: golang
-  audience: developer
-  maturity: stable
   kind: reference
 ---
 

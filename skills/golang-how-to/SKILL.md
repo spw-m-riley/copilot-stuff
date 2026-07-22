@@ -2,9 +2,6 @@
 name: golang-how-to
 description: "Golang skills orchestrator — always active on any Golang coding, review, debug, or setup task."
 metadata:
-  category: golang
-  audience: developer
-  maturity: stable
   kind: reference
 ---
 

@@ -2,9 +2,6 @@
 name: github-cli-pr-workflow
 description: "Use when a completed branch needs end-to-end PR lifecycle work: create or update the PR, resolve review feedback, watch checks, or choose merge, keep, or discard."
 metadata:
-  category: version-control
-  audience: general-coding-agent
-  maturity: stable
   kind: task
 ---
 

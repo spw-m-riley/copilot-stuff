@@ -3,9 +3,6 @@ name: grill-me
 description: "Use when the user wants to be interviewed or stress-tested about a plan, design, or decision — or when the user explicitly says 'grill me'. Not for domain-doc maintenance; route to grill-with-docs when CONTEXT.md or ADRs should be updated."
 disable-model-invocation: true
 metadata:
-  category: planning
-  audience: general-coding-agent
-  maturity: stable
   kind: task
 ---
 

@@ -2,9 +2,6 @@
 name: golang-stay-updated
 description: "Use when checking whether a Go project or toolchain should be updated; not when the task is implementation or day-to-day debugging."
 metadata:
-  category: go
-  audience: general-coding-agent
-  maturity: stable
   kind: reference
 ---
 

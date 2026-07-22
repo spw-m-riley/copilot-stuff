@@ -2,9 +2,6 @@
 name: to-prd
 description: "Use when the user wants a PRD synthesized from current repository and conversation context, especially for issue-tracker handoff. Not when doc-coauthoring, workflow-contracts, or codebase discovery is the better fit."
 metadata:
-  category: planning
-  audience: general-coding-agent
-  maturity: stable
   kind: task
 ---
 

@@ -2,9 +2,6 @@
 name: circleci-to-github-actions-migration
 description: Use when a repository still depends on .circleci/config.yml jobs, workflows, or artifacts that need to be replaced or phased out with GitHub Actions — including incremental shadow runs, staged cutover, and parity checks.
 metadata:
-  category: migrations
-  audience: general-coding-agent
-  maturity: stable
   kind: task
 ---
 
