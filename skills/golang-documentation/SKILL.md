@@ -1,6 +1,6 @@
 ---
 name: golang-documentation
-description: "Use when writing or reviewing Go doc comments, examples, READMEs, contribution guides, changelogs, package docs, or documentation sites."
+description: "Use when writing or reviewing Go docs, examples, READMEs, changelogs, or package documentation."
 metadata:
   kind: reference
 ---

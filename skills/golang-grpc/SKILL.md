@@ -1,6 +1,6 @@
 ---
 name: golang-grpc
-description: "Use when implementing or reviewing Go gRPC/protobuf services, interceptors, status errors, TLS, streaming, or bufconn tests."
+description: "Use when implementing or reviewing Go gRPC/protobuf services, interceptors, TLS, streaming, or bufconn tests."
 metadata:
   kind: reference
 ---

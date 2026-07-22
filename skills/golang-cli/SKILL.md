@@ -1,6 +1,6 @@
 ---
 name: golang-cli
-description: "Use when building or reviewing a Go CLI command tree, flags, exits, configuration layering, or shell behavior; not for non-CLI Go code."
+description: "Use when building or reviewing Go CLI commands, flags, exits, config, or shell behavior; not non-CLI Go."
 metadata:
   kind: reference
 ---

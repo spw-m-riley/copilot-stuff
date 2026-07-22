@@ -1,6 +1,6 @@
 ---
 name: golang-stay-updated
-description: "Use when checking whether a Go project or toolchain should be updated; not when the task is implementation or day-to-day debugging."
+description: "Use when deciding whether to update a Go project or toolchain; not implementation or day-to-day debugging."
 metadata:
   kind: reference
 ---

@@ -1,6 +1,6 @@
 ---
 name: golang-context
-description: "Use when threading Go context cancellation, deadlines, or request-scoped values through a call chain; not for unrelated concurrency bugs."
+description: "Use when threading Go cancellation, deadlines, or request-scoped values; not for unrelated concurrency bugs."
 metadata:
   kind: reference
 ---

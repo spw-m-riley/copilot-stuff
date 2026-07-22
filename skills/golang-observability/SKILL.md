@@ -1,6 +1,6 @@
 ---
 name: golang-observability
-description: "Use when instrumenting Go services with slog, Prometheus, OpenTelemetry, pprof, alerting, or dashboards; not for deep benchmark analysis."
+description: "Use when instrumenting Go with slog, Prometheus, OpenTelemetry, pprof, alerting, or dashboards; not benchmarks."
 metadata:
   kind: reference
 ---

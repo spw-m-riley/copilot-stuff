@@ -1,6 +1,6 @@
 ---
 name: workflow-contracts
-description: "Use when a task needs a durable handoff artifact for planning, review, or execution in agent-driven workflows — not just a chat summary."
+description: "Use when a workflow needs a durable planner, review, or execution handoff artifact; not a chat summary."
 metadata:
   kind: task
 ---

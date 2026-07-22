@@ -1,6 +1,6 @@
 ---
 name: to-issues
-description: "Use when turning a plan, spec, PRD, or approved idea into independently grabbable issue slices; not for unfinished discovery or PRD work."
+description: "Use when turning an approved plan, spec, or PRD into grabbable issue slices; not for discovery or PRD work."
 metadata:
   kind: task
 ---

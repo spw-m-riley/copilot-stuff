@@ -1,6 +1,6 @@
 ---
 name: golang-data-structures
-description: "Use when choosing, implementing, or optimizing Go slices, maps, arrays, containers, strings, generics, pointers, or copy semantics."
+description: "Use when choosing or optimizing Go slices, maps, arrays, containers, strings, generics, pointers, or copies."
 metadata:
   kind: reference
 ---
