@@ -1,6 +1,6 @@
 ---
 name: code-review
-description: "Use when asked to review a diff, pull request, branch, or patch with explicit evidence, confidence scoring, validator confirmation, and machine-readable findings output — not when the work is already about resolving existing review comments."
+description: "Use when reviewing a diff, PR, branch, or patch with evidence, confidence, validation, and machine-readable findings; not for resolving existing comments."
 metadata:
   kind: task
 ---

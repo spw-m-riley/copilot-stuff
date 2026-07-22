@@ -1,6 +1,6 @@
 ---
 name: cross-repo-diff
-description: Use when comparing two or more repositories for feature parity, functional drift, implementation differences, or to use one repo as a reference guide for how another should be built or migrated — especially when the comparison spans CI configs, API surfaces, dependency sets, or code patterns.
+description: "Use when comparing repositories for feature parity, drift, or migration reference across CI, APIs, dependencies, or code; not for single-repo analysis."
 metadata:
   kind: task
 ---

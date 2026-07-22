@@ -1,6 +1,6 @@
 ---
 name: ast-grep
-description: "Use when you need ast-grep structural search, linting, or safe codemod rewrites, especially for requests that mention ast-grep, sg, codemod, rule files, or syntax-aware edits instead of plain-text search."
+description: "Use when structural code search, linting, or codemods need ast-grep/sg syntax awareness; not for plain-text search."
 metadata:
   kind: task
 ---

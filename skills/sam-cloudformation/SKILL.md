@@ -1,6 +1,6 @@
 ---
 name: sam-cloudformation
-description: "Use when AWS SAM templates, CloudFormation stacks, or SAM deploys fail on YAML, transforms, resource wiring, or rollback state — not when the Lambda binary itself or IAM OIDC auth is the primary blocker."
+description: "Use when AWS SAM or CloudFormation fails on YAML, transforms, resource wiring, deploys, or rollback state; not for Lambda binary or IAM OIDC failures."
 metadata:
   kind: task
 ---

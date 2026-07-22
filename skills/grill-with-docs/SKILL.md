@@ -1,6 +1,6 @@
 ---
 name: grill-with-docs
-description: "Use when stress-testing a plan against the project's domain model, when domain terminology is fuzzy or inconsistent, or when the user says 'grill me' about a design that should produce or update CONTEXT.md and ADRs."
+description: "Use when stress-testing a plan against project terminology or domain models and updating CONTEXT.md or ADRs; not for generic interviews."
 disable-model-invocation: true
 metadata:
   kind: task

@@ -1,6 +1,6 @@
 ---
 name: to-prd
-description: "Use when the user wants a PRD synthesized from current repository and conversation context, especially for issue-tracker handoff. Not when doc-coauthoring, workflow-contracts, or codebase discovery is the better fit."
+description: "Use when synthesizing a PRD from repository and conversation context for issue-tracker handoff; not for general docs, workflow contracts, or discovery."
 metadata:
   kind: task
 ---

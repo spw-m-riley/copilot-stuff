@@ -1,6 +1,6 @@
 ---
 name: reverse-prompt
-description: Use when a request is under-specified, ambiguous, or needs sharpening before research, planning, or implementation begins — or when the user explicitly asks to improve, rewrite, or reverse-prompt their ask.
+description: "Use when a request is ambiguous or under-specified and needs sharpening before research, planning, or implementation."
 metadata:
   kind: task
 ---

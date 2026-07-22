@@ -1,6 +1,6 @@
 ---
 name: agentic-eval
-description: "Use when designing or implementing an evaluation loop for AI agent outputs — reflection loops, evaluator-optimizer pipelines, LLM-as-judge scoring, or rubric-based iteration. Not when running an existing test suite or reviewing a completed artifact without iterating."
+description: "Use when designing iterative evaluation loops for AI outputs, such as reflection, judge, rubric, or evaluator-optimizer workflows; not for ordinary tests."
 metadata:
   kind: reference
 ---

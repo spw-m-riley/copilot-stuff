@@ -1,6 +1,6 @@
 ---
 name: typescript-any-eliminator
-description: Use when TypeScript source contains explicit `any` in application code, shared helpers, DTOs, or API layers that should be narrowed without changing runtime behavior — or when a reviewer or lint rule flags unsafe `any` usage.
+description: "Use when explicit TypeScript `any` needs safe narrowing in application, helper, DTO, or API code; not for runtime behavior changes."
 metadata:
   kind: task
 ---
