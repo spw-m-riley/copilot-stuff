@@ -1,6 +1,6 @@
 ---
 name: golang-how-to
-description: "Use when any Go coding, review, debugging, or setup task needs Go-skill routing."
+description: "Use when Go coding, review, debugging, or setup needs skill routing."
 metadata:
   kind: reference
 ---
