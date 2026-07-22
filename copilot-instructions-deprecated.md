@@ -350,3 +350,10 @@ These rules remain active, but their operational scope is narrower than the glob
   - Current guidance: `instructions/javascript.instructions.md`, learned rules 24-27.
 - **Rule 133:** `[DOCS] Only add generated screenshots or VHS demos to user-facing documentation when they clarify the actual reader workflow; do not include validation-command recordings as decorative media.`
   - Current guidance: `instructions/markdown.instructions.md`, learned rule 5.
+
+### Universal operational instructions
+
+- **Rules 11, 59, 135, 136, 140, 142, 143:** Memory and Lore guidance moved to `instructions/memory.instructions.md`.
+- **Rules 40, 53, 77, 82, 121, 132:** Shell and CLI guidance moved to `instructions/shell.instructions.md`.
+- **Rules 56, 58, 92:** Review lifecycle guidance moved to `instructions/review.instructions.md`.
+- **Rules 87, 110:** GitHub CLI and repository-operation guidance moved to `instructions/github.instructions.md`.
