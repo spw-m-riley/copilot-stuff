@@ -1,6 +1,6 @@
 ---
 name: golang-swagger
-description: "Golang OpenAPI/Swagger documentation with swaggo/swag — annotation comments (@Summary, @Param, @Success, @Router, @Security), swag init code generation, framework integrations (gin, echo, fiber, chi, net/http), security definitions (Bearer/JWT, OAuth2, API key), and struct tags (swaggertype, enums, example, swaggerignore). Apply when adding or maintaining Swagger/OpenAPI docs in a Go project, or when the codebase imports github.com/swaggo/swag, github.com/swaggo/gin-swagger, github.com/swaggo/echo-swagger, github.com/swaggo/http-swagger, or github.com/swaggo/files."
+description: "Use when adding or maintaining Go OpenAPI/Swagger docs with swaggo annotations, generation, framework integrations, security definitions, or struct tags."
 metadata:
   kind: reference
 ---

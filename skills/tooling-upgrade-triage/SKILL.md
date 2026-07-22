@@ -1,6 +1,6 @@
 ---
 name: tooling-upgrade-triage
-description: Use when a package manager, runtime version, or toolchain upgrade pipeline fails — including topgrade runs, uv/pip resolver conflicts, Homebrew errors, Go or Node toolchain upgrade failures, and lock file breakage. Not when the CI job itself is failing (→ github-actions-failure-triage) or when the dependency change is a deliberate library version bump (→ golang-dependency-management).
+description: "Use when package-manager, runtime, or toolchain upgrades fail, including topgrade, uv/pip, Homebrew, Go, Node, or lockfiles; not for ordinary CI failures or deliberate dependency bumps."
 metadata:
   kind: task
 ---

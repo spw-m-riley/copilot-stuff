@@ -1,6 +1,6 @@
 ---
 name: golang-project-layout
-description: "Provides a guide for setting up Golang project layouts and workspaces. Use when starting a new Go project, organizing an existing codebase, setting up a monorepo with multiple packages, creating CLI tools with multiple main packages, deciding between cmd/internal/pkg directory conventions, or discussing package restructuring, package splits, or module splits."
+description: "Use when starting or restructuring a Go project, workspace, monorepo, CLI layout, package split, module split, or cmd/internal/pkg organization."
 metadata:
   kind: reference
 ---

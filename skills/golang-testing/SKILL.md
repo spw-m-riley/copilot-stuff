@@ -1,6 +1,6 @@
 ---
 name: golang-testing
-description: "Production-ready Golang tests — table-driven tests, testify suites and mocks, parallel tests, fuzzing, fixtures, goroutine leak detection with goleak, snapshot testing, code coverage, integration tests, idiomatic test naming. Use when writing or reviewing Go tests, choosing a testing approach, setting up Go test CI, or debugging flaky/slow tests. Testify API guidance is included in this skill's references; for measurement methodology see `samber/cc-skills-golang@golang-benchmark`."
+description: "Use when writing or reviewing Go tests, including table-driven tests, mocks, fuzzing, parallelism, fixtures, coverage, integration tests, or flaky-test diagnosis."
 metadata:
   kind: reference
 ---

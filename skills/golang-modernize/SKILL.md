@@ -1,6 +1,6 @@
 ---
 name: golang-modernize
-description: "Modernize Golang code to use recent language features, standard library improvements, and idiomatic patterns. Trigger proactively when writing or reviewing Go code and old-style patterns are detected, or when encountering a deprecation warning. Also use when the user explicitly asks for modernization, a Go version upgrade, or a CI/tooling refresh."
+description: "Use when modernizing Go code, upgrading Go versions, replacing deprecated APIs, or adopting newer standard-library patterns; not for ordinary implementation or debugging."
 metadata:
   kind: reference
 ---

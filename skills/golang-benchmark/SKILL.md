@@ -1,6 +1,6 @@
 ---
 name: golang-benchmark
-description: "Golang benchmarking, profiling, and performance measurement. Use when writing, running, or comparing Go benchmarks, profiling hot paths with pprof, interpreting CPU/memory/trace profiles, analyzing results with benchstat, setting up CI benchmark regression detection, or investigating production performance with Prometheus runtime metrics. Also use when the developer needs deep analysis on a specific performance indicator - this skill provides the measurement methodology, while `samber/cc-skills-golang@golang-performance` provides the optimization patterns."
+description: "Use when measuring or analyzing Go performance with benchmarks, pprof, trace, benchstat, or runtime metrics; not when applying optimization patterns."
 metadata:
   kind: reference
 ---

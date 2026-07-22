@@ -1,6 +1,6 @@
 ---
 name: golang-security
-description: "Security best practices and vulnerability prevention for Golang. Covers injection (SQL, command, XSS), cryptography, filesystem safety, network security, cookies, secrets management, memory safety, and logging. Apply when writing, reviewing, or auditing Go code for security, or when working on any risky code involving crypto, I/O, secrets management, user input handling, or authentication. Includes configuration of security tools."
+description: "Use when writing, reviewing, or auditing Go code for injection, crypto, filesystem, network, secrets, memory, logging, authentication, or security-tool issues."
 metadata:
   kind: reference
 ---

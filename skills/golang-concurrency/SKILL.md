@@ -1,6 +1,6 @@
 ---
 name: golang-concurrency
-description: "Golang concurrency patterns. Use when writing or reviewing concurrent Go code involving goroutines, channels, select, locks, sync primitives, errgroup, singleflight, worker pools, or fan-out/fan-in pipelines. Also triggers when you detect goroutine leaks, race conditions, channel ownership issues, or need to choose between channels and mutexes."
+description: "Use when writing or reviewing concurrent Go code with goroutines, channels, locks, errgroup, worker pools, leaks, races, or ownership issues."
 metadata:
   kind: reference
 ---
