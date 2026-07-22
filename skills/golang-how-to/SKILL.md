@@ -1,6 +1,6 @@
 ---
 name: golang-how-to
-description: "Golang skills orchestrator — always active on any Golang coding, review, debug, or setup task."
+description: "Use when any Go coding, review, debugging, or setup task needs Go-skill routing."
 metadata:
   kind: reference
 ---
