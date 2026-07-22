@@ -1,6 +1,6 @@
 ---
 name: golang-naming
-description: "Use when choosing or reviewing Go names for packages, types, methods, errors, constants, receivers, or tests; not for general Go implementation."
+description: "Use when choosing or reviewing Go names for packages, types, methods, errors, constants, receivers, or tests; not for general implementation."
 metadata:
   kind: reference
 ---

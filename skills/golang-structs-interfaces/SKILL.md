@@ -1,6 +1,6 @@
 ---
 name: golang-structs-interfaces
-description: "Use when designing Go structs or interfaces, choosing receivers, composing or embedding types, adding field tags, or defining consumer-owned contracts."
+description: "Use when designing Go structs/interfaces, choosing receivers, embedding, tags, or consumer-owned contracts."
 metadata:
   kind: reference
 ---

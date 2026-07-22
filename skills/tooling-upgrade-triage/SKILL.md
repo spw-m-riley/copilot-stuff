@@ -1,6 +1,6 @@
 ---
 name: tooling-upgrade-triage
-description: "Use when package-manager, runtime, or toolchain upgrades fail, including topgrade, uv/pip, Homebrew, Go, Node, or lockfiles; not for ordinary CI failures or deliberate dependency bumps."
+description: "Use when package-manager, runtime, or toolchain upgrades fail, including topgrade, uv/pip, Homebrew, Go, Node, or lockfiles; not for ordinary CI."
 metadata:
   kind: task
 ---

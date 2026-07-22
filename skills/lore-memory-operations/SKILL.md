@@ -1,6 +1,6 @@
 ---
 name: lore-memory-operations
-description: "Use when writing, reflecting on, or verifying Lore memories and need persistence, scope, backfill, or coverage semantics; not for stabilisation-guard open-loop blocking."
+description: "Use when writing or verifying Lore memories and need persistence, scope, backfill, or coverage semantics; not for open-loop blocking."
 metadata:
   kind: task
 ---

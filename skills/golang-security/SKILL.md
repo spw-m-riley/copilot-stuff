@@ -1,6 +1,6 @@
 ---
 name: golang-security
-description: "Use when writing, reviewing, or auditing Go code for injection, crypto, filesystem, network, secrets, memory, logging, authentication, or security-tool issues."
+description: "Use when writing or auditing Go code for injection, crypto, I/O, secrets, memory, authentication, or security-tool issues."
 metadata:
   kind: reference
 ---

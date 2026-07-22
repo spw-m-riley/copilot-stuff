@@ -1,6 +1,6 @@
 ---
 name: improve
-description: "Use when auditing a codebase for high-leverage improvements and producing implementation plans for another agent; not for direct implementation."
+description: "Use when auditing a codebase for high-leverage improvements and producing plans for another agent; not for direct implementation."
 metadata:
   kind: task
 ---

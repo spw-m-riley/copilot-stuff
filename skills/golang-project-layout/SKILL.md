@@ -1,6 +1,6 @@
 ---
 name: golang-project-layout
-description: "Use when starting or restructuring a Go project, workspace, monorepo, CLI layout, package split, module split, or cmd/internal/pkg organization."
+description: "Use when starting or restructuring a Go project, workspace, monorepo, CLI layout, or package/module split."
 metadata:
   kind: reference
 ---

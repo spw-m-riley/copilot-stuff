@@ -1,6 +1,6 @@
 ---
 name: golang-testing
-description: "Use when writing or reviewing Go tests, including table-driven tests, mocks, fuzzing, parallelism, fixtures, coverage, integration tests, or flaky-test diagnosis."
+description: "Use when writing or reviewing Go tests, including mocks, fuzzing, parallelism, coverage, integration, or flaky-test diagnosis."
 metadata:
   kind: reference
 ---

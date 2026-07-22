@@ -1,6 +1,6 @@
 ---
 name: context-map
-description: Use when a task may span multiple files, when dependencies or tests are unclear, or when you need a pre-edit map of likely files and patterns before planning or implementation.
+description: "Use when a task spans files or dependencies/tests are unclear and you need a pre-edit map."
 metadata:
   kind: task
 ---

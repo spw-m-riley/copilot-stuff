@@ -1,6 +1,6 @@
 ---
 name: sam-cloudformation
-description: "Use when AWS SAM or CloudFormation fails on YAML, transforms, resource wiring, deploys, or rollback state; not for Lambda binary or IAM OIDC failures."
+description: "Use when AWS SAM/CloudFormation fails on YAML, transforms, wiring, deploy, or rollback; not for Lambda binary or IAM OIDC failures."
 metadata:
   kind: task
 ---

@@ -1,6 +1,6 @@
 ---
 name: test-driven-development
-description: "Use when implementing a new feature, fixing a bug, or refactoring existing behavior — proven correct by executable tests written before production code."
+description: "Use when implementing, fixing, or refactoring behavior with tests written before production code."
 metadata:
   kind: task
 ---

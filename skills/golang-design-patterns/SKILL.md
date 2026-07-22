@@ -1,6 +1,6 @@
 ---
 name: golang-design-patterns
-description: "Use when choosing an idiomatic Go architecture or implementation pattern, including constructors, functional options, lifecycle, resilience, streaming, or graceful shutdown."
+description: "Use when choosing Go architecture patterns for constructors, options, lifecycle, resilience, streaming, or shutdown."
 metadata:
   kind: reference
 ---

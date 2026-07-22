@@ -1,6 +1,6 @@
 ---
 name: golang-code-style
-description: "Use when writing or reviewing Go code for clarity, control flow, declarations, line breaking, comments, or project style; not for naming or lint configuration."
+description: "Use when writing or reviewing Go code style, control flow, declarations, comments, or formatting; not for naming or lint."
 metadata:
   kind: reference
 ---

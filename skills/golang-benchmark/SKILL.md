@@ -1,6 +1,6 @@
 ---
 name: golang-benchmark
-description: "Use when measuring or analyzing Go performance with benchmarks, pprof, trace, benchstat, or runtime metrics; not when applying optimization patterns."
+description: "Use when measuring/analyzing Go performance with benchmarks, pprof, trace, benchstat, or runtime metrics; not for optimization patterns."
 metadata:
   kind: reference
 ---

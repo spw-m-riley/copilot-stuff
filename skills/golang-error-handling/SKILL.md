@@ -1,6 +1,6 @@
 ---
 name: golang-error-handling
-description: "Use when creating, wrapping, inspecting, or logging Go errors, including errors.Is/As, errors.Join, panic/recover, slog, or oops; not for general Go debugging."
+description: "Use when creating, wrapping, inspecting, or logging Go errors with errors.Is/As, errors.Join, panic/recover, slog, or oops; not for debugging."
 metadata:
   kind: reference
 ---

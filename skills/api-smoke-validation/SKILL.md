@@ -1,6 +1,6 @@
 ---
 name: api-smoke-validation
-description: Use when API endpoints need quick, repeatable smoke validation with hurl after changes, especially for auth, status codes, and response-shape regressions before broader testing.
+description: "Use when API endpoints need hurl smoke tests for auth, status, or response-shape regressions."
 metadata:
   kind: task
 ---

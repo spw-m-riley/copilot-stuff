@@ -1,6 +1,6 @@
 ---
 name: to-prd
-description: "Use when synthesizing a PRD from repository and conversation context for issue-tracker handoff; not for general docs, workflow contracts, or discovery."
+description: "Use when synthesizing a PRD from repository and conversation context for issue handoff; not for general docs or discovery."
 metadata:
   kind: task
 ---

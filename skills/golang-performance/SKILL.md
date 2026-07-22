@@ -1,6 +1,6 @@
 ---
 name: golang-performance
-description: "Use when Go profiling or benchmarks identify a bottleneck and you need optimization patterns for allocations, CPU, memory, GC, pooling, or caching; not for measurement or debugging."
+description: "Use when Go profiles or benchmarks reveal a bottleneck and you need optimization patterns; not for measurement or debugging."
 metadata:
   kind: reference
 ---

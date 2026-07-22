@@ -1,6 +1,6 @@
 ---
 name: tsconfig-hardening
-description: "Use when tightening TypeScript compiler flags, fixing tsconfig/module-resolution drift, consolidating config chains, or adding project references without cascading errors."
+description: "Use when tightening TypeScript flags, fixing tsconfig/module-resolution drift, or adding project references safely."
 metadata:
   kind: task
 ---

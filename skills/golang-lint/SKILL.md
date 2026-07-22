@@ -1,6 +1,6 @@
 ---
 name: golang-lint
-description: "Use when configuring or interpreting golangci-lint, go vet, staticcheck, revive, nolint directives, or Go lint failures; not for generic CI failures."
+description: "Use when configuring/interpreting golangci-lint, go vet, staticcheck, revive, or Go lint failures; not for generic CI."
 metadata:
   kind: reference
 ---

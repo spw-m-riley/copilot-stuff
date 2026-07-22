@@ -1,6 +1,6 @@
 ---
 name: worktrunk
-description: "Use when a user needs to configure or operate Worktrunk (wt) for worktree lifecycle management, hooks, LLM commits, or parallel agent workflows."
+description: "Use when configuring or operating Worktrunk (wt) for worktree lifecycle, hooks, commits, or parallel agents."
 metadata:
   kind: task
 ---

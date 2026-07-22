@@ -1,6 +1,6 @@
 ---
 name: golang-database
-description: "Use when writing or reviewing Go SQL queries, row scanning, transactions, connection pools, or persistence tests; not for general application debugging."
+description: "Use when writing or reviewing Go SQL, scanning, transactions, pools, or persistence tests; not for general debugging."
 metadata:
   kind: reference
 ---

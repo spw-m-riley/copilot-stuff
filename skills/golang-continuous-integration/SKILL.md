@@ -1,6 +1,6 @@
 ---
 name: golang-continuous-integration
-description: "Use when setting up or fixing Go CI workflows, quality gates, release jobs, or repository automation; not for generic non-Go Actions failures."
+description: "Use when setting up or fixing Go CI workflows, quality gates, releases, or repository automation; not for generic Actions failures."
 metadata:
   kind: reference
 ---

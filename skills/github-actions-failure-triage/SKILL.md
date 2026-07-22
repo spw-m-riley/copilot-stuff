@@ -1,6 +1,6 @@
 ---
 name: github-actions-failure-triage
-description: "Use when a GitHub Actions run or check fails and needs root-cause triage, especially after workflow, action, runner, cache, matrix, or Node-runtime changes."
+description: "Use when GitHub Actions fails and needs root-cause triage after workflow, action, runner, cache, matrix, or Node-runtime changes."
 metadata:
   kind: task
 ---

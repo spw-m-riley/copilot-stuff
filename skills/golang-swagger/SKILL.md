@@ -1,6 +1,6 @@
 ---
 name: golang-swagger
-description: "Use when adding or maintaining Go OpenAPI/Swagger docs with swaggo annotations, generation, framework integrations, security definitions, or struct tags."
+description: "Use when maintaining Go OpenAPI/Swagger docs with swaggo annotations, generation, framework integrations, security, or struct tags."
 metadata:
   kind: reference
 ---

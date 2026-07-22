@@ -1,6 +1,6 @@
 ---
 name: execution-strategy
-description: "Use when deciding whether to handle work inline, serially, or in parallel before dispatching subagents, especially when file overlap or shared mutable state might make parallelism unsafe."
+description: "Use when choosing inline, serial, or parallel work before dispatching agents, especially with file overlap or shared state."
 metadata:
   kind: task
 ---

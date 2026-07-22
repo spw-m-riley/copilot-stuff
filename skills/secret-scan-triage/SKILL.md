@@ -1,6 +1,6 @@
 ---
 name: secret-scan-triage
-description: Use when secret scanning with gitleaks reports findings that need fast triage, containment, and false-positive adjudication before code changes or merges continue.
+description: "Use when gitleaks reports secrets needing triage, containment, or false-positive review before changes or merges."
 metadata:
   kind: task
 ---

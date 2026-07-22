@@ -1,6 +1,6 @@
 ---
 name: tsc-error-triage
-description: "Use when tsc or the project typecheck command reports failures — especially after a refactor, dependency upgrade, tsconfig change, or strict-mode flag addition that causes a burst of compiler errors."
+description: "Use when tsc or project typecheck reports compiler errors after refactors, upgrades, tsconfig changes, or strict-mode changes."
 metadata:
   kind: task
 ---

@@ -1,6 +1,6 @@
 ---
 name: golang-modernize
-description: "Use when modernizing Go code, upgrading Go versions, replacing deprecated APIs, or adopting newer standard-library patterns; not for ordinary implementation or debugging."
+description: "Use when modernizing Go, upgrading versions, replacing deprecated APIs, or adopting newer standard-library patterns; not for debugging."
 metadata:
   kind: reference
 ---

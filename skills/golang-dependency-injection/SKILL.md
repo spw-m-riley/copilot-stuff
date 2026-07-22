@@ -1,6 +1,6 @@
 ---
 name: golang-dependency-injection
-description: "Use when designing or refactoring Go dependency injection, constructor wiring, service lifecycles, composition roots, or DI library selection."
+description: "Use when designing or refactoring Go dependency injection, constructors, lifecycles, composition roots, or DI libraries."
 metadata:
   kind: reference
 ---

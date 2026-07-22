@@ -1,6 +1,6 @@
 ---
 name: cross-repo-diff
-description: "Use when comparing repositories for feature parity, drift, or migration reference across CI, APIs, dependencies, or code; not for single-repo analysis."
+description: "Use when comparing repositories for feature parity, drift, or migration reference; not for single-repo analysis."
 metadata:
   kind: task
 ---

@@ -1,6 +1,6 @@
 ---
 name: go-build-and-test
-description: "Use when Go build, test, toolchain, or CI parity failures surface, including GOROOT, govulncheck, or TempDir race issues; not for Go error-pattern design."
+description: "Use when Go build, test, toolchain, or CI parity failures surface, including GOROOT, govulncheck, or TempDir races."
 metadata:
   kind: task
 ---

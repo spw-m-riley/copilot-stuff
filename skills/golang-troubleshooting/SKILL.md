@@ -1,6 +1,6 @@
 ---
 name: golang-troubleshooting
-description: "Use when Go code has bugs, crashes, deadlocks, races, flaky tests, or unexpected behavior and needs root-cause debugging; not for benchmark interpretation or optimization."
+description: "Use when Go code has bugs, crashes, deadlocks, races, flaky tests, or unexpected behavior; not for profiles or optimization."
 metadata:
   kind: reference
 ---
