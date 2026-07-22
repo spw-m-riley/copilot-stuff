@@ -1,6 +1,6 @@
 ---
 name: herdr
-description: "Use inside herdr to inspect panes, create tabs/workspaces, wait for output, or coordinate agents; not outside herdr."
+description: "Use when in herdr to inspect panes, create tabs/workspaces, wait for output, or coordinate agents; not outside herdr."
 metadata:
   kind: task
 ---
