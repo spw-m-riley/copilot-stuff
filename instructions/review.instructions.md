@@ -5,29 +5,14 @@ applyTo: "**/*"
 
 # Review guidance
 
-## Purpose and Scope
+## Guidance
 
-- Applies to code reviews, pull-request review feedback, asynchronous reviewer results, and promotion decisions.
-- Treat review conclusions as evidence about a specific commit, not as permanent approval for a moving branch.
-
-## Core Guidance
-
+- Tie every review conclusion to the commit or diff it examined.
 - Before pushing or creating a pull request after asynchronous branch reviews, read every pending final-review result for the current `HEAD` or rerun the reviewers on the latest `HEAD`.
 - If a final review reports `APPROVED` but its reasoning identifies a concrete plausible defect, inspect that code path and verify the behavior directly before closing the task.
 - When GitHub's Copilot reviewer authors a thread and the requested fix has been pushed, resolve the thread unless Matt explicitly says to leave it open.
 - Keep review findings focused on high-confidence defects, security issues, regressions, or actionable contract violations.
-
-## Validation Expectations
-
-- Tie each review result to the commit or diff it actually examined.
 - Re-run the smallest relevant validation after addressing a finding, then reassess promotion readiness.
-- Do not treat an earlier approval as current after the branch advances.
-
-## Maintenance Notes
-
-- Keep `## Learned Rules` as the final section in the file; do not add new sections after it.
-- Append new learned rules without renumbering existing entries; numbering gaps can reflect archived or superseded entries.
-- Use `[REVIEW]` for review-specific learned rules.
 
 ## Learned Rules
 

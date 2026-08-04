@@ -5,29 +5,13 @@ applyTo: "**/*.go"
 
 # Go guidance
 
-## Purpose and Scope
+## Guidance
 
-- Applies to `**/*.go` files in this workspace.
-- Use these rules for low-churn Go edits that respect package boundaries, toolchain realities, and existing error patterns.
-
-## Core Guidance
-
-- Prefer existing modules, naming conventions, error patterns, and type design before introducing new Go structure.
 - Keep package boundaries clear and avoid leaking package-local types or type aliases into shared contracts.
 - Use function-type contracts carefully; remember Go's function types are not covariant.
 - Be deliberate with toolchain overrides and version management; verify the active toolchain before blaming code.
-- Keep error handling, constructors, and helper wrappers readable and type-safe.
-
-## Validation Expectations
-
 - Run the repository's standard formatting, test, and build or typecheck commands for the touched Go packages.
 - Confirm the active toolchain and any exported `GOROOT`/`GOTOOLDIR` overrides before treating version mismatches as code failures.
-
-## Maintenance Notes
-
-- Keep `## Learned Rules` as the final section in the file; do not add new sections after it.
-- Append new learned rules without renumbering existing entries; numbering gaps can reflect archived or superseded rules.
-- Use `[GO]` for Go-specific learned rules in this file and keep broader workflow or repository-policy guidance in the root instructions.
 
 ## Learned Rules
 

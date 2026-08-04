@@ -5,25 +5,13 @@ applyTo: "**/.github/workflows/*.{yml,yaml}"
 
 # GitHub Actions workflow guidance
 
-## Purpose and Scope
+## Guidance
 
-- Applies to `**/.github/workflows/*.{yml,yaml}` files in this workspace.
-- Use these rules for GitHub Actions workflow structure, deployment safety, and CI review expectations.
-
-## Core Guidance
-
-- Keep workflows explicit, deterministic, and easy to scan.
 - Prefer existing repository patterns, reusable workflows, and trusted actions before adding bespoke job graphs or large inline shell scripts.
-- Set `permissions` deliberately and keep them as narrow as the workflow needs.
 - Keep triggers, path filters, concurrency, caching, and matrix expansion intentional so workflows only run when they should.
-- Keep job names, runner choices, and step boundaries clear; extract repeated logic rather than duplicating it across jobs.
-
-## Validation Expectations
-
 - Run `actionlint` against all changed workflows and fix any issues it finds.
-- Re-check pinned `uses:` references, `permissions`, `concurrency`, and artifact path changes in the final diff before treating the workflow update as ready.
 
-## Baseline Workflow Guardrails
+## Baseline
 
 - Pin every `uses:` reference to a full commit SHA and include a version comment for readability unless a more specific local rule documents an allowed exception; do not commit mutable refs such as `@v4`, `@main`, or `@latest` by default.
 - Set `permissions` explicitly. Start from `contents: read` at the workflow level and widen scopes only for the jobs that need additional access.
@@ -32,20 +20,6 @@ applyTo: "**/.github/workflows/*.{yml,yaml}"
 - Default `actions/checkout` to `fetch-depth: 1`; only fetch full history when release, tagging, or other history-aware steps actually need it.
 - For protected deployments, use GitHub `environment` rules with the right reviewers, branch restrictions, and secrets; include post-deploy smoke checks and keep rollback steps clear and testable.
 - Use artifacts to pass built outputs and publish test, coverage, or security results when downstream jobs or reviewers need them; set `retention-days` intentionally and keep artifact names and paths exact.
-
-## Review Checklist
-
-- Are all `uses:` references pinned to a commit SHA or covered by a documented local exception, and are `permissions` explicit?
-- Do long-running or shared-resource jobs set appropriate `concurrency` and `timeout-minutes` values?
-- Do checkout steps use the right `fetch-depth` for the job's actual history needs?
-- Do protected deployment jobs use the right `environment` controls, smoke checks, and rollback expectations?
-- Do artifact producers and consumers agree on exact names, paths, and `retention-days`?
-
-## Maintenance Notes
-
-- Keep `## Learned Rules` as the final section in the file; do not add new sections after it.
-- Append new learned rules without renumbering existing entries; numbering gaps can reflect archived or superseded rules.
-- Use `[GITHUB-ACTIONS]` for GitHub Actions-specific learned rules in this file.
 
 ## Learned Rules
 

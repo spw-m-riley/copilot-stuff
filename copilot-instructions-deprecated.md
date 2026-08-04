@@ -11,6 +11,27 @@ This file contains rules that have been superseded, are no longer applicable, or
 
 ## Deprecated Rules
 
+### Rules promoted into the global contract (2026-08-04)
+
+These rules remain operative through concise guidance in `copilot-instructions.md`; the duplicate learned-rule entries were archived to reduce prompt noise.
+
+| Rule | Promoted guidance |
+| --- | --- |
+| 1 | Never bypass trusted signing or authentication paths. |
+| 2 | Persist reusable learned rules in the most specific instruction file when discovered. |
+| 5 | Do not propose GitHub-side remote coding agents for this workflow. |
+| 7 | Keep completed work separate from a new follow-on delta. |
+| 21 | Do not mark SQL todos done before validation succeeds. |
+| 29 | Use conventional-commit syntax unless Matt asks otherwise. |
+| 79 | Use narrow learned-rule categories and preserve `## Learned Rules` as the final section. |
+| 90 | Run RTK directly when an equivalent command exists. |
+| 107 | Run command-backed decisions and report the observed result. |
+| 115 | Perform one-offs directly instead of designing reusable infrastructure. |
+
+### Duplicate Rule 128 renumbered
+
+The stash/checkout rule previously shared ID 128 with the `git filter-repo` remote-restoration rule. It is now active as Rule 144; the wording and guidance are unchanged.
+
 ### Rule 25 (Deprecated: Superseded by Rule 26)
 
 **Original text:**

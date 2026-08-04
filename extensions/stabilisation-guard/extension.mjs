@@ -10,7 +10,7 @@ const LORE_DB_PATH = path.join(
   "lore.db",
 );
 
-const SUPPORTED_SCHEMA_VERSION = 15;
+const SUPPORTED_SCHEMA_VERSION = 17;
 const DISPLAY_LIMIT = 5;
 const EDIT_TOOLS = new Set(["edit", "create", "apply_patch"]);
 

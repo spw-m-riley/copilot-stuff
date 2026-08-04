@@ -5,31 +5,18 @@ applyTo: "**/*"
 
 # Shell and CLI guidance
 
-## Purpose and Scope
+## Guidance
 
-- Applies to shell commands, CLI tools, validation commands, temporary command inputs, and command-backed decisions.
 - Prefer direct, inspectable commands over opaque shell construction.
-
-## Core Guidance
-
 - Avoid shell command substitution in verification steps when a small explicit loop or plain-argument command is clearer and safer.
 - Use `printf '%s\n' ...` or `printf --` when a heading or value could begin with `-`.
 - Isolate best-effort diagnostics such as benchmark diffs from required validation so `|| true` cannot mask an earlier failure.
 - Resolve Go-installed helper binaries from `go env GOBIN` instead of assuming `~/go/bin` or `GOPATH/bin`.
 - When passing multiline Markdown to a CLI flag, write it to a temporary file and use the tool's `--body-file` option.
 - When authoring VHS tapes, avoid escaped double quotes inside `Type` commands; use shell-safe quoting or Lua long brackets.
-
-## Validation Expectations
-
 - Run command-backed decisions directly and report the observed result.
 - Keep required checks fail-fast and inspect the final exit status before updating task state.
 - Keep temporary files and generated diagnostics inside the allowed workspace scope.
-
-## Maintenance Notes
-
-- Keep `## Learned Rules` as the final section in the file; do not add new sections after it.
-- Append new learned rules without renumbering existing entries; numbering gaps can reflect archived or superseded entries.
-- Use `[SHELL]` for shell and CLI execution rules.
 
 ## Learned Rules
 

@@ -5,30 +5,14 @@ applyTo: "**/*.js,**/*.mjs,**/*.cjs"
 
 # JavaScript guidance
 
-## Purpose and Scope
+## Guidance
 
-- Applies to `**/*.js`, `**/*.mjs`, and `**/*.cjs` files in this workspace.
-- Use these rules for runtime-safe JavaScript edits that stay aligned with existing helpers, module style, and repository tooling.
-
-## Core Guidance
-
-- Prefer existing shared helpers, schemas, and project conventions before adding new patterns.
 - Prefer existing project tooling; when choosing or extending JS linting or formatting, favor `oxlint` and `oxfmt` over `eslint`, `prettier`, or `biome` unless the repository already standardizes otherwise.
 - Keep module syntax, import style, and runtime assumptions consistent with the file type and the surrounding codebase.
 - Validate untrusted inputs at runtime before assuming object shapes or data types.
 - Handle `null` and `undefined` explicitly rather than relying on truthiness when behavior matters.
-- Keep exported APIs and shared utilities small, clear, and easy to consume.
-
-## Validation Expectations
-
 - Run the repository's standard lint, test, and runtime validation commands for the touched JavaScript surface.
 - Prefer syntax checks or extension-runtime validation over bare Node import probes when the runtime injects dependencies that plain Node does not provide.
-
-## Maintenance Notes
-
-- Keep `## Learned Rules` as the final section in the file; do not add new sections after it.
-- Append new learned rules without renumbering existing entries; numbering gaps can reflect archived or superseded rules.
-- Use `[JAVASCRIPT]` for JavaScript-specific learned rules in this file and keep broader workflow or repository-policy guidance in the root instructions.
 
 ## Learned Rules
 

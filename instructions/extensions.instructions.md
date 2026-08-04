@@ -5,30 +5,18 @@ applyTo: "extensions/**/*"
 
 # Extension guidance
 
-## Purpose and Scope
+## Guidance
 
-- Applies to extension code and integration surfaces managed from this repository.
-- If a nested extension repository has its own instruction file, follow that more-specific product guidance and keep this file focused on parent-repo integration boundaries.
-
-## Core Guidance
-
+- Defer to a nested extension repository's own instructions and keep this file focused on integration boundaries.
 - Verify hook names and payload contracts against the shipped Copilot CLI SDK or bundled runtime source before implementing them; issue descriptions can mention unsupported hooks.
 - Normalize extension tool arguments before reading fields because interactive payloads can arrive as JSON strings.
 - Keep extension reloads separate from follow-up extension-tool calls so availability changes are validated sequentially.
 - Do not add branded model names or model IDs to extension files unless Matt explicitly requests them.
 - Keep root documentation high-level and keep detailed setup, rollout, maintenance, and product guidance with the owning nested extension.
 - Do not suggest direct calls to blocked Copilot API endpoints; use the supported local or editor-backed fallback.
-
-## Validation Expectations
-
 - Prefer syntax checks and extension-runtime validation over plain Node imports when dependencies are provided only by Copilot CLI.
 - When live-testing a tool handler, pass the structured arguments implied by the natural-language request before diagnosing routing.
 - When an extension or its test surface moves, update the tracked README and CI/test references in the same slice.
-
-## Maintenance Notes
-
-- Keep `## Learned Rules` as the final section in the file; do not add new sections after it.
-- Append new learned rules without renumbering existing entries; numbering gaps can reflect archived or superseded entries.
 
 ## Learned Rules
 

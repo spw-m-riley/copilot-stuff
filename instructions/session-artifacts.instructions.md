@@ -5,35 +5,14 @@ applyTo: "**/session-state/**/*.md"
 
 # Session artifact guidance
 
-## Purpose and Scope
-
-- Applies to `**/session-state/**/*.md` artifacts in this workspace.
-- This file adds session-state-specific guidance on top of the broader `markdown.instructions.md` rules.
-- Use these rules for plans, research notes, reviews, and execution handoffs that need to stay concise, structured, and easy to resume.
-
-## Core Guidance
+## Guidance
 
 - Keep session-state artifacts concise, structured, and easy to hand off.
 - Prefer the `v1` templates under `skills/workflow-contracts/assets/` when a plan, review, or execution artifact needs durable structure.
-- For plan or handoff artifacts:
-  - include concrete tasks, dependencies, validation, and rollout notes
-  - keep files in scope, verification commands, and artifact outputs explicit
-  - make worktree boundaries explicit when parallelization is real
-- For research, review, or execution artifacts that feed implementation:
-  - separate findings from interpretation or recommendation when both are present
-  - make status, blockers, and next action explicit
-  - avoid free-form shape changes when an approved `v1` contract already fits
-
-## Validation Expectations
-
+- Include tasks, dependencies, validation, rollout notes, scoped files, outputs, and real worktree boundaries in plans or handoffs.
+- Separate findings from interpretation, and make status, blockers, and next action explicit.
+- Do not invent a free-form shape when an approved `v1` contract fits.
 - Validate against the chosen `v1` contract or the repository's existing artifact format before handoff.
-- Confirm status, next action, files in scope, and verification commands are explicit enough that the next phase does not need to reconstruct context from chat history.
-
-## Maintenance Notes
-
-- Keep `## Learned Rules` as the final section in the file; do not add new sections after it.
-- Append new learned rules without renumbering existing entries; numbering gaps can reflect archived or superseded rules.
-- Use `[WORKFLOW]` for learned rules here because these Markdown files are execution artifacts rather than general docs.
 
 ## Learned Rules
 

@@ -5,26 +5,14 @@ applyTo: "skills/**/*"
 
 # Skill package guidance
 
-## Purpose and Scope
+## Guidance
 
-- Applies to reusable skill packages under `skills/`, including `SKILL.md`, support files, and validation scripts.
-- Use the skill-authoring contract before changing a reusable skill package.
-
-## Core Guidance
-
+- Use the `skill-authoring` contract before changing a reusable skill package.
 - Keep imported skills aligned with this repository's local frontmatter and section contract; do not reintroduce upstream-only metadata or headings.
 - Keep support files shallow and link every on-disk support file from the skill's `## Reference files` section.
 - When integrating later skill changes onto a newer branch, compare the touched `SKILL.md` files with the current integration content before applying the change.
-
-## Validation Expectations
-
 - Run `node skills/skill-authoring/scripts/validate-skill-library.mjs` after changing a skill package.
 - When an imported `golang-*` skill regresses, repair frontmatter and required reference-skill headings together before rerunning the validator.
-
-## Maintenance Notes
-
-- Keep `## Learned Rules` as the final section in the file; do not add new sections after it.
-- Append new learned rules without renumbering existing entries; numbering gaps can reflect archived or superseded entries.
 
 ## Learned Rules
 

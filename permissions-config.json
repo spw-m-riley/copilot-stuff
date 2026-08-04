@@ -447,6 +447,42 @@
           "extensionName": "user:lore"
         }
       ]
+    },
+    "/Users/matthew.riley/Library/CloudStorage/OneDrive-LloydsWealth/Documents/presentations": {
+      "tool_approvals": [
+        {
+          "kind": "extension-permission-access",
+          "extensionName": "user:rtk-hook"
+        },
+        {
+          "kind": "extension-permission-access",
+          "extensionName": "user:post-edit-lint"
+        },
+        {
+          "kind": "extension-permission-access",
+          "extensionName": "user:agit-recorder"
+        },
+        {
+          "kind": "extension-permission-access",
+          "extensionName": "user:ci-migration-context"
+        },
+        {
+          "kind": "extension-permission-access",
+          "extensionName": "user:worktree-manager"
+        },
+        {
+          "kind": "extension-permission-access",
+          "extensionName": "user:stabilisation-guard"
+        },
+        {
+          "kind": "extension-permission-access",
+          "extensionName": "user:gha-url-router"
+        },
+        {
+          "kind": "extension-permission-access",
+          "extensionName": "user:lore"
+        }
+      ]
     }
   }
 }

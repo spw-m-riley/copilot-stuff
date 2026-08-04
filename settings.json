@@ -1,5 +1,4 @@
 {
-  "alt_screen": true,
   "compactPaste": true,
   "continueOnAutoMode": true,
   "copyOnSelect": true,
@@ -81,12 +80,9 @@
       }
     ]
   },
-  "ide.auto_connect": true,
-  "ide.open_diff_on_edit": true,
   "includeCoAuthoredBy": false,
   "mouse": true,
   "renderMarkdown": true,
-  "rollout": {},
   "stream": true,
   "subagents": {
     "agents": {
@@ -110,11 +106,10 @@
   },
   "updateTerminalTitle": true,
   "voice": {
-    "enabled": true,
+    "enabled": false,
     "selectedModel": "nemotron-speech-streaming-en-0.6b-generic-cpu:3"
   },
-  "model": "gpt-5.6-luna",
-  "effortLevel": "xhigh",
+  "model": "gpt-5.6-sol",
   "sandbox": {
     "enabled": false,
     "sandboxMcpServers": false,

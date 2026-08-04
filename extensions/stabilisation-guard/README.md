@@ -26,7 +26,7 @@ The query touches a small, stable subset of the `semantic_memory` table:
 | `superseded_by` | Exclude resolved or replaced memories |
 | `updated_at` | Order most-recent items first |
 
-The extension also reads `lore_schema_version.version` on every session start. If the version exceeds `SUPPORTED_SCHEMA_VERSION` (currently `15`), the guard disables itself and logs a warning rather than failing noisily.
+The extension also reads `lore_schema_version.version` on every session start. If the version exceeds `SUPPORTED_SCHEMA_VERSION` (currently `17`), the guard disables itself and logs a warning rather than failing noisily.
 
 **If you are making a lore schema migration that renames or removes any of the columns above, update `SUPPORTED_SCHEMA_VERSION` in `extension.mjs` and verify the query still works before releasing.**
 

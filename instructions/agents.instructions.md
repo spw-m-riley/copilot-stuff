@@ -5,28 +5,13 @@ applyTo: "agents/**/*.agent.md"
 
 # Custom agent guidance
 
-## Purpose and Scope
-
-- Applies to manual custom agents under `agents/`.
-- Treat agent names, descriptions, and invocation syntax as runtime contracts rather than informal labels.
-
-## Core Guidance
+## Guidance
 
 - Keep each agent's scope explicit and route only work that benefits from its specialist context.
 - After creating or changing an agent, verify that the runtime loads it successfully before treating the change as complete.
 - Invoke `/agent <name>` with the bare agent name first; send the task as a separate follow-up message.
 - For pane-backed agent work, confirm the pane is processing the submitted prompt before trusting a successful command return.
-
-## Validation Expectations
-
-- Re-read the loaded agent or runtime status after invocation; text remaining in a pane input box has not been submitted.
-- Treat an output marker that was echoed inside the prompt as insufficient evidence of completion; confirm the marker belongs to the agent's result.
 - When removing an agent, remove its related documentation and glossary/context entries in the same slice unless they are intentionally retained.
-
-## Maintenance Notes
-
-- Keep `## Learned Rules` as the final section in the file; do not add new sections after it.
-- Append new learned rules without renumbering existing entries; numbering gaps can reflect archived or superseded entries.
 
 ## Learned Rules
 
