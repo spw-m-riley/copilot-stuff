@@ -2,6 +2,9 @@
 name: typescript-any-eliminator
 description: "Use when explicit TypeScript `any` needs safe narrowing in application, helper, DTO, or API code; not for runtime behavior changes."
 metadata:
+  category: typescript
+  audience: general-coding-agent
+  maturity: stable
   kind: task
 ---
 

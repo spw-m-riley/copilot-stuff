@@ -27,10 +27,10 @@ The following top-level keys are valid in a skill frontmatter block:
 
 | Field | Status | Valid values |
 | --- | --- | --- |
-| `metadata.category` | **Recommended** | `authoring`, `ci`, `migrations`, `typescript`, `version-control`, `workflow`, or another concise domain label. |
-| `metadata.audience` | **Recommended** | `general-coding-agent` for most skills. Use a more specific value only for narrowly specialized skills. |
-| `metadata.maturity` | **Recommended** | `draft` for new or unvalidated skills; `stable` after smoke-test validation and live use. |
-| `metadata.kind` | **Required for `draft` skills** | `task` or `reference`. Required before a draft skill can be promoted to stable. |
+| `metadata.category` | **Required** | `authoring`, `ci`, `migrations`, `typescript`, `version-control`, `workflow`, or another concise domain label. |
+| `metadata.audience` | **Required** | `general-coding-agent` for most skills. Use a more specific value only for narrowly specialized skills. |
+| `metadata.maturity` | **Required** | `draft` for new or unvalidated skills; `stable` after smoke-test validation and live use. |
+| `metadata.kind` | **Required** | `task` or `reference`. |
 
 ### What `metadata.kind` means
 
@@ -95,6 +95,7 @@ metadata:
   category: workflow
   audience: general-coding-agent
   maturity: stable
+  kind: task
 ---
 ```
 
@@ -153,9 +154,9 @@ The validator (`scripts/validate-skill-library.mjs`) currently enforces:
 | `name` must match directory | All skills | Error |
 | `description` must be ≥ 20 characters | All skills | Error |
 | `description` must include a trigger phrase | `draft` skills | Error |
-| `metadata.kind` must be `task` or `reference` if present | All skills | Error |
+| `metadata.kind` must be `task` or `reference` | All skills | Error |
 | **Forbidden top-level keys** | All skills | **Error** (added wave 2) |
 | **Forbidden provenance keys in `metadata`** | All skills | **Error** (added wave 2) |
-| **`metadata.kind` required for `draft` skills** | Draft skills | **Error** (added wave 2) |
+| Required lifecycle fields (`category`, `audience`, `maturity`, `kind`) | All skills | **Error** |
 | Required headings must exist, occur exactly once, and stay in order | All skills | Error |
 | Support-file links and orphaned support files | All skills | Error |

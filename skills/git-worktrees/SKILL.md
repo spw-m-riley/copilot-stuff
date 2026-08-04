@@ -2,6 +2,9 @@
 name: git-worktrees
 description: "Use when you need isolated Git worktrees for parallel branches, agent lanes, or safer cleanup."
 metadata:
+  category: version-control
+  audience: general-coding-agent
+  maturity: stable
   kind: task
 ---
 

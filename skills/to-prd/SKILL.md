@@ -2,6 +2,9 @@
 name: to-prd
 description: "Use when synthesizing a PRD from repository and conversation context for issue handoff; not for general docs or discovery."
 metadata:
+  category: workflow
+  audience: general-coding-agent
+  maturity: stable
   kind: task
 ---
 

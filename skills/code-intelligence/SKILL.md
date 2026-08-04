@@ -2,6 +2,9 @@
 name: code-intelligence
 description: "Use when navigating or refactoring code with LSP, rg, or semantic search, especially when results are empty or tools overlap."
 metadata:
+  category: utilities
+  audience: general-coding-agent
+  maturity: stable
   kind: reference
 ---
 

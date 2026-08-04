@@ -2,6 +2,9 @@
 name: github-actions-failure-triage
 description: "Use when GitHub Actions fails and needs root-cause triage after workflow, action, runner, cache, matrix, or Node-runtime changes."
 metadata:
+  category: ci
+  audience: general-coding-agent
+  maturity: stable
   kind: task
 ---
 
@@ -114,7 +117,7 @@ Do not collect secret values. Only confirm whether the expected names, scopes, a
 - Smoke test:
   - should trigger: "Diagnose why the deploy job started failing after a workflow edit."
   - should trigger: "Reproduce this failing Actions job locally with act after reading the hosted failure evidence."
-  - should not trigger: "Add a new Go release workflow to a repository with no failing run." (→ `golang-continuous-integration`)
+  - should not trigger: "Add a new release workflow to a repository with no failing run."
 
 ## Examples
 

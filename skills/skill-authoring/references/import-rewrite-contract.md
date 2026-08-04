@@ -67,10 +67,10 @@ Replace `## Inputs to gather`, `## First move`, `## Workflow`, and `## Outputs` 
 | --- | --- | --- |
 | `name` | Yes | Lowercase kebab-case. Must match the skill directory name exactly. No spaces, uppercase, or special characters. |
 | `description` | Yes | Minimum 20 characters. Must start with a trigger phrase ("Use when", "Use this when", or equivalent). Never a domain label alone. Never a workflow summary. |
-| `metadata.category` | Recommended | `authoring`, `ci`, `migrations`, `typescript`, `version-control`, `workflow`, or a concise domain label. |
-| `metadata.audience` | Recommended | `general-coding-agent` unless the skill is narrowly specialized. |
-| `metadata.maturity` | Recommended | `draft` for new imports; `stable` only after smoke-test validation and live use. |
-| `metadata.kind` | Required for new skills | `task` or `reference`. |
+| `metadata.category` | Required | `authoring`, `ci`, `migrations`, `typescript`, `version-control`, `workflow`, or a concise domain label. |
+| `metadata.audience` | Required | `general-coding-agent` unless the skill is narrowly specialized. |
+| `metadata.maturity` | Required | `draft` for new imports; `stable` only after smoke-test validation and live use. |
+| `metadata.kind` | Required | `task` or `reference`. |
 
 **Do not add** `license`, `compatibility`, `author`, `inspired-by`, or any other top-level keys not listed above.
 
@@ -166,5 +166,5 @@ Read the completed `SKILL.md` as the target agent. The next action must be obvio
 - **Preserve:** The generate→evaluate→critique→refine loop concept and diagram, the three evaluation strategies (outcome-based, LLM-as-judge, rubric-based), the best-practices table (clear criteria, iteration limits, convergence check, log history, structured output), and the implementation checklist.
 - **Support file decision:** Move the Python code examples from `SKILL.md` to `assets/examples.md` or `references/patterns.md` to keep `SKILL.md` concise. Keep the implementation checklist as `assets/eval-checklist.md` if it is genuinely reused.
 - **Remove from upstream:** The `## Overview` and `## When to Use` non-standard headings (map to local heading names), inline Python code blocks as primary skill content (move to `assets/`), missing routing table and route-away conditions, missing `metadata` block.
-- **Routing:** Route against `verification-before-completion` (verifying that completed work meets acceptance criteria, not iterating on output quality), `systematic-debugging` (diagnosing a specific root cause, not evaluating output quality), and `javascript-testing-expert` (writing test coverage, not an evaluation loop).
+- **Routing:** Route against `verification-before-completion` (verifying that completed work meets acceptance criteria, not iterating on output quality), `systematic-debugging` (diagnosing a specific root cause, not evaluating output quality), and `test-driven-development` (writing test coverage, not an evaluation loop).
 - **Activation boundary:** This skill applies when an agent is _designing_ or _implementing_ an evaluation loop; it does not apply when the agent is _running_ an existing test suite or _reviewing_ a completed artifact without iteration.

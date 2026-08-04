@@ -2,6 +2,9 @@
 name: github-cli-pr-workflow
 description: "Use when a completed branch needs PR creation/update, review resolution, checks, or merge/keep/discard decisions."
 metadata:
+  category: version-control
+  audience: general-coding-agent
+  maturity: stable
   kind: task
 ---
 

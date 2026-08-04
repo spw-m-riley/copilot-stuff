@@ -2,6 +2,9 @@
 name: tsconfig-hardening
 description: "Use when tightening TypeScript flags, fixing tsconfig/module-resolution drift, or adding project references safely."
 metadata:
+  category: typescript
+  audience: general-coding-agent
+  maturity: stable
   kind: task
 ---
 

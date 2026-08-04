@@ -2,6 +2,9 @@
 name: verification-before-completion
 description: "Use when about to claim work is complete, tests pass, a bug is fixed, or a build succeeds."
 metadata:
+  category: testing
+  audience: general-coding-agent
+  maturity: stable
   kind: task
 ---
 

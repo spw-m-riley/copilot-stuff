@@ -3,6 +3,9 @@ name: grill-me
 description: 'Use when the user wants a plan, design, or decision stress-tested or explicitly says "grill me"; not for domain-doc updates.'
 disable-model-invocation: true
 metadata:
+  category: workflow
+  audience: general-coding-agent
+  maturity: stable
   kind: task
 ---
 

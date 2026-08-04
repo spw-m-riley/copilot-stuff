@@ -2,6 +2,9 @@
 name: cross-repo-diff
 description: "Use when comparing repositories for feature parity, drift, or migration reference; not for single-repo analysis."
 metadata:
+  category: review
+  audience: general-coding-agent
+  maturity: stable
   kind: task
 ---
 

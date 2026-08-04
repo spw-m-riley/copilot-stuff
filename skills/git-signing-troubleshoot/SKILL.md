@@ -2,6 +2,9 @@
 name: git-signing-troubleshoot
 description: "Use when GPG, SSH, or 1Password signing blocks commits, tags, or pushes; not for branch integration, PR handling, or secret triage."
 metadata:
+  category: version-control
+  audience: general-coding-agent
+  maturity: stable
   kind: task
 ---
 

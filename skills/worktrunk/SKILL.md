@@ -2,6 +2,9 @@
 name: worktrunk
 description: "Use when configuring or operating Worktrunk (wt) for worktree lifecycle, hooks, commits, or parallel agents."
 metadata:
+  category: version-control
+  audience: general-coding-agent
+  maturity: stable
   kind: task
 ---
 

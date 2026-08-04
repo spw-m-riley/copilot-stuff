@@ -8,6 +8,10 @@
   },
   "experimental": true,
   "extensions": {
+    "disabledExtensions": [
+      "user:agit-recorder",
+      "user:ci-migration-context"
+    ],
     "mode": "load_and_augment"
   },
   "extraKnownMarketplaces": {
@@ -109,7 +113,7 @@
     "enabled": false,
     "selectedModel": "nemotron-speech-streaming-en-0.6b-generic-cpu:3"
   },
-  "model": "gpt-5.6-sol",
+  "model": "gpt-5.6-luna",
   "sandbox": {
     "enabled": false,
     "sandboxMcpServers": false,
@@ -130,5 +134,9 @@
         "keychainAccess": true
       }
     }
-  }
+  },
+  "ide": {
+    "autoConnect": false
+  },
+  "effortLevel": "xhigh"
 }

@@ -2,6 +2,9 @@
 name: workflow-contracts
 description: "Use when a workflow needs a durable planner, review, or execution handoff artifact; not a chat summary."
 metadata:
+  category: workflow
+  audience: general-coding-agent
+  maturity: stable
   kind: task
 ---
 

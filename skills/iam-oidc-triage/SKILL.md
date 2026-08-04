@@ -2,6 +2,9 @@
 name: iam-oidc-triage
 description: "Use when an OIDC caller gets AWS STS AssumeRole AccessDenied; not when auth succeeds and SAM, CloudFormation, or Terraform is failing."
 metadata:
+  category: infrastructure
+  audience: general-coding-agent
+  maturity: stable
   kind: task
 ---
 
@@ -32,7 +35,7 @@ Use this skill when an OIDC-federated caller cannot assume an AWS role and the p
 | Auth succeeds, but the SAM or CloudFormation stack then fails | No | [`sam-cloudformation`](../sam-cloudformation/SKILL.md) |
 | Terraform-managed infrastructure fails during plan/apply after auth | No | [`terraform-skill`](../terraform-skill/SKILL.md) |
 | The failure is earlier in the workflow or not IAM-related | No | [`github-actions-failure-triage`](../github-actions-failure-triage/SKILL.md) |
-| Lambda packaging or runtime is broken after deployment auth | No | [`aws-lambda-go-deployment`](../aws-lambda-go-deployment/SKILL.md) |
+| Lambda packaging or runtime is broken after deployment auth | No | [`systematic-debugging`](../systematic-debugging/SKILL.md) |
 
 ## Inputs to gather
 

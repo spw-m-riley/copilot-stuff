@@ -2,6 +2,9 @@
 name: project-references-migration
 description: "Use when migrating layered TypeScript workspaces to project references without breaking package boundaries or editor resolution."
 metadata:
+  category: typescript
+  audience: general-coding-agent
+  maturity: stable
   kind: task
 ---
 

@@ -2,6 +2,9 @@
 name: ast-grep
 description: "Use when structural code search, linting, or codemods need ast-grep/sg syntax awareness; not for plain-text search."
 metadata:
+  category: code-quality
+  audience: general-coding-agent
+  maturity: stable
   kind: task
 ---
 

@@ -2,6 +2,9 @@
 name: reverse-prompt
 description: "Use when a request is ambiguous or under-specified and needs sharpening before research, planning, or implementation."
 metadata:
+  category: workflow
+  audience: general-coding-agent
+  maturity: stable
   kind: task
 ---
 

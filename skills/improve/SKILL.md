@@ -1,7 +1,11 @@
 ---
 name: improve
 description: "Use when auditing a codebase for high-leverage improvements and producing plans for another agent; not for direct implementation."
+disable-model-invocation: true
 metadata:
+  category: workflow
+  audience: general-coding-agent
+  maturity: stable
   kind: task
 ---
 

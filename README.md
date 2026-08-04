@@ -16,13 +16,13 @@ Your personal Copilot CLI setup — a collection of instructions, agents, skills
 
 ## Capabilities index
 
-Full catalogs live with the source of truth — they are surfaced in-session via skill/agent metadata rather than mirrored here:
+Skill and agent bodies remain the source of truth; this README keeps a current categorized snapshot for quick discovery:
 
 - **Skills** — browse [`./skills/`](./skills/); each `SKILL.md` declares its own trigger conditions.
 - **Agents** — browse [`./agents/`](./agents/); each `*.agent.md` declares its scope.
 - **Extensions** — see the [Extensions](#extensions) table below.
 
-This avoids the README drifting out of sync as skills/agents are added or renamed.
+Use the linked directories for complete workflow details and support-file inventories.
 
 ## Extensions
 
@@ -35,21 +35,16 @@ These live in [`./extensions/`](./extensions/) and are auto-discovered by the Co
 | Extension | What It Does |
 | --------- | ------------ |
 | `lore` | Local-first memory and continuity for Copilot CLI. Handles session recall, learning from your workflow, and keeping context sharp across sessions. Keep Lore-specific setup, rollout, maintenance, and health docs in [`./extensions/lore`](./extensions/lore). |
-| `ma` | Adds reduced-context file-reading tools (`ma_smart_read`, `ma_skeleton`, `ma_compress`, `ma_minify_schema`, `ma_dedup`) and injects reduction-first guidance for understanding-oriented file reads. |
-| `ci-migration-context` | Detects CI migration requests (e.g., CircleCI→GitHub Actions), injects extra migration context into parent turns, and caches the same guidance for child-agent propagation when the runtime supports that hook. |
-| `fleet-model-policy` | Steers implementation-heavy fleet work toward the implementation-focused default, then caches that preference for child-agent propagation when the runtime supports it. |
+| `agit-recorder` | Records Copilot CLI sessions into the local `.agit` store through the `agit` hook. |
 | `gha-url-router` | Detects GitHub Actions run/job URLs in prompts, injects structured routing context, and caches that routing data for delegated investigation agents when child-hook support is available. |
 | `post-edit-lint` | Watches `edit`-style tool calls and runs targeted formatting, linting, and validation for JS/TS, JSON, YAML, Terraform, and shell files, feeding results back into the conversation. |
 | `worktree-manager` | Adds `mr_worktree_create`, `mr_worktree_list`, `mr_worktree_status`, `mr_worktree_remove`, and `mr_worktree_merge` tools, plus injects worktree guidance into the parent session and prepares the same guidance for child agents when the runtime supports that hook. |
-| `copilot-healthcheck` | Adds the `mr_healthcheck_run` tool — a lightweight environment check that reports repo state and key local Copilot files/tools. |
 | `rtk-hook` | Runs `rtk hook copilot` on Bash pre-tool calls so RTK can deny raw commands and steer Copilot CLI toward the token-saving `rtk ...` equivalent. See [`./docs/RTK.md`](./docs/RTK.md). |
 | `stabilisation-guard` | Surfaces unresolved `open_loop` and `assistant_goal` Lore memories at session start, then denies the first `edit`/`create`/`apply_patch` call once so pending items are acknowledged before implementation begins. Reads `lore.db` directly; fails open on any error. |
 
 ### Child-Agent Context Propagation
 
 Several extensions inject policy and guidance into the parent session today and keep child-agent propagation handlers wired for future runtime support:
-- **fleet-model-policy** → implementation-style child agents (model preference)
-- **ci-migration-context** → CI migration & workflow-debug child agents (migration checklists)
 - **gha-url-router** → GitHub Actions investigation child agents (run/job context)
 - **worktree-manager** → implementation/edit/task child agents (worktree guidance)
 
@@ -114,7 +109,7 @@ Then review the finished plan explicitly:
 ```
 Use the /plan-review-loop skill to review and refine the current plan
 ```
-Once Jason and Freddy both approve, switch out of plan mode if needed and implement the approved plan with `/fleet` — the parent session receives `ci-migration-context` guidance immediately, and the child-agent inheritance path remains pending runtime hook support.
+Once Jason and Freddy both approve, switch out of plan mode if needed and implement the approved plan with `/fleet` — the parent session receives the relevant workflow guidance, and the child-agent inheritance path remains pending runtime hook support.
 
 **Example 2: Type Safety Audit** (Finding and fixing `any` in TypeScript)
 ```
@@ -149,7 +144,7 @@ The categories below describe the current repo-tracked skills in this worktree. 
 - `tsconfig-hardening` — Enable stricter TypeScript without your codebase exploding
 - `schema-boundary-typing` — Untrusted input? Validate at runtime before treating it as typed
 - `typescript-any-eliminator` — Replace that `any` with the narrowest truthful type
-- `test-driven-development` — Write tests first, including compile-time regression tests for TypeScript contracts
+- `typescript-triage` — Route unclear TypeScript problems to the right specialist skill
 - `project-references-migration` — Layer a monorepo with TypeScript project references safely
 
 **Migrations (2 skills)** — Framework and tool transitions handled in staged batches
@@ -162,15 +157,18 @@ The categories below describe the current repo-tracked skills in this worktree. 
 - `verification-before-completion` — Don't claim "tests pass" without running them fresh
 - `api-smoke-validation` — Quick, repeatable smoke validation of API endpoints with hurl after changes
 
-**Workflow & Planning (10 skills)** — Planning, handoff docs, discovery, and decision support
+**Workflow & Planning (13 skills)** — Planning, handoff docs, discovery, and decision support
 - `acquire-codebase-knowledge` — Produce traceable codebase knowledge packs for onboarding and repo discovery
 - `context-map` — Map likely files, dependencies, tests, and reference patterns before multi-file work
-- `plan-review-loop` — Run explicit Jason/Freddy plan review rounds after `/plan`
-- `reverse-prompt` — Turn a vague request into an executable task brief (explicit user trigger)
-- `workflow-contracts` — Create versioned markdown handoff artifacts for multi-turn work
 - `doc-coauthoring` — Write docs collaboratively with context gathering and reader feedback loops
+- `execution-strategy` — Choose inline, serial, or parallel execution before dispatching agents
 - `grill-me` — Stress-test a plan or design through structured interrogation
 - `grill-with-docs` — Stress-test a plan while updating domain docs such as `CONTEXT.md` and ADRs
+- `improve` — Audit a codebase for high-leverage improvements and produce an implementation plan
+- `plan-review-loop` — Run explicit Jason/Freddy plan review rounds after `/plan`
+- `reverse-prompt` — Turn a vague request into an executable task brief (explicit user trigger)
+- `session-handoff` — Create durable handoff context when switching sessions or lanes
+- `workflow-contracts` — Create versioned markdown handoff artifacts for multi-turn work
 - `to-prd` — Turn repository and conversation context into a product requirements document
 - `to-issues` — Split approved work into dependency-aware issue slices
 
@@ -190,25 +188,38 @@ The categories below describe the current repo-tracked skills in this worktree. 
 - `fallow` — Use Fallow for dead code, duplication, complexity, boundary, and cleanup workflows in JS/TS repos
 - `ast-grep` — Structural code search, linting, and safe codemod rewrites with ast-grep
 
-**Authoring & Configuration (2 skills)** - Skill creation and setup workflows
+**Authoring & Configuration (4 skills)** - Skill creation and setup workflows
+- `copilot-extension-development` - Build and register Copilot CLI extensions
+- `customize-cloud-agent` - Configure cloud coding-agent instructions and environments
 - `skill-authoring` - Write reusable agent skills from scratch with activation conditions
 - `init` - Create or update copilot-instructions.md and per-file instruction files
 
-**Version Control (3 skills)** — Worktree, branching, and PR workflows
+**Version Control (4 skills)** — Worktree, branching, and PR workflows
+- `git-signing-troubleshoot` — Diagnose GPG, SSH, or 1Password signing blockers
 - `git-worktrees` — Create and manage isolated Git worktrees for parallel lanes
 - `worktrunk` — Advanced worktree lifecycle, LLM-generated commits, and coordination
 - `github-cli-pr-workflow` — Complete PR lifecycle with `gh`: create/update, resolve review comments, watch checks, and choose merge, keep, or discard
 
+**Review & Analysis (2 skills)** — Evidence-backed review and repository comparison
+- `code-review` — Review diffs, PRs, branches, and patches with evidence and validation
+- `cross-repo-diff` — Compare repositories for feature parity, drift, or migration reference
+
 **Utilities (3 skills)** — Context reduction, code navigation, and web patterns
-- `ma` — Reduce large local files for understanding before deciding whether a full-fidelity read is necessary
 - `code-intelligence` — Navigate and refactor code with the right search tool (LSP, rg, or semantic) and proper degradation fallback
+- `herdr` — Inspect panes, create tabs, wait for output, and coordinate agents in herdr
 - `modern-web-guidance` — Write HTML, CSS, JavaScript, forms, and animations without reaching for legacy patterns
 
-**Infrastructure (1 skill)** — Terraform and OpenTofu workflows
+**Infrastructure & Cloud (3 skills)** — Terraform, AWS deployment, and cloud-agent failure diagnosis
+- `iam-oidc-triage` — Diagnose AWS STS AssumeRole AccessDenied on OIDC paths
+- `sam-cloudformation` — Diagnose AWS SAM and CloudFormation failures
 - `terraform-skill` — Write, review, or debug Terraform/OpenTofu — modules, tests, CI/CD, security scans, and state operations
 
-**Memory & Session (1 skill)** — Lore memory management
+**Memory & Session (2 skills)** — Lore memory management and session continuity
+- `lore-memory-operations` — Write and verify Lore memories with scope and persistence semantics
 - `resolve-open-loops` — Close out active `open_loop` and `assistant_goal` Lore memories when the stabilisation-guard fires or when pending items need explicit resolution
+
+**Tooling (1 skill)** — Package-manager, runtime, and toolchain upgrade diagnosis
+- `tooling-upgrade-triage` — Diagnose failed package-manager, runtime, or toolchain upgrades
 
 ### Using Skills
 
@@ -291,7 +302,7 @@ Older flat-pattern worktrees can be renamed incrementally as they are touched or
 
 ## Custom Agents
 
-Alongside the built-in agents, this repository tracks **6 custom agents** for specialized workflows:
+Alongside the built-in agents, this repository tracks **8 custom agents** for specialized workflows:
 
 | Agent | What It Does | Use When |
 |-------|-------------|----------|
@@ -301,6 +312,8 @@ Alongside the built-in agents, this repository tracks **6 custom agents** for sp
 | **pr-operations-orchestrator** | Coordinates PR descriptions, review-thread handling, workflow checks, and merge-readiness once most code changes already exist. | The remaining work is GitHub-side PR orchestration rather than fresh implementation |
 | **typescript-api-test-generator** | Writes runtime tests for TypeScript APIs, request handlers, and Lambda functions using your repo's existing test framework. | You need new or expanded test coverage around a TypeScript API surface |
 | **web-research-analyst** | Investigates external docs, patterns, and prior art, then distills findings into actionable recommendations and handoff-friendly summaries. | You need research + comparisons grounded in actual documentation before deciding on an approach |
+| **research-fleet** | Fans research into visible, pane-per-subtopic Copilot processes and synthesizes their findings. | You explicitly want separate herdr panes for parallel research |
+| **workflow-bash-refactor** | Refactors dense inline Bash and hard-to-read GitHub Actions conditions without changing behavior. | A workflow needs structural clarity rather than a root-cause fix |
 
 These custom agents are still **manual-only** in the current runtime: Lore can recommend them and local skills can route toward them, but they are not auto-invoked as background subagents by the CLI itself.
 

@@ -78,8 +78,8 @@ Use this skill when ...
 - `references/REFERENCE.md` - ...
 ```
 
-Use `metadata.kind: task` for multi-step playbooks with explicit outputs and validation.
+Use `metadata.kind: task` for multi-step playbooks with explicit outputs and validation. Every skill also declares `metadata.category`, `metadata.audience`, and `metadata.maturity`.
 
 Use `metadata.kind: reference` for lookup-heavy guidance where the main value is navigation, conventions, or examples.
 
-Descriptions must be single-line YAML strings with trigger conditions, not workflow summaries. `metadata.kind` is **required** for all `draft` skills and must be set before promotion to `stable`. See `skills/skill-authoring/references/metadata-contract.md` for the full frontmatter contract, including forbidden top-level keys and forbidden provenance fields.
+Descriptions must be single-line YAML strings with trigger conditions, not workflow summaries. `metadata.category`, `metadata.audience`, `metadata.maturity`, and `metadata.kind` are required for every skill. See `skills/skill-authoring/references/metadata-contract.md` for the full frontmatter contract, including forbidden top-level keys and forbidden provenance fields.

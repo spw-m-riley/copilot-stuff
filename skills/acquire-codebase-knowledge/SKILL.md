@@ -1,7 +1,10 @@
 ---
 name: acquire-codebase-knowledge
-description: "Use when the user explicitly asks to map, document, onboard into, or create codebase docs for an existing repo."
+description: "Use when the user explicitly asks for committed codebase onboarding or architecture documentation; use context-map for a pre-edit file map."
 metadata:
+  category: workflow
+  audience: general-coding-agent
+  maturity: stable
   kind: task
 ---
 

@@ -2,6 +2,9 @@
 name: autoresearch
 description: "Use when iteratively optimizing a measurable codebase metric; not for writing tests or diagnosing failures."
 metadata:
+  category: optimization
+  audience: general-coding-agent
+  maturity: stable
   kind: task
 ---
 

@@ -2,6 +2,9 @@
 name: test-driven-development
 description: "Use when implementing, fixing, or refactoring behavior with tests written before production code."
 metadata:
+  category: testing
+  audience: general-coding-agent
+  maturity: stable
   kind: task
 ---
 

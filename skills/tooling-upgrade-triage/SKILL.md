@@ -2,6 +2,9 @@
 name: tooling-upgrade-triage
 description: "Use when package-manager, runtime, or toolchain upgrades fail, including topgrade, uv/pip, Homebrew, Go, Node, or lockfiles; not for ordinary CI."
 metadata:
+  category: tooling
+  audience: general-coding-agent
+  maturity: stable
   kind: task
 ---
 
@@ -21,7 +24,7 @@ Use this skill when an upgrade tool or package manager fails to update cleanly a
 ## Do not use this skill when
 
 - The failure is in a CI job that calls an upgrade step; the job itself is what needs diagnosis (→ [`github-actions-failure-triage`](../github-actions-failure-triage/SKILL.md)).
-- The task is deliberately upgrading a library dependency in code — choosing versions, vetting changelogs, resolving conflicts (→ [`golang-dependency-management`](../golang-dependency-management/SKILL.md)).
+- The task is deliberately upgrading a library dependency in application code rather than repairing the package manager or toolchain.
 - The failure is an OS-level or system package issue that requires admin or infrastructure access.
 - The underlying tool is a custom in-house script, not a known package manager or runtime toolchain.
 
@@ -35,7 +38,7 @@ Use this skill when an upgrade tool or package manager fails to update cleanly a
 | Go/Node toolchain upgrade breaks environment | Yes | - |
 | Lock file stale or regeneration fails | Yes | - |
 | CI workflow fails, not the upgrade tool itself | No | [`github-actions-failure-triage`](../github-actions-failure-triage/SKILL.md) |
-| Deliberate library version bump with changelog review | No | [`golang-dependency-management`](../golang-dependency-management/SKILL.md) |
+| Deliberate library version bump with changelog review | No | use the repository's normal dependency-management workflow |
 | System or OS package failure requiring admin access | No | escalate to user |
 
 ## Inputs to gather
@@ -108,7 +111,6 @@ Use this skill when an upgrade tool or package manager fails to update cleanly a
   - should trigger: "`uv lock` fails with a resolver conflict after adding a new dependency."
   - should trigger: "`brew upgrade` fails because of a dependency conflict in a formula."
   - should not trigger: "The CI `pip install` step fails in my GitHub Actions workflow." (→ `github-actions-failure-triage`)
-  - should not trigger: "I want to bump the Go version of my `go.mod` to 1.24." (→ `golang-dependency-management`)
 
 ## Examples
 

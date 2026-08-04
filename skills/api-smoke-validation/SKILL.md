@@ -2,6 +2,9 @@
 name: api-smoke-validation
 description: "Use when API endpoints need hurl smoke tests for auth, status, or response-shape regressions."
 metadata:
+  category: testing
+  audience: general-coding-agent
+  maturity: stable
   kind: task
 ---
 

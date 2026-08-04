@@ -2,6 +2,9 @@
 name: typescript-triage
 description: "Start here when the TypeScript problem is unclear — routes to the right specialist skill by symptom."
 metadata:
+  category: typescript
+  audience: general-coding-agent
+  maturity: stable
   kind: task
 ---
 

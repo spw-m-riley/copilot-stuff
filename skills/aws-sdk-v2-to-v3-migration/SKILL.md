@@ -2,6 +2,9 @@
 name: aws-sdk-v2-to-v3-migration
 description: "Use when migrating JavaScript AWS SDK v2 usage (`aws-sdk`, `.promise()`, DocumentClient, `s3.upload`) to modular v3 without behavior changes."
 metadata:
+  category: migrations
+  audience: general-coding-agent
+  maturity: stable
   kind: task
 ---
 

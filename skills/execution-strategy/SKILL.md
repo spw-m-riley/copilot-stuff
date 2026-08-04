@@ -2,6 +2,9 @@
 name: execution-strategy
 description: "Use when choosing inline, serial, or parallel work before dispatching agents, especially with file overlap or shared state."
 metadata:
+  category: workflow
+  audience: general-coding-agent
+  maturity: stable
   kind: task
 ---
 

@@ -2,6 +2,9 @@
 name: agent-supply-chain
 description: "Use this skill when agent plugins need integrity manifests, tamper checks, dependency pinning, or promotion provenance."
 metadata:
+  category: governance
+  audience: general-coding-agent
+  maturity: stable
   kind: reference
 ---
 

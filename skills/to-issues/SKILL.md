@@ -1,7 +1,11 @@
 ---
 name: to-issues
 description: "Use when turning an approved plan, spec, or PRD into grabbable issue slices; not for discovery or PRD work."
+disable-model-invocation: true
 metadata:
+  category: workflow
+  audience: general-coding-agent
+  maturity: stable
   kind: task
 ---
 

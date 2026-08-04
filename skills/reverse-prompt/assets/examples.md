@@ -10,7 +10,7 @@ Use these examples to keep the skill grounded in repository-local workflows and 
 | `Rewrite this rough ask into the best executable prompt for this repository: add a skill that improves prompts before implementation.` | `rewrite-and-return` | Return a repository-shaped brief for creating a new skill, without starting the work. |
 | `Before you start, sharpen my prompt into goal, constraints, deliverables, approval rule, and exact files, then move into planning mode: add a reverse prompt skill under @skills/.` | `rewrite-and-proceed` | Produce the improved brief, note assumptions, then continue into planning. |
 | `Reverse-prompt this request for this repo, then execute it: fix the TypeScript issues around @skills/.` | `rewrite-and-proceed` | Produce the improved brief, note assumptions, then continue with implementation-oriented work. |
-| `Improve this prompt and then do the work: compare @extensions/gha-url-router and @extensions/ci-migration-context and summarize the overlap.` | `rewrite-and-proceed` | Produce the improved brief, then route into research or analysis rather than returning only a prompt. |
+| `Improve this prompt and then do the work: compare @extensions/gha-url-router and @extensions/worktree-manager and summarize the overlap.` | `rewrite-and-proceed` | Produce the improved brief, then route into research or analysis rather than returning only a prompt. |
 | `Improve this prompt and do it: update the broken workflow.` | blocked after rewrite | Return the improved brief plus a blocker because the target workflow is not known well enough to act safely. |
 
 ## Before/after sketches

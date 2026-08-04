@@ -2,6 +2,9 @@
 name: lore-memory-operations
 description: "Use when writing or verifying Lore memories and need persistence, scope, backfill, or coverage semantics; not for open-loop blocking."
 metadata:
+  category: memory
+  audience: general-coding-agent
+  maturity: stable
   kind: task
 ---
 

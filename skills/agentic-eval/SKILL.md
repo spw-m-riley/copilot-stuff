@@ -2,6 +2,9 @@
 name: agentic-eval
 description: "Use when designing iterative evaluation loops for AI outputs, such as reflection, judge, rubric, or evaluator-optimizer workflows; not for ordinary tests."
 metadata:
+  category: optimization
+  audience: general-coding-agent
+  maturity: stable
   kind: reference
 ---
 
@@ -24,7 +27,7 @@ The core pattern is: **Generate → Evaluate → Critique → Refine → Output*
 
 - You are running an existing test suite to verify code — use `verification-before-completion`.
 - You are diagnosing a specific failure or bug, not evaluating output quality — use `systematic-debugging`.
-- The goal is writing test coverage (unit tests, integration tests) — use `javascript-testing-expert` or `test-driven-development`.
+- The goal is writing test coverage (unit tests, integration tests) — use `test-driven-development`.
 - You are reviewing a completed artifact once without a refinement loop (a single code review, an editorial pass, a PR check).
 
 ## Routing boundary
@@ -35,16 +38,16 @@ The core pattern is: **Generate → Evaluate → Critique → Refine → Output*
 | Implementing LLM-as-judge comparison of two candidate outputs | Yes | — |
 | Running `npm test` to confirm a fix works | No | `verification-before-completion` |
 | Tracing why a specific assertion fails | No | `systematic-debugging` |
-| Writing Jest or pytest test coverage for a module | No | `javascript-testing-expert` / `test-driven-development` |
+| Writing Jest or pytest test coverage for a module | No | `test-driven-development` |
 | Reviewing a PR diff once, no iteration | No | `github-cli-pr-workflow` |
 
 ## Navigation
 
 The three evaluation strategy patterns (outcome-based, LLM-as-judge, rubric-based) and full Python examples are in `references/patterns.md`.
 
-The implementation checklist — criteria, threshold, loop wiring, convergence, logging — is in `assets/eval-checklist.md`.
+The implementation checklist — criteria, threshold, loop wiring, convergence, logging — is in the Validation section below.
 
-For a new implementation, start with the checklist to confirm your setup is complete, then use the patterns reference to choose and adapt an evaluation strategy.
+For a new implementation, start with the checklist below to confirm your setup is complete, then use the patterns reference to choose and adapt an evaluation strategy.
 
 ## Guardrails
 

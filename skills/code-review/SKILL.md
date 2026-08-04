@@ -2,6 +2,9 @@
 name: code-review
 description: "Use when reviewing a diff, PR, branch, or patch with evidence and validation; not for resolving existing comments."
 metadata:
+  category: review
+  audience: general-coding-agent
+  maturity: stable
   kind: task
 ---
 

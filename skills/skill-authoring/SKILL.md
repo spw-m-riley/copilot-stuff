@@ -2,6 +2,9 @@
 name: skill-authoring
 description: "Use when creating or revising a reusable agent skill under skills/<name>/SKILL.md."
 metadata:
+  category: authoring
+  audience: general-coding-agent
+  maturity: stable
   kind: task
 ---
 

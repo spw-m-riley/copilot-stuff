@@ -2,6 +2,9 @@
 name: herdr
 description: "Use when in herdr to inspect panes, create tabs, wait for output, or coordinate agents; not outside."
 metadata:
+  category: utilities
+  audience: general-coding-agent
+  maturity: stable
   kind: task
 ---
 

@@ -2,6 +2,9 @@
 name: session-handoff
 description: "Use when ending research/planning, compacting noisy context, or handing off work to another session/lane."
 metadata:
+  category: workflow
+  audience: general-coding-agent
+  maturity: stable
   kind: task
 ---
 

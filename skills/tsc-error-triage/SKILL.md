@@ -2,6 +2,9 @@
 name: tsc-error-triage
 description: "Use when tsc or project typecheck reports compiler errors after refactors, upgrades, tsconfig changes, or strict-mode changes."
 metadata:
+  category: typescript
+  audience: general-coding-agent
+  maturity: stable
   kind: task
 ---
 

@@ -2,6 +2,9 @@
 name: sam-cloudformation
 description: "Use when AWS SAM/CloudFormation fails on YAML, transforms, wiring, deploy, or rollback; not for Lambda binary or IAM OIDC failures."
 metadata:
+  category: infrastructure
+  audience: general-coding-agent
+  maturity: stable
   kind: task
 ---
 
@@ -19,7 +22,7 @@ Use this skill when the failure lives in the SAM template, CloudFormation stack 
 
 ## Do not use this skill when
 
-- The main issue is the Go Lambda binary, runtime, handler, or zip layout.
+- The main issue is Lambda packaging, runtime, handler, or zip layout.
 - The deployment fails on IAM role assumption or OIDC trust before SAM or CloudFormation runs.
 - The infrastructure is Terraform-managed rather than SAM/CloudFormation-managed.
 - The core problem is a generic GitHub Actions workflow failure with no SAM-specific evidence yet.
@@ -29,7 +32,7 @@ Use this skill when the failure lives in the SAM template, CloudFormation stack 
 | Situation | Use this skill? | Route instead |
 | --- | --- | --- |
 | SAM template authoring, validation, deploy, or CloudFormation stack-state issues | Yes | - |
-| Lambda binary, runtime, bootstrap, or handler issue | No | [`aws-lambda-go-deployment`](../aws-lambda-go-deployment/SKILL.md) |
+| Lambda binary, runtime, bootstrap, or handler issue | No | [`systematic-debugging`](../systematic-debugging/SKILL.md) |
 | OIDC or AssumeRole AccessDenied during deployment auth | No | [`iam-oidc-triage`](../iam-oidc-triage/SKILL.md) |
 | Infrastructure is owned by Terraform instead of SAM/CloudFormation | No | [`terraform-skill`](../terraform-skill/SKILL.md) |
 | Generic workflow-run diagnosis before the SAM deploy step is understood | No | [`github-actions-failure-triage`](../github-actions-failure-triage/SKILL.md) |
@@ -79,7 +82,7 @@ Use this skill when the failure lives in the SAM template, CloudFormation stack 
 
 - A narrowed diagnosis of whether the failure is template syntax, transform/schema validation, resource wiring, stack rollback state, or deploy-auth routing.
 - The smallest justified SAM/CloudFormation configuration change or recovery action.
-- A clean handoff to `aws-lambda-go-deployment`, `iam-oidc-triage`, `terraform-skill`, or `github-actions-failure-triage` when another skill owns the blocker.
+- A clean handoff to `systematic-debugging`, `iam-oidc-triage`, `terraform-skill`, or `github-actions-failure-triage` when another skill owns the blocker.
 
 ## Guardrails
 
@@ -96,7 +99,7 @@ Use this skill when the failure lives in the SAM template, CloudFormation stack 
 - If event source mappings were touched, confirm `FunctionResponseTypes` is set when partial batch failure handling is required.
 - Smoke test:
   - should trigger: "Our SAM deploy rolls back because the template has invalid resource wiring and the stack is now stuck in UPDATE_ROLLBACK_FAILED."
-  - should not trigger: "The Go Lambda zip is missing the `bootstrap` binary and fails before the template is the problem." (→ `aws-lambda-go-deployment`)
+  - should not trigger: "The Lambda zip is missing the `bootstrap` binary and fails before the template is the problem." (→ `systematic-debugging`)
 
 ## Examples
 

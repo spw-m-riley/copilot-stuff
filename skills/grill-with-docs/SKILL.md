@@ -3,6 +3,9 @@ name: grill-with-docs
 description: "Use when stress-testing a plan against project terminology or domain models and updating CONTEXT.md or ADRs; not for generic interviews."
 disable-model-invocation: true
 metadata:
+  category: workflow
+  audience: general-coding-agent
+  maturity: stable
   kind: task
 ---
 

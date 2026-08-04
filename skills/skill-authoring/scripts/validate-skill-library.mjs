@@ -28,6 +28,7 @@ const TASK_ONLY_HEADINGS = new Set([
 ]);
 
 const VALID_KINDS = new Set(["task", "reference"]);
+const VALID_MATURITIES = new Set(["draft", "stable"]);
 
 // Metadata contract: only these top-level keys are permitted in skill frontmatter.
 // See skills/skill-authoring/references/metadata-contract.md for rationale.
@@ -507,12 +508,31 @@ function validateDisableModelInvocation(frontmatter, errors) {
 
 function validateSkillMetadata(metadata, errors) {
   if (!metadata || typeof metadata !== "object") {
+    errors.push(
+      "missing metadata block with category, audience, maturity, and kind — see skills/skill-authoring/references/metadata-contract.md",
+    );
     return;
   }
 
   validateForbiddenMetadataKeys(metadata, errors);
+  validateMetadataLifecycleFields(metadata, errors);
   validateMetadataKind(metadata, errors);
-  validateDraftMetadataKindRequirement(metadata, errors);
+}
+
+function validateMetadataLifecycleFields(metadata, errors) {
+  for (const field of ["category", "audience", "maturity", "kind"]) {
+    if (!(field in metadata) || !String(metadata[field]).trim()) {
+      errors.push(
+        `missing metadata.${field}; set the required lifecycle field — see skills/skill-authoring/references/metadata-contract.md`,
+      );
+    }
+  }
+
+  if ("maturity" in metadata && !VALID_MATURITIES.has(metadata.maturity)) {
+    errors.push(
+      `invalid metadata.maturity ${metadata.maturity || "<missing>"}; expected one of draft, stable`,
+    );
+  }
 }
 
 function validateForbiddenMetadataKeys(metadata, errors) {
@@ -533,16 +553,6 @@ function validateMetadataKind(metadata, errors) {
 
   errors.push(
     `invalid metadata.kind ${metadata.kind || "<missing>"}; expected one of task, reference`,
-  );
-}
-
-function validateDraftMetadataKindRequirement(metadata, errors) {
-  if (metadata.maturity !== "draft" || "kind" in metadata) {
-    return;
-  }
-
-  errors.push(
-    'metadata.kind is required for draft skills; set to "task" or "reference" — see skills/skill-authoring/references/metadata-contract.md',
   );
 }
 

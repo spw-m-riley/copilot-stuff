@@ -2,6 +2,9 @@
 name: terraform-skill
 description: "Use when writing, reviewing, or debugging Terraform/OpenTofu — modules, tests, CI/CD, security scans, or state operations."
 metadata:
+  category: infrastructure
+  audience: general-coding-agent
+  maturity: stable
   kind: task
 ---
 

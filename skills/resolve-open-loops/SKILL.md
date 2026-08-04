@@ -2,6 +2,9 @@
 name: resolve-open-loops
 description: "Use when stabilisation-guard surfaces active open_loop or assistant_goal memories, or the user asks to review pending Lore items."
 metadata:
+  category: memory
+  audience: general-coding-agent
+  maturity: stable
   kind: task
 ---
 

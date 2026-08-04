@@ -2,6 +2,9 @@
 name: plan-review-loop
 description: "Use when a completed /plan needs explicit multi-reviewer approval and refinement before implementation begins."
 metadata:
+  category: workflow
+  audience: general-coding-agent
+  maturity: stable
   kind: task
 ---
 

@@ -2,6 +2,9 @@
 name: secret-scan-triage
 description: "Use when gitleaks reports secrets needing triage, containment, or false-positive review before changes or merges."
 metadata:
+  category: governance
+  audience: general-coding-agent
+  maturity: stable
   kind: task
 ---
 

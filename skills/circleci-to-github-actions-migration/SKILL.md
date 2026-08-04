@@ -2,6 +2,9 @@
 name: circleci-to-github-actions-migration
 description: "Use when replacing or phasing out CircleCI config, jobs, workflows, or artifacts with GitHub Actions while preserving parity."
 metadata:
+  category: migrations
+  audience: general-coding-agent
+  maturity: stable
   kind: task
 ---
 

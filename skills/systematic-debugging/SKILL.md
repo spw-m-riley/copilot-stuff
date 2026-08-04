@@ -1,7 +1,10 @@
 ---
 name: systematic-debugging
-description: "Use when encountering any bug, test failure, unexpected behavior, or persistent error before proposing fixes."
+description: "Use when a failure or unexpected behavior has an unclear root cause and needs evidence before fixing; use specialist triage for known CI, AWS, TypeScript, Terraform, or toolchain failures."
 metadata:
+  category: testing
+  audience: general-coding-agent
+  maturity: stable
   kind: task
 ---
 
@@ -22,6 +25,7 @@ Use this skill when the symptom is visible but the root cause is not yet proven.
 - The root cause is already known and validated.
 - The fix has already been verified in a test environment.
 - The user explicitly asks you to apply a specific fix and does not want investigation.
+- The failure is clearly scoped to GitHub Actions, AWS, TypeScript, Terraform, or toolchain upgrades; use the matching specialist triage skill.
 - The remaining work is verifying a fix; route to [`verification-before-completion`](../verification-before-completion/SKILL.md).
 
 ## Routing boundary

@@ -2,6 +2,9 @@
 name: customize-cloud-agent
 description: "Use when configuring cloud coding-agent instructions, setup scripts, environments, or repository-specific behavior."
 metadata:
+  category: authoring
+  audience: general-coding-agent
+  maturity: stable
   kind: task
 ---
 
