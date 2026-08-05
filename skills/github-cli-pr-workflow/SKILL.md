@@ -112,15 +112,15 @@ Use this skill for the complete branch-to-PR lifecycle, from readiness checks th
 
 ## Guardrails
 
-- Never claim checks are green without naming the current head SHA.
-- Do not apply review comments mechanically or dismiss them without evidence.
-- Do not mix unrelated cleanup into review-fix commits.
-- Do not merge or delete from a dirty worktree.
-- Do not proceed on failing or blocked checks unless the selected outcome is keep or discard.
-- Do not merge or create a PR while actionable findings remain unclassified.
+- Anchor every check-status claim to the current head SHA.
+- Classify each review comment with evidence before applying or dismissing it.
+- Keep review-fix commits limited to the intended change batch.
+- Require a clean worktree before merge or deletion.
+- Treat failing or blocked checks as a keep-or-discard decision until they reach a justified state.
+- Complete review classification before merging or creating a PR.
 - Require explicit typed confirmation before deleting branches or worktrees.
 - Inspect the staged file list and diff before every scoped commit.
-- Do not claim completion until the selected outcome and its validation are complete.
+- Use the selected outcome and its validation as the completion gate.
 
 ## Validation
 

@@ -91,13 +91,13 @@ Use this skill to stress-test a plan or design through relentless interrogation 
 
 ## Guardrails
 
-- Ask questions one at a time. Never dump a wall of questions.
-- Provide your recommended answer with every question.
-- Update CONTEXT.md inline as terms resolve. Do not batch documentation updates to the end.
-- Do not add general programming concepts to CONTEXT.md — only project-specific domain terms.
-- Do not offer an ADR unless all three conditions (hard to reverse, surprising, real trade-off) are met.
-- Do not create CONTEXT.md or `docs/adr/` until you have something to write in them.
-- Keep CONTEXT.md definitions to one sentence. Define what a term IS, not what it does.
+- Ask one question at a time so each answer resolves the next branch.
+- Pair every question with a recommended answer.
+- Update CONTEXT.md inline as terms resolve rather than batching documentation updates.
+- Keep CONTEXT.md focused on project-specific domain terms; leave general programming concepts out.
+- Offer an ADR only when all three conditions hold: hard to reverse, surprising without context, and the result of a real trade-off.
+- Create CONTEXT.md or `docs/adr/` lazily, once there is something meaningful to write.
+- Keep CONTEXT.md definitions to one sentence and define what a term is rather than what it does.
 
 ## Validation
 

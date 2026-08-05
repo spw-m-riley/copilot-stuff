@@ -67,6 +67,12 @@ The following `metadata` keys are explicitly banned because they carry upstream 
 
 ## Special-case decisions
 
+### Model invocation versus explicit invocation
+
+Implicit model invocation improves discoverability: the skill description can help the model select the skill without the user naming it. That discoverability has a cost, because the description contributes to model context and adds another candidate to routing and cognitive load on every relevant prompt.
+
+Set `disable-model-invocation: true` when deliberate explicit invocation is the safer or clearer contract: for example, the workflow is interactive, side-effectful, unusually noisy, or should not compete for implicit routing. The skill remains available when the user invokes it by name, while its description is kept out of implicit model selection context. Leave the field absent when broad, low-risk discoverability is part of the skill's value.
+
 ### Imported skills
 
 Imported skills must follow the same local frontmatter contract as native skills before they are considered complete. There are no active exceptions for upstream provenance keys, extra top-level keys, or multiline descriptions.
@@ -153,7 +159,7 @@ The validator (`scripts/validate-skill-library.mjs`) currently enforces:
 | --- | --- | --- |
 | `name` must match directory | All skills | Error |
 | `description` must be ≥ 20 characters | All skills | Error |
-| `description` must include a trigger phrase | `draft` skills | Error |
+| `description` must include a trigger phrase | All skills | Error |
 | `metadata.kind` must be `task` or `reference` | All skills | Error |
 | **Forbidden top-level keys** | All skills | **Error** (added wave 2) |
 | **Forbidden provenance keys in `metadata`** | All skills | **Error** (added wave 2) |

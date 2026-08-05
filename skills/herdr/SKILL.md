@@ -80,17 +80,17 @@ Use this skill when you are already inside a herdr-managed pane and need to coor
 
 ## Guardrails
 
-- Never use this skill outside a herdr-managed pane; if `HERDR_ENV` is not `1`, stop and use the normal terminal workflow instead.
-- `HERDR_ENV=1` only authorizes talking to the herdr socket at all — it is never blanket authorization to read, run commands in, or send keys to every visible pane.
-- Treat any pane you did not create in this task as read-only. Only use `pane read` on it. Do not use `pane run`, `pane send-text`, or `pane send-keys` against a pre-existing sibling pane unless the user explicitly names that exact pane id and the literal command or keys to send in the current request.
-- Never spawn a new agent instance on your own initiative (for example `pane run <id> "claude"`, `"codex"`, `"copilot"`, or similar). Only start another agent when the user explicitly asks for one in the current turn — multi-agent expansion is a one-time user decision, not something to chain automatically.
-- Do not treat ids like `1-3` or `1:2` as durable; re-list or parse fresh ids after create, move, or close operations.
-- Use `pane read` for output that already exists and `wait output` only for output you expect next.
-- Do not forward pane output that may contain credentials, tokens, or secrets into another pane, log, external destination, or spawned agent's prompt.
-- Prefer `--no-focus` for sibling work that should not steal the current pane's keyboard focus.
-- Parse JSON responses for newly created resources; do not assume the next numeric id is yours.
-- Treat commands run via `pane run` with the same caution as any shell command — refuse destructive or irreversible commands unless the user explicitly asked for exactly that command.
-- Keep Git branch and worktree lifecycle out of this skill; route checkout isolation to [`git-worktrees`](../git-worktrees/SKILL.md) or [`worktrunk`](../worktrunk/SKILL.md).
+- Use this skill only inside a herdr-managed pane; when `HERDR_ENV` is not `1`, use the normal terminal workflow.
+- Treat `HERDR_ENV=1` as permission to talk to the herdr socket only, never as blanket authorization for every visible pane.
+- Treat panes you did not create in this task as read-only and use `pane read` only. Mutating commands require the user to name the exact pane and literal command or keys in the current request.
+- Keep agent spawning user-initiated; start another agent only when the user explicitly asks in the current turn.
+- Treat ids like `1-3` or `1:2` as ephemeral; re-list or parse fresh ids after create, move, or close operations.
+- Use `pane read` for existing output and `wait output` only for output expected next.
+- Keep credentials, tokens, and secrets out of forwarded pane output, logs, and agent prompts.
+- Prefer `--no-focus` for sibling work that should not steal keyboard focus.
+- Parse JSON responses for newly created resources instead of guessing numeric ids.
+- Treat commands run via `pane run` with normal shell safety; require explicit user authorization for destructive or irreversible commands.
+- Keep Git branch and worktree lifecycle in [`git-worktrees`](../git-worktrees/SKILL.md) or [`worktrunk`](../worktrunk/SKILL.md).
 
 ## Validation
 

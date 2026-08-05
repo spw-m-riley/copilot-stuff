@@ -130,13 +130,13 @@ When the loop ends:
 
 ## Guardrails
 
-- Never modify out-of-scope files, even to make a failing metric run succeed.
-- Never skip the measurement step. Every experiment must be measured before the keep/discard decision.
-- Never use `git reset --hard` as a revert strategy. Always revert with a new commit (`git revert HEAD --no-edit`) to preserve history and avoid data loss.
-- Never use `git commit --amend` in the loop. Amended history makes the results log unreliable.
-- Never install new dependencies or change environment configuration without explicit user approval.
-- Keep changes per experiment small. Large batched changes hide which modification drove the metric.
-- Do not keep a change that improves the metric but regresses another metric the user named as a constraint.
+- Keep every experiment within the declared in-scope files; leave out-of-scope files untouched.
+- Measure every experiment before deciding whether to keep or discard it.
+- Revert losing or crashed experiments with a new `git revert HEAD --no-edit` commit so history stays intact and data remains recoverable.
+- Keep the experiment history append-only by using new commits rather than `git commit --amend`.
+- Keep dependencies and environment configuration unchanged unless the user explicitly approves a change.
+- Keep each experiment small enough that its effect on the metric remains identifiable.
+- Retain a change only when it improves the target metric without regressing any named constraint.
 
 ## Validation
 

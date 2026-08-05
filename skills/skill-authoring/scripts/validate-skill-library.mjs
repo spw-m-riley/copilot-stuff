@@ -4,28 +4,15 @@ import { access, readFile, readdir } from "node:fs/promises";
 import { constants as fsConstants } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  REQUIRED_HEADINGS,
+  TASK_HEADINGS,
+  TASK_ONLY_HEADINGS,
+} from "./skill-contract.mjs";
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(SCRIPT_DIR, "../../..");
 const SKILLS_ROOT = path.join(REPO_ROOT, "skills");
-
-const REQUIRED_HEADINGS = [
-  "## Use this skill when",
-  "## Do not use this skill when",
-  "## Inputs to gather",
-  "## First move",
-  "## Workflow",
-  "## Validation",
-  "## Examples",
-  "## Reference files",
-];
-
-// Headings required only for task skills (omitted in reference skills per the import-rewrite-contract).
-const TASK_ONLY_HEADINGS = new Set([
-  "## Inputs to gather",
-  "## First move",
-  "## Workflow",
-]);
 
 const VALID_KINDS = new Set(["task", "reference"]);
 const VALID_MATURITIES = new Set(["draft", "stable"]);
@@ -50,6 +37,15 @@ const FORBIDDEN_METADATA_KEYS = new Set([
   "version",
   "enhancements",
 ]);
+
+const AUTHORING_TEMPLATE_PATH = path.join(
+  REPO_ROOT,
+  "skills/skill-authoring/assets/skill-template.md",
+);
+const IMPORT_CONTRACT_PATH = path.join(
+  REPO_ROOT,
+  "skills/skill-authoring/references/import-rewrite-contract.md",
+);
 
 function normalize(text) {
   return text.replace(/\r\n?/g, "\n");
@@ -466,12 +462,10 @@ function validateSkillDescription(frontmatter, errors) {
     errors.push("description is too short; provide a meaningful description");
   }
 
-  if (frontmatter.metadata?.maturity === "draft") {
-    validateDraftDescriptionTriggerPhrase(desc, errors);
-  }
+  validateDescriptionTriggerPhrase(desc, errors);
 }
 
-function validateDraftDescriptionTriggerPhrase(desc, errors) {
+function validateDescriptionTriggerPhrase(desc, errors) {
   const descLower = desc.toLowerCase();
   const hasTriggerPhrase =
     descLower.includes("when ") ||
@@ -567,7 +561,9 @@ function validateRequiredHeadings(searchableBody, metadata, errors) {
 }
 
 function shouldValidateHeading(heading, metadata) {
-  return !(metadata?.kind === "reference" && TASK_ONLY_HEADINGS.has(heading));
+  return !(
+    metadata?.kind === "reference" && TASK_ONLY_HEADINGS.includes(heading)
+  );
 }
 
 function validateHeadingOrder(lines, requiredHeadings, errors) {
@@ -621,6 +617,30 @@ async function validateReferenceTargets(filePath, referenceSection, errors) {
   }
 }
 
+function extractHeadings(text) {
+  return [...text.matchAll(/^## .+$/gm)].map((match) => match[0].trim());
+}
+
+async function validateAuthoringContractArtifacts(errors) {
+  const template = await readFile(AUTHORING_TEMPLATE_PATH, "utf8");
+  const templateHeadings = extractHeadings(template).filter((heading) =>
+    TASK_HEADINGS.includes(heading),
+  );
+
+  if (templateHeadings.join("\n") !== TASK_HEADINGS.join("\n")) {
+    errors.push(
+      "skill template headings drift from scripts/skill-contract.mjs; update the canonical contract or template together",
+    );
+  }
+
+  const importContract = await readFile(IMPORT_CONTRACT_PATH, "utf8");
+  if (!importContract.includes("../scripts/skill-contract.mjs")) {
+    errors.push(
+      "import-rewrite-contract.md must point to scripts/skill-contract.mjs as the canonical section contract",
+    );
+  }
+}
+
 async function validateFile(filePath) {
   const absolutePath = path.resolve(filePath);
   const text = await readFile(absolutePath, "utf8");
@@ -663,6 +683,20 @@ async function collectValidationOutput(files) {
 }
 
 async function main() {
+  const contractErrors = [];
+  try {
+    await validateAuthoringContractArtifacts(contractErrors);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    contractErrors.push(`unable to validate authoring contract artifacts: ${message}`);
+  }
+
+  if (contractErrors.length > 0) {
+    console.error(contractErrors.map((error) => `FAIL ${error}`).join("\n"));
+    process.exitCode = 1;
+    return;
+  }
+
   const files = await resolveSkillFiles(process.argv.slice(2));
   if (files.length === 0) {
     console.error("no SKILL.md files found");

@@ -84,10 +84,10 @@ Use this skill when local Git signing is the blocker and the job is to diagnose 
 
 ## Guardrails
 
-- Never suggest `--no-gpg-sign`, `git -c commit.gpgsign=false`, credential-helper swaps, or alternate signing programs just to get a commit through.
-- Treat the real signed Git command as the source of truth; do not overrule it with `op whoami`.
-- Treat `failed to fill whole buffer` as a 1Password app or SSH-agent interop issue, not as a reason to change Git to an unsigned path.
-- Never fetch a full 1Password SSH key item payload just to confirm metadata.
+- Keep every suggested recovery path on the trusted signing route; bypasses such as `--no-gpg-sign`, `git -c commit.gpgsign=false`, credential-helper swaps, and alternate signing programs are out of scope.
+- Treat the real signed Git command as the source of truth, with `op whoami` as secondary evidence.
+- Treat `failed to fill whole buffer` as a 1Password app or SSH-agent interop issue and preserve signed Git behavior while diagnosing it.
+- Inspect only non-secret 1Password key metadata when metadata confirmation is necessary.
 - Stop and surface the blocker clearly when the trusted signing path needs user approval or repair.
 
 ## Validation

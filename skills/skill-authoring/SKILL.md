@@ -101,3 +101,4 @@ Use this skill when creating or revising a reusable `skills/<name>/SKILL.md` pac
 - [`references/import-rewrite-contract.md`](references/import-rewrite-contract.md) - shared target shape for rewriting upstream skills into this library
 - [`references/quality-scenarios.md`](references/quality-scenarios.md) - skill quality review scenarios and maintenance loop
 - [`scripts/validate-skill-library.mjs`](scripts/validate-skill-library.mjs) - local validator for metadata, examples, and support-file references
+- [`scripts/skill-contract.mjs`](scripts/skill-contract.mjs) - canonical section contract shared by the validator and authoring template

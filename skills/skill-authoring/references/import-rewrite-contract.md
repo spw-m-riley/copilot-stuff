@@ -78,23 +78,13 @@ Replace `## Inputs to gather`, `## First move`, `## Workflow`, and `## Outputs` 
 
 ## Section and heading expectations
 
-Every imported skill must use these stable section names. Do not carry forward upstream heading variations.
+The canonical heading contract lives in [`../scripts/skill-contract.mjs`](../scripts/skill-contract.mjs). The validator imports the same arrays, and the starter template is checked against them.
 
-| Section | Task skill | Reference skill | Notes |
-| --- | --- | --- | --- |
-| H1 title | Required | Required | Must match the `name` field in plain words. |
-| One-paragraph activation lead | Required | Required | A single paragraph that says when to use the skill. |
-| `## Use this skill when` | Required | Required | Bullet list of specific trigger conditions. |
-| `## Do not use this skill when` | Required | Required | At least two route-away conditions when adjacent skills exist. |
-| `## Routing boundary` | Required | Required | Markdown table: Situation / Use this skill? / Route instead. |
-| `## Inputs to gather` | Required | Omit | Three sub-sections: Required / Helpful if present / Only investigate if encountered. |
-| `## First move` | Required | Omit | Numbered list. Three steps maximum. |
-| `## Workflow` | Required | Omit | Numbered list. Sequential and actionable. |
-| `## Outputs` | Required | Omit | Bullet list of artifacts or end-state expectations. |
-| `## Guardrails` | Required | Required | Bullet list including safety-critical constraints. |
-| `## Validation` | Required | Required | At least one mechanical check and one smoke-test. |
-| `## Examples` | Required | Required | Three realistic user-request examples. |
-| `## Reference files` | Required | Required | One entry per support file, linked and annotated. |
+- `TASK_HEADINGS` defines the complete ordered shape for task skills, including `## Outputs`.
+- `REFERENCE_HEADINGS` defines the ordered shape for lookup-heavy reference skills.
+- `TASK_ONLY_HEADINGS` identifies the workflow sections omitted from reference skills.
+
+Every imported skill must follow that contract rather than carrying forward upstream heading variations. Keep the H1 title, activation lead, routing table, guardrails, and section content aligned with the surrounding guidance in this file.
 
 ## Support-file decision rules
 

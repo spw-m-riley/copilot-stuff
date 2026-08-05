@@ -79,12 +79,12 @@ Use this skill when calling Lore's memory tools (`lore_retain`, `lore_reflect`, 
 
 ## Guardrails
 
-- Never treat a narrated Lore write as done because the summary sounds specific — verify the row exists.
-- Never omit domain fields on a `lore_retain` call that references an existing `domainKey`.
-- Never rely on free-text temporal phrasing for `lore_reflect` coverage — pass `lookbackHours`.
-- Never call `persistObservation: true` unconditionally on every run of a recurring automation.
-- Never invoke `memory_portable_bundle` `action: "import"` from a hook, schedule, or any automatic trigger — it must stay a deliberate, explicit tool call, since it promotes externally sourced content into retrievable memory.
-- `recentSessionCount` capping and `lore_retain` durability were historically unreliable but are now fixed (`extensions/lore` PR #48) — see [reference notes](references/tool-behavior-notes.md#fixed-recentsessioncount-and-durability-extensionslore-pr-48) before assuming you still need a manual workaround.
+- Verify every narrated Lore write against the persisted row or observation before treating it as complete.
+- Supply the full domain field set whenever `lore_retain` references an existing `domainKey`.
+- Pass an explicit `lookbackHours` to `lore_reflect` when temporal coverage matters.
+- For recurring automation, evolve the stored narrative instead of calling `persistObservation: true` unconditionally.
+- Keep `memory_portable_bundle` `action: "import"` deliberate and explicit; automatic hooks and schedules must not promote external content into retrievable memory.
+- Treat `recentSessionCount` capping and `lore_retain` durability as fixed (`extensions/lore` PR #48); consult the [reference notes](references/tool-behavior-notes.md#fixed-recentsessioncount-and-durability-extensionslore-pr-48) before adding a workaround.
 
 ## Validation
 

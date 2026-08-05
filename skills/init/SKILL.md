@@ -71,11 +71,11 @@ Use this skill to create or refresh instruction files that reduce repeated agent
 
 ## Guardrails
 
-- Do not use instruction files as a code walkthrough; agents can read code, configs, and README files.
-- Do not duplicate rules already enforced by linters, type checks, pre-commit hooks, or CI.
-- Do not add generic best practices such as "write clean code" or "test thoroughly".
-- Do not force a tool choice unless the repository genuinely cannot use an alternative.
-- Do not add unstable guidance for code or workflows still in flux.
+- Keep instruction files focused on non-obvious guidance rather than code walkthroughs; agents can read code, configs, and README files directly.
+- Rely on linters, type checks, pre-commit hooks, and CI for rules they already enforce instead of duplicating them.
+- Keep generic advice such as "write clean code" or "test thoroughly" out of instruction files.
+- Keep tool choices flexible unless the repository genuinely cannot use an alternative.
+- Add guidance only when it is stable enough to remain accurate.
 - Keep `## Learned Rules` as the final section in instruction files that have one.
 - Prefer narrow file/path-scoped instructions over bloated global instruction files.
 

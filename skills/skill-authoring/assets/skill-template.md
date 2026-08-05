@@ -78,6 +78,8 @@ Use this skill when ...
 - `references/REFERENCE.md` - ...
 ```
 
+The canonical section order is [`../scripts/skill-contract.mjs`](../scripts/skill-contract.mjs). Keep this scaffold synchronized with that contract; the validator checks the task headings against it.
+
 Use `metadata.kind: task` for multi-step playbooks with explicit outputs and validation. Every skill also declares `metadata.category`, `metadata.audience`, and `metadata.maturity`.
 
 Use `metadata.kind: reference` for lookup-heavy guidance where the main value is navigation, conventions, or examples.

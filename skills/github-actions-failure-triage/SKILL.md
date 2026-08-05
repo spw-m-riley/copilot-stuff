@@ -96,15 +96,14 @@ Do not collect secret values. Only confirm whether the expected names, scopes, a
 
 ## Guardrails
 
-- **Must not** edit workflow files speculatively before reading the concrete failing evidence.
-- **Must not** assume every failure is a YAML problem; the root cause may be a real project, test, deployment, or runtime bug.
-- **Must not** collect, print, or store secret values.
-- **Must not** absorb migration planning, PR review handling, or worktree setup into this skill.
-- **Must not** rely on blind reruns as a substitute for diagnosis.
-- **Must not** rerun a failure just to feel productive; a rerun only counts when it can change the evidence or verify a narrowly targeted fix.
-- **Should** prefer the smallest change that explains the failure and preserves the surrounding workflow shape.
-- **Should** distinguish flaky, pre-existing, and newly introduced failures before claiming a fix.
-- **Should** escalate instead of guessing when the failure depends on org-admin controls, runner-fleet health, or broader CI redesign.
+- Anchor workflow edits in concrete failing evidence before changing files.
+- Classify the failure from logs and surrounding setup; include project, test, deployment, and runtime causes rather than assuming YAML is at fault.
+- Keep secret values out of outputs and storage; inspect only the names, scopes, and inheritance behavior needed for diagnosis.
+- Keep migration planning, PR review handling, and worktree setup routed to their owning skills.
+- Use reruns only when they can change the evidence or verify a narrowly targeted fix.
+- Prefer the smallest change that explains the failure and preserves the surrounding workflow shape.
+- Distinguish flaky, pre-existing, and newly introduced failures before claiming a fix.
+- Escalate instead of guessing when the failure depends on org-admin controls, runner-fleet health, or broader CI redesign.
 
 ## Validation
 

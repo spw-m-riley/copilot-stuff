@@ -65,9 +65,9 @@ Use this skill when a repository needs cloud-agent customization rather than loc
 
 ## Guardrails
 
-- Do not configure cloud agents in repositories where the active policy says they are not allowed.
-- Never commit secrets, tokens, private machine paths, or local credential-helper assumptions.
-- Do not duplicate CI configuration or README content unless the agent needs a non-obvious operational caveat.
+- Configure cloud agents only when the target repository's active policy permits them.
+- Keep secrets, tokens, private machine paths, and local credential-helper assumptions out of committed files.
+- Keep CI and README content single-sourced; add only non-obvious operational caveats the cloud agent needs.
 - Keep local Copilot CLI behavior separate from cloud-agent customization.
 
 ## Validation

@@ -107,14 +107,14 @@ Use this skill when working with Terraform or OpenTofu infrastructure code. It d
 
 ## Guardrails
 
-- Always emit the Response Contract — never omit version floor or risk category
-- Never generate `for_each` keyed on a computed attribute (`.id`, `.arn`) — keys must be known at plan time
-- Never claim `sensitive = true` keeps a value out of state — use `ephemeral` (1.10+) or `write_only` (1.11+) for state exclusion
-- Never use DynamoDB for S3 state locking on Terraform 1.10+ — use `use_lockfile = true`
-- Never rename a resource without a `moved` block (requires 1.1+)
-- Never emit a feature above the version floor without an explicit version guard comment
-- Always check the terraform-ls Capability Matrix (`references/code-intelligence-lsp.md`) before claiming an LSP operation is available
-- Do not load all reference files speculatively — load only what the diagnosed failure mode requires
+- Emit the Response Contract on every response, including the version floor and risk category.
+- Use `for_each` keys that are known at plan time; computed attributes such as `.id` and `.arn` are not valid keys.
+- Keep state-exclusion claims precise: `sensitive = true` redacts display, while `ephemeral` (1.10+) or `write_only` (1.11+) keeps values out of state.
+- Use `use_lockfile = true` for S3 state locking on Terraform 1.10+.
+- Pair every resource rename with a `moved` block when the feature is available (1.1+).
+- Add an explicit version guard before emitting a feature above the established version floor.
+- Check the terraform-ls Capability Matrix (`references/code-intelligence-lsp.md`) before claiming an LSP operation is available.
+- Load only the reference files required by the diagnosed failure mode.
 
 ## Validation
 
