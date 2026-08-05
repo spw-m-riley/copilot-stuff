@@ -23,7 +23,7 @@ The squash step calls the configured LLM command to generate a commit message. I
 wt merge --no-squash
 ```
 
-See [`llm-commits-setup.md`](llm-commits-setup.md) for configuration.
+See [`wt-llm-commits-setup.md`](wt-llm-commits-setup.md) for configuration.
 
 ## Flags
 

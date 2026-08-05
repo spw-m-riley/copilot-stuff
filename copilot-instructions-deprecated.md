@@ -32,6 +32,36 @@ These rules remain operative through concise guidance in `copilot-instructions.m
 
 The stash/checkout rule previously shared ID 128 with the `git filter-repo` remote-restoration rule. It is now active as Rule 144; the wording and guidance are unchanged.
 
+### Duplicate Rules 34-42 renumbered (2026-08-05)
+
+`instructions/go.instructions.md`'s entire learned-rule block (IDs 34-42) was appended using a locally-continued sequence that, on inspection, reused IDs already retired or still active elsewhere in the global pool:
+
+- 35, 38, 39, 41 collided with distinct, still-active root `copilot-instructions.md` rules of the same number.
+- 36 collided with the now-archived WORKTREE rule 36 above (folded into the `git-worktrees` skill).
+- 40 collided with the still-active `instructions/shell.instructions.md` rule 40.
+- 42 collided with the now-archived (moved) ACTIONS rule 42 above.
+- 34 and 37 are also recorded as retired, contentless IDs in the "Rules 34, 37, 44, 45 (Deprecated: Removed without archive)" entry above.
+
+Since almost every ID in the block was already spoken for, the whole block was renumbered rather than leaving a mix of untouched and patched IDs. The wording, category, and guidance of every Go rule are unchanged; only the numeric ID moved:
+
+| Old ID (Go) | New ID (Go) |
+| --- | --- |
+| 34 | 150 |
+| 35 | 151 |
+| 36 | 152 |
+| 37 | 153 |
+| 38 | 154 |
+| 39 | 155 |
+| 40 | 156 |
+| 41 | 157 |
+| 42 | 158 |
+
+The root, shell, and archived rules that previously shared these numbers are unaffected.
+
+### Duplicate Rule 122 renumbered (2026-08-05)
+
+The active `copilot-instructions.md` rule 122 ("[COMMUNICATION] Never claim Matt manually pasted skill bodies...") reused an ID already retired by the archived MEMORY rule 122 above ("Rules #119 and #120 are fixed and merged..."). Archived IDs are never reused, so the active COMMUNICATION rule is now Rule 149; wording and category are unchanged. The archived MEMORY rule 122 keeps its original number for historical record.
+
 ### Rule 25 (Deprecated: Superseded by Rule 26)
 
 **Original text:**
@@ -185,6 +215,55 @@ The stash/checkout rule previously shared ID 128 with the `git filter-repo` remo
 **Reason for deprecation:** All three are tied to a single repository's state at a single moment, which Rule 64 explicitly says should not be captured as durable global rules. If the situations recur, the lessons belong in the relevant repo's own `CONTEXT.md` or `.github/copilot-instructions.md`, not in the global `~/.copilot` ledger.
 
 **Current guidance:** Rule 64 — "Never capture a one-off repo-state clarification as a durable learned rule unless it reflects a reusable preference or general practice."
+
+---
+
+### GitHub Workflows Rule 21 (Deprecated: Repo-specific one-off per Rule 64)
+
+**Original text:**
+```
+21. [GITHUB-ACTIONS] In `aws-referral-api-v2`, do not treat gitleaks as a required addition when planning a scoped PR-workflow hardening slice unless Matt explicitly asks for it - he explicitly rejected gitleaks as important for this plan
+```
+
+**Reason for deprecation:** `instructions/github-workflows.instructions.md` applies to every repository's `.github/workflows/*.yml` files, not just `aws-referral-api-v2`. This rule captured a single planning decision about gitleaks in one specific repo at one point in time — the same one-off pattern Rule 64 and the archived Rules 88/89/97 above already cover (Rule 89 is the same repo's gitleaks history). Generalizing it into the global GitHub Actions instruction file would misrepresent a repo-specific preference as universal guidance.
+
+**Current guidance:** Rule 64 — repo-specific clarifications belong in the target repository's own `CONTEXT.md` or `.github/copilot-instructions.md`, not in this global ledger.
+
+---
+
+### JavaScript Instructions Rule 12 (Deprecated: Repo-specific one-off per Rule 64)
+
+**Original text:**
+```
+12. [JAVASCRIPT] When refreshing this repo's `src/web` Yarn 1 lockfile for the CRA4 app, keep `babel-preset-react-app` pinned to `10.0.0`, `babel-preset-current-node-syntax` pinned to `1.0.1`, and `@types/minimatch` pinned to `3.0.3` in `src/web/package.json` resolutions before reinstalling - newer transitive Babel and type-package resolutions break web tests with `plugin-syntax-import-attributes` and break builds with `TS2688` on `minimatch`
+```
+
+**Reason for deprecation:** `instructions/javascript.instructions.md` applies to every repository's `*.js`/`*.mjs`/`*.cjs` files, not just the specific external repo with a `src/web` CRA4 app. This is a one-off dependency-pin decision for one project's lockfile at one point in time — the same repo-specific pattern Rule 64 covers.
+
+**Current guidance:** Rule 64 — repo-specific dependency pins belong in the target repository's own `CONTEXT.md` or `package.json` comments, not in this global ledger.
+
+---
+
+### JavaScript Instructions Rules 6-11, 13-14, 19, 22-23 (Moved to extensions.instructions.md)
+
+**Original text:**
+```
+6. [JAVASCRIPT] When extracting short identity statements from conversational prompts in JS, strip greeting or direct-address prefixes before matching intro regexes - greetings like `Hi Coda, I'm Matt` otherwise miss the real identity clause
+7. [JAVASCRIPT] When extending `detectPromptContextNeed`, preserve all existing contract fields and shipped routing semantics (identity-only fast path, temporal cross-workspace fallback, and repo-scoped temporal local-only behavior); add new fields additively rather than replacing existing detection contracts - replacing fields caused regressions in style context, temporal routing, and greeting handling
+8. [JAVASCRIPT] For Coherence maintenance-scheduler MVPs, prefer an additive `maintenanceScheduler` config and reuse existing deferred extraction, validation, replay, status, and trace surfaces; keep rollout default-off rather than introducing a parallel upkeep system - the user explicitly redirected this slice toward the smallest safe reuse path
+9. [JAVASCRIPT] For the Coherence maintenance-scheduler MVP surface, expose a single `maintenance_schedule_run` tool with dry-run/live modes and keep status on existing surfaces like `memory_status` - the user explicitly narrowed the desired public interface for this slice
+10. [JAVASCRIPT] For Coherence safety-gate MVP slices, keep scope to one observe-only reporting surface integrated into an existing Doctor/status tool; avoid adding new rollout flags, standalone tools, interception hooks, or enforcement paths unless explicitly requested - the user explicitly requested the smallest additive reporting-only slice
+11. [JAVASCRIPT] When JS extensions read GitHub Copilot CLI user config, prefer the current camelCase config keys and keep older snake_case names only as explicit compatibility fallbacks - this audit found `config.json` using `effortLevel` while a config fallback still looked for `reasoning_effort`, which silently dropped the user's reasoning preference
+13. [JAVASCRIPT] When validating Copilot CLI extension `.mjs` entrypoints in this workspace, do not treat raw Node `import()` failures for `@github/copilot-sdk` as proof of a code regression - the SDK is runtime-provided and unavailable to plain Node here, so use syntax checks and extension-runtime reloads when possible instead
+14. [JAVASCRIPT] When JS extensions need the user's Copilot model or effort fallback, read `settings.json` first and treat `config.json` as a comment-tolerant compatibility file rather than strict JSON - this regression came from parsing a comment-prefixed managed config file that does not own user settings
+19. [JAVASCRIPT] When adding a new `lib/config.mjs` + `schemas/lore.schema.json` config key in the Lore extension, also update `tests/helpers/fixture-config.mjs`'s separately-maintained hardcoded defaults and any test asserting the full rollout shape (e.g. `tests/unit/config.test.mjs`'s `normalizeRolloutConfig` expectation) - `scripts/validate-config-schema.mjs` only checks parity between `config.mjs` and the schema, so the test fixture's own defaults copy can silently drift and never exercise the new key otherwise
+22. [JAVASCRIPT] When patching repeated JavaScript test setup blocks, anchor the patch with the unique test name or fixture ID rather than a generic setup call - an episode fixture for the reflection-default test was initially inserted into the preceding opt-in test because both blocks shared the same `db.insertSemanticMemory` context
+23. [JAVASCRIPT] When expanding Lore retrieval queries for SQLite FTS, never append semantic expansion terms to the existing space-separated query; run expansion as an alternate retrieval attempt and retry the deterministic query when it produces no evidence - adjacent FTS terms narrow matches with AND-style behavior and can hide valid evidence
+```
+
+**Reason for deprecation (2026-08-05):** `instructions/javascript.instructions.md` applies to every JavaScript file in every repository, but these 11 rules are internal to the Lore/Coherence extension's own implementation (`detectPromptContextNeed`, `maintenanceScheduler`, `maintenance_schedule_run`, `lib/config.mjs`/`schemas/lore.schema.json`, `db.insertSemanticMemory`, Lore's SQLite FTS retrieval) or general Copilot CLI extension-authoring concerns (reading `config.json`/`settings.json`, validating `.mjs` entrypoints) rather than reusable JavaScript-language guidance. They belong with the other extension-integration rules in `instructions/extensions.instructions.md` (`applyTo: extensions/**/*`), which already covers `extensions/lore/**/*` without editing the nested submodule.
+
+**Current guidance:** See `instructions/extensions.instructions.md`, learned rules 10-20 (wording and category unchanged; only the file and local ID moved).
 
 ---
 
@@ -343,11 +422,15 @@ These rules remain active, but their operational scope is narrower than the glob
 - **Rule 105:** `[DOCS] When removing a custom agent at Matt's request, remove its related documentation and glossary/context entries in the same change unless Matt explicitly asks to keep them.`
   - Current guidance: `instructions/agents.instructions.md`, learned rule 2.
 - **Rule 125:** `[EXTENSIONS] \`/agent <name>\` joins every token after the command into one string used as the exact agent lookup id; appending a prompt on the same line makes the whole trailing text the lookup string. Invoke the agent name first, then send the task separately.`
-  - Current guidance: `instructions/agents.instructions.md`, learned rule 3, and `agents/research-fleet.agent.md`.
+  - Current guidance: moved back to `copilot-instructions.md` learned rule 125 on 2026-08-05 (see "Rule 125-127 restored to the global ledger" below); also referenced by `agents/research-fleet.agent.md`.
 - **Rule 126:** `[SHELL] \`herdr pane run <pane> "<text>"\` can leave text unsubmitted in a pane input box; re-read the pane and submit with \`herdr pane send-keys <pane> Enter\` when needed.`
-  - Current guidance: `instructions/agents.instructions.md`, learned rule 4.
+  - Current guidance: moved back to `copilot-instructions.md` learned rule 126 on 2026-08-05 (see "Rule 125-127 restored to the global ledger" below).
 - **Rule 127:** `[SHELL] Do not trust a \`herdr wait output\` marker when the same marker appears in the prompt; cross-check pane status or transcript position.`
-  - Current guidance: `instructions/agents.instructions.md`, learned rule 5.
+  - Current guidance: moved back to `copilot-instructions.md` learned rule 127 on 2026-08-05 (see "Rule 125-127 restored to the global ledger" below).
+
+### Rule 125-127 restored to the global ledger (2026-08-05)
+
+The 2026-07-15 move above scoped these three invocation/`herdr`-pane rules to `instructions/agents.instructions.md`, which only attaches when a file under `agents/**/*.agent.md` is being edited. That mismatch meant the guidance did not reliably attach at the moment it actually mattered: while invoking an agent or driving a `herdr` pane, not while authoring an agent definition file. The rules are restored to `copilot-instructions.md` under their original IDs (125, 126, 127) with unchanged wording; a short pointer to the always-loaded `## Tools` section replaces them in `instructions/agents.instructions.md`, which now keeps only its genuinely file-authoring-scoped rules (1-2).
 
 ### Extensions
 

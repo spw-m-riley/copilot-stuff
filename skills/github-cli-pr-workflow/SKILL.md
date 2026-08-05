@@ -23,7 +23,7 @@ Use this skill for the complete branch-to-PR lifecycle, from readiness checks th
 
 - The task is a one-time code review without existing PR feedback; use [`code-review`](../code-review/SKILL.md).
 - The primary blocker is a failing workflow or check; use [`github-actions-failure-triage`](../github-actions-failure-triage/SKILL.md).
-- The task is only worktree setup or isolation; use [`git-worktrees`](../git-worktrees/SKILL.md) or [`worktrunk`](../worktrunk/SKILL.md).
+- The task is only worktree setup or isolation, including Worktrunk (`wt`) configuration; use [`git-worktrees`](../git-worktrees/SKILL.md).
 - The user asks for supervised multi-agent PR operations; use [`pr-operations-orchestrator`](../../agents/pr-operations-orchestrator.agent.md).
 
 ## Iron Laws
@@ -41,7 +41,7 @@ Use this skill for the complete branch-to-PR lifecycle, from readiness checks th
 | Choose merge, PR, keep, or discard after implementation | Yes | - |
 | Review a diff once without existing review threads | No | `code-review` |
 | Diagnose a failing workflow or check | No | `github-actions-failure-triage` |
-| Create an isolated worktree or configure Worktrunk | No | `git-worktrees` or `worktrunk` |
+| Create an isolated worktree or configure Worktrunk | No | `git-worktrees` |
 | Supervise cross-cutting PR operations across agents | No | `pr-operations-orchestrator` |
 
 ## Inputs to gather

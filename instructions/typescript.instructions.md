@@ -15,6 +15,7 @@ applyTo: "**/*.ts,**/*.tsx"
 - Validate untrusted inputs at runtime before treating them as typed values.
 - Handle `null` and `undefined` explicitly instead of relying on non-null assertions.
 - Run the repository's standard typecheck, test, and lint commands for the touched TypeScript surface.
+- When the TypeScript problem is unclear (vague symptom, unknown category, or it could span compiler errors, config drift, `any` usage, or schema boundaries), use the `typescript-triage` skill to route to the right specialist skill instead of guessing.
 
 ## Learned Rules
 

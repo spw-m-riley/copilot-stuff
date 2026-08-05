@@ -80,8 +80,7 @@ metadata:
 ## Routing boundary
 
 - Use this skill when causal failures are source-type issues and need root-cause-first triage.
-- Route to [`tsconfig-hardening`](../tsconfig-hardening/SKILL.md) when first causal failures point to compiler configuration, project references, or module-resolution drift rather than source typings.
-- Route to [`project-references-migration`](../project-references-migration/SKILL.md) when the main issue is an incomplete or inconsistent `tsc -b` / `composite` workspace migration.
+- Route to [`tsconfig-hardening`](../tsconfig-hardening/SKILL.md) when first causal failures point to compiler configuration, project references, or module-resolution drift rather than source typings — including an incomplete or inconsistent `tsc -b` / `composite` workspace migration (project-references mode).
 - Route to [`test-driven-development`](../test-driven-development/SKILL.md) only after compiler stability is restored and you need compile-time regression locks.
 - If the TypeScript problem is vague or it's unclear which skill applies, route to [`typescript-triage`](../typescript-triage/SKILL.md).
 

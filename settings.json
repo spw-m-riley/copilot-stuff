@@ -8,10 +8,6 @@
   },
   "experimental": true,
   "extensions": {
-    "disabledExtensions": [
-      "user:agit-recorder",
-      "user:ci-migration-context"
-    ],
     "mode": "load_and_augment"
   },
   "extraKnownMarketplaces": {

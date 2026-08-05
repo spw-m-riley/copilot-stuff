@@ -15,7 +15,7 @@ When generating the next experiment hypothesis, work through this priority order
 
 ## Results TSV format
 
-The `results.tsv` file is the experiment journal. Keep it tab-separated and untracked.
+The `.autoresearch/<tag>/results.tsv` file is the experiment journal. Keep it tab-separated and untracked.
 
 **Header row:**
 
@@ -54,7 +54,7 @@ Do not use `git reset --hard`. Use a revert commit instead:
 git revert HEAD --no-edit
 ```
 
-This adds a new commit that undoes the experiment. The branch history remains intact and the `results.tsv` log stays accurate.
+This adds a new commit that undoes the experiment. The branch history remains intact and the `.autoresearch/<tag>/results.tsv` log stays accurate.
 
 ### Reverting a crash with a failed fix attempt
 
@@ -71,7 +71,7 @@ Never use `--amend` to alter commits in the loop. Amended commits make the resul
 
 - All experiments happen on the `autoresearch/<tag>` branch.
 - The `autoresearch/<tag>` branch is never merged into `main` or `develop` automatically — the user decides what to keep.
-- `results.tsv` and `run.log` are added to `.git/info/exclude` and stay untracked throughout the session.
+- `.autoresearch/` (containing `results.tsv` and `run.log` per tag) is added to `.git/info/exclude` and stays untracked throughout the session.
 
 ## Constraint handling
 

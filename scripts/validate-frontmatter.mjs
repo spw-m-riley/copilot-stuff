@@ -4,16 +4,13 @@ import { access, readFile, readdir, stat } from "node:fs/promises";
 import { constants as fsConstants } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { extractFrontmatter, normalize } from "./markdown-structure.mjs";
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(SCRIPT_DIR, "..");
 const DEFAULT_SKILLS_ROOT = path.join(REPO_ROOT, "skills");
 const DEFAULT_AGENTS_ROOT = path.join(REPO_ROOT, "agents");
 const DEFAULT_INSTRUCTIONS_ROOT = path.join(REPO_ROOT, "instructions");
-
-function normalize(text) {
-  return text.replace(/\r\n?/g, "\n");
-}
 
 function hasBom(text) {
   return text.charCodeAt(0) === 0xfeff;
@@ -79,21 +76,9 @@ function extractYamlText(filePath, text) {
     return { yamlText: text, mode: "yaml" };
   }
 
-  const withoutBom = stripBom(text);
-  const normalized = normalize(withoutBom);
-
-  if (!normalized.startsWith("---\n")) {
-    throw new Error("missing frontmatter block");
-  }
-
-  const endMatch = normalized.slice(4).match(/\n---(?:\n|$)/);
-  if (!endMatch) {
-    throw new Error("unterminated frontmatter block");
-  }
-
-  const endIndex = 4 + endMatch.index;
+  const { frontmatterText } = extractFrontmatter(stripBom(text));
   return {
-    yamlText: normalized.slice(4, endIndex),
+    yamlText: frontmatterText,
     mode: "frontmatter",
   };
 }

@@ -1,6 +1,7 @@
 ---
 name: api-smoke-validation
-description: "Use when API endpoints need hurl smoke tests for auth, status, or response-shape regressions."
+description: "Use when API endpoints need hurl smoke tests for auth, status, or response-shape regressions and hurl is already in use in the repository."
+disable-model-invocation: true
 metadata:
   category: testing
   audience: general-coding-agent
@@ -10,17 +11,19 @@ metadata:
 
 # API smoke validation
 
-Use this skill when you need fast, scriptable API smoke checks with `hurl` so endpoint regressions are caught immediately after a change.
+Use this skill when you need fast, scriptable API smoke checks with `hurl` so endpoint regressions are caught immediately after a change. This skill only runs when explicitly invoked: this config repo has no API endpoints or `.hurl` fixtures of its own, so there is no in-repo evidence to justify implicit routing in an arbitrary target repository. Confirm `hurl` is installed (or the target repo already has `.hurl` files) before treating this as the right tool.
 
 ## Use this skill when
 
-- You changed API handlers, routing, auth checks, or request/response shaping.
+- The user explicitly asks for hurl-based API smoke checks, or the target repository already has `.hurl` files in use.
+- You changed API handlers, routing, auth checks, or request/response shaping and confirmed `hurl` is available.
 - You need a minimal, repeatable request suite that verifies critical paths quickly.
 - A branch needs confidence in endpoint health before heavier integration coverage.
 - Existing hurl files can be reused or small targeted ones can be added.
 
 ## Do not use this skill when
 
+- `hurl` is not installed and the repository has no existing `.hurl` files, and the user has not explicitly asked to add hurl as a new dependency.
 - The task is full contract testing, load testing, or deep integration test design.
 - There is no runnable API target environment for smoke requests.
 - The request is non-HTTP validation unrelated to endpoint behavior.
@@ -42,9 +45,10 @@ Use this skill when you need fast, scriptable API smoke checks with `hurl` so en
 
 ## First move
 
-1. Select the smallest endpoint set that represents service health and changed behavior.
-2. Write or update targeted `hurl` requests with explicit assertions.
-3. Run the smoke file and capture first failure before broadening coverage.
+1. Confirm `hurl` is installed (`hurl --version`) or the repository already has `.hurl` files; if neither is true, stop and confirm with the user before adding a new dependency.
+2. Select the smallest endpoint set that represents service health and changed behavior.
+3. Write or update targeted `hurl` requests with explicit assertions.
+4. Run the smoke file and capture first failure before broadening coverage.
 
 ## Workflow
 

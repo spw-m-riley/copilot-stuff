@@ -23,7 +23,7 @@ Use this skill when you are already inside a herdr-managed pane and need to coor
 ## Do not use this skill when
 
 - `HERDR_ENV` is not `1`, or the `herdr` CLI is unavailable in the current environment.
-- The real need is Git branch or checkout isolation rather than terminal layout management; route to [`git-worktrees`](../git-worktrees/SKILL.md) or [`worktrunk`](../worktrunk/SKILL.md).
+- The real need is Git branch or checkout isolation rather than terminal layout management; route to [`git-worktrees`](../git-worktrees/SKILL.md).
 - You are still deciding whether work should stay inline, go serially, or split into parallel lanes; route to [`execution-strategy`](../execution-strategy/SKILL.md).
 - You only need normal shell commands in the current pane and do not need cross-pane coordination.
 
@@ -33,7 +33,7 @@ Use this skill when you are already inside a herdr-managed pane and need to coor
 | --- | --- | --- |
 | You are inside herdr and need to inspect, control, or coordinate panes, tabs, or workspaces. | Yes | - |
 | You want a topic auto-decomposed into subtopics, fanned out across several herdr panes, and synthesized into one answer. | No | [`research-fleet`](../../agents/research-fleet.agent.md) agent, which builds on this skill |
-| You need another isolated Git checkout or branch for mutating work. | No | [`git-worktrees`](../git-worktrees/SKILL.md) or [`worktrunk`](../worktrunk/SKILL.md) |
+| You need another isolated Git checkout or branch for mutating work. | No | [`git-worktrees`](../git-worktrees/SKILL.md) |
 | You need to choose inline vs serial vs parallel execution before creating extra lanes. | No | [`execution-strategy`](../execution-strategy/SKILL.md) |
 | You are not inside a herdr-managed pane. | No | Use the normal CLI/tool workflow in the current shell |
 
@@ -90,7 +90,7 @@ Use this skill when you are already inside a herdr-managed pane and need to coor
 - Prefer `--no-focus` for sibling work that should not steal keyboard focus.
 - Parse JSON responses for newly created resources instead of guessing numeric ids.
 - Treat commands run via `pane run` with normal shell safety; require explicit user authorization for destructive or irreversible commands.
-- Keep Git branch and worktree lifecycle in [`git-worktrees`](../git-worktrees/SKILL.md) or [`worktrunk`](../worktrunk/SKILL.md).
+- Keep Git branch and worktree lifecycle in [`git-worktrees`](../git-worktrees/SKILL.md).
 
 ## Validation
 
@@ -98,7 +98,7 @@ Use this skill when you are already inside a herdr-managed pane and need to coor
 - If you are actually inside herdr, confirm `herdr pane list` and `herdr workspace list` succeed before attempting layout changes.
 - Smoke test:
   - should trigger: "I'm in herdr and want to split a pane, run the dev server beside me, and wait for `ready` before I continue."
-  - should not trigger: "Create a new Git worktree for this refactor and keep my main checkout clean." (→ [`git-worktrees`](../git-worktrees/SKILL.md) or [`worktrunk`](../worktrunk/SKILL.md))
+  - should not trigger: "Create a new Git worktree for this refactor and keep my main checkout clean." (→ [`git-worktrees`](../git-worktrees/SKILL.md))
   - guardrail check: "Send `rm -rf /` into pane 2-1" should be refused unless the user explicitly named pane `2-1` for exactly that command in the current request, and even then the destructive-command guardrail applies.
 
 ## Examples

@@ -2,6 +2,36 @@
 
 Use this checklist when introducing project references incrementally.
 
+## Example configs
+
+Solution config:
+
+```json
+{
+  "files": [],
+  "references": [
+    { "path": "./packages/core" },
+    { "path": "./packages/ui" }
+  ]
+}
+```
+
+Pilot package config:
+
+```json
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "rootDir": "src",
+    "outDir": "dist"
+  },
+  "references": [{ "path": "../core" }]
+}
+```
+
 ## 1. Inventory the graph
 
 Capture:

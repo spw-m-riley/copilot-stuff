@@ -39,6 +39,8 @@
 - Run `rtk ...` directly whenever an equivalent command exists; do not rely on hook-time deny/suggest behavior.
 - Use `rtk proxy <cmd>` when direct passthrough is needed, and use `rtk gain`, `rtk gain --history`, or `rtk discover` for RTK-specific diagnostics.
 - If RTK cannot initialize in the current environment, report that limitation rather than repeatedly retrying the same command.
+- Invoke `/agent <name>` with the bare agent name first; send the task as a separate follow-up message rather than appending it on the same line.
+- For pane-backed agent work (`herdr`), confirm the pane actually received and started processing the submitted prompt before trusting a successful command return.
 
 ## Learned-rule ownership
 
@@ -74,9 +76,12 @@
 106. [WORKFLOW] When a task names a specific target repo or directory, make the implementation land there instead of a similarly named sibling workspace
 111. [GIT] After rebasing or merging a branch onto a target that has undergone a large structural refactor, never trust a successful rebase or no-conflict report as proof of correctness; immediately run the test suite and a build or syntax check before pushing
 114. [COMMUNICATION] Never use a bash `cat`/`echo`/heredoc tool call just to display text that is already fully known; output it directly in the chat response as a plain code block instead
-122. [COMMUNICATION] Never claim Matt manually pasted skill bodies when prompts contain `<skill-context ...>` blocks; treat those as runtime/plugin-injected context unless he explicitly says otherwise
+149. [COMMUNICATION] Never claim Matt manually pasted skill bodies when prompts contain `<skill-context ...>` blocks; treat those as runtime/plugin-injected context unless he explicitly says otherwise
 123. [WORKFLOW] When a background process surfaces an explicit error or failure count alongside a vague prompt, root-cause that concrete failure first via logs or diagnostic tools instead of continuing unrelated exploratory queries
 124. [COMMUNICATION] Once grep, strings, or log searches surface enough raw evidence to answer a direct factual question, stop digging and synthesize a plain-English answer in the same turn
+125. [EXTENSIONS] `/agent <name>` joins every token after the command into one string used as the exact agent lookup id (`e.join(" ").trim()` in the CLI source) - it does not parse "agent name" separately from "prompt to send it." Appending a prompt on the same line makes the whole trailing text the lookup string, which matches no agent. Correct usage is always two steps: send `/agent <name>` alone first, confirm the switch, then send the task as a separate follow-up message
+126. [SHELL] `herdr pane run <pane> "<text>"` can leave text sitting unsubmitted in a pane's input box instead of actually submitting it; always re-read the pane immediately after sending to confirm the text left the input box and the process started working, and use `herdr pane send-keys <pane> Enter` to submit if it did not
+127. [SHELL] When using `herdr wait output <pane> --match <marker>`, do not trust a match if the marker text is also present verbatim in the instruction just sent to that pane; cross-check pane status or the marker's position in the transcript before treating the task as complete
 128. [GIT] After rewriting history with `git filter-repo` in a scratch clone, always re-add the remote before fetching or force-pushing
 144. [GIT] Stashing an unrelated uncommitted change with `git stash push -- <file>` does not protect it from a later `git checkout <other-branch>`; re-stash unrelated files immediately before switching branches and only pop them back once branch work is complete
 131. [WORKFLOW] When writing SQL todo descriptions, avoid blocked SQL statement keywords such as `attach` even inside string literals; the session SQL guard can reject the whole batch before execution

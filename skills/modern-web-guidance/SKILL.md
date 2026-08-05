@@ -29,7 +29,7 @@ A reference and search tool for modern web platform APIs. Use before implementin
 - Working on CI/CD — pipelines, Docker, GitHub Actions workflows
 - Writing tooling — ESLint config, Vite/Webpack config, Python/Go scripts
 - Debugging a runtime error — use `systematic-debugging` instead
-- Reviewing a running website's design — use `web-design-reviewer` instead
+- Reviewing the visual design or UX of an already-running website — inspect the rendered page directly (browser devtools, screenshots, accessibility tree) instead of implementation guidance; there is no dedicated local design-review skill, so do this directly rather than routing anywhere
 - Typing TypeScript API boundaries — use `schema-boundary-typing` instead
 
 ## Routing boundary
@@ -37,7 +37,7 @@ A reference and search tool for modern web platform APIs. Use before implementin
 | Situation | Use this skill? | Route instead |
 |-----------|----------------|---------------|
 | Implement a new UI component in HTML/CSS/JS | ✅ Yes | — |
-| Review the design of a running website | ❌ No | `web-design-reviewer` |
+| Review the visual design or UX of a running website | ❌ No | Inspect the rendered page directly (devtools, screenshots) — no local design-review skill exists |
 | Debug a runtime CSS/JS error | ❌ No | `systematic-debugging` |
 | Type a TypeScript API edge contract | ❌ No | `schema-boundary-typing` |
 | Audit dead CSS/JS code | ❌ No | `fallow` |
@@ -58,16 +58,16 @@ A reference and search tool for modern web platform APIs. Use before implementin
 
 ```sh
 # Step 1: Search with an action-oriented query
-npx -y modern-web-guidance@latest search "<query>"
+npx -y modern-web-guidance@0.0.169 search "<query>"
 # Returns: [{ id, description, category, featuresUsed, tokenCount, similarity }]
 
 # Step 2: Retrieve the guide
-npx -y modern-web-guidance@latest retrieve "<id>"
+npx -y modern-web-guidance@0.0.169 retrieve "<id>"
 ```
 
 If `search` returns low-similarity results, use `list` to browse all guides:
 ```sh
-npx -y modern-web-guidance@latest list
+npx -y modern-web-guidance@0.0.169 list
 ```
 
 > Requires Node.js ≥ 20. Works offline after first install (TensorFlow.js local search, no API keys).
@@ -85,11 +85,16 @@ npx -y modern-web-guidance@latest list
 - Guides are framework-agnostic. Always adapt patterns to the project's framework (React hooks, Vue composables, Angular directives).
 - Do not copy guide code verbatim into JSX/SFC templates without adaptation.
 
+**Dynamic-retrieval version pin:**
+- The `npx -y modern-web-guidance@0.0.169` invocations are pinned to the same version recorded in [`PROVENANCE.md`](PROVENANCE.md), not `@latest` — an unpinned `@latest` would run whatever the package published most recently with no review.
+- Bump the pin only as a deliberate, reviewed update: update the version in every `npx` invocation in this file and update `PROVENANCE.md` in the same change.
+
 **Never:**
 - Implement an HTML/CSS/JS feature without checking for a modern pattern first.
 - Use `:invalid`/`:valid` for form validation UX — use `:user-invalid`/`:user-valid`.
 - Use `position: absolute; clip: rect(0,0,0,0)` for visually-hidden elements — use the `clip-path: inset(50%)` pattern from `references/accessibility.md`.
 - Assume BEM is required — use `@layer` + `:where()` for cascade management.
+- Run the dynamic-retrieval `npx` command with an unpinned `@latest` tag.
 
 ## Validation
 
@@ -111,17 +116,17 @@ npx -y modern-web-guidance@latest list
 **Example 2 — Dynamic retrieval (specific UX pattern)**
 > "Animate a dialog sliding in and fading out when it opens/closes"
 ```sh
-npx -y modern-web-guidance@latest search "animate dialog open close"
+npx -y modern-web-guidance@0.0.169 search "animate dialog open close"
 # → id: "animate-to-from-top-layer"
-npx -y modern-web-guidance@latest retrieve "animate-to-from-top-layer"
+npx -y modern-web-guidance@0.0.169 retrieve "animate-to-from-top-layer"
 ```
 
 **Example 3 — Dynamic retrieval (passkeys)**
 > "Implement passkey registration and conditional login"
 ```sh
-npx -y modern-web-guidance@latest search "passkey registration"
+npx -y modern-web-guidance@0.0.169 search "passkey registration"
 # → id: "passkey-registration"
-npx -y modern-web-guidance@latest retrieve "passkey-registration"
+npx -y modern-web-guidance@0.0.169 retrieve "passkey-registration"
 ```
 
 ## Reference files
@@ -131,4 +136,4 @@ npx -y modern-web-guidance@latest retrieve "passkey-registration"
 - `references/accessibility.md` — WCAG 2.2, ARIA, `.visually-hidden`, live regions, focus management; from upstream guides/accessibility/accessibility.md
 - `references/performance.md` — CWV, LCP/INP optimisation, CSS containment, images, Workbox; from upstream guides/performance/performance.md
 - `references/forms.md` — Autofill, validation, branded controls, security patterns; from upstream guides/forms/forms.md
-- Full library of 130+ guides available via `npx modern-web-guidance@latest search/retrieve` — covers UX animations, passkeys, built-in AI, scroll effects, WebMCP, security, privacy
+- Full library of 130+ guides available via `npx modern-web-guidance@0.0.169 search/retrieve` — covers UX animations, passkeys, built-in AI, scroll effects, WebMCP, security, privacy

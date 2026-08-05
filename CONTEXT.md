@@ -14,8 +14,8 @@ This is Matt's user-level Copilot CLI config repo. It is the **one special repo*
 | **Agent** | A `agents/<name>.agent.md` specialist (manual-only) for orchestration-heavy work that doesn't fit a single skill. |
 | **Extension** | A `extensions/<name>/` package that registers lifecycle hooks or new tools with Copilot CLI. Auto-discovered. |
 | **Instruction file** | `copilot-instructions.md` (root, global) or `instructions/<type>.instructions.md` (file-scoped). Both auto-read by Copilot. Standalone docs in `docs/` are not. |
-| **Learned rule** | A numbered, categorized rule under `## Learned Rules` in an instruction file. Append on correction, never renumber, archive supersessions to `copilot-instructions-deprecated.md`. |
-| **Worktrunk** | Worktree-per-task workflow; see `skills/worktrunk/` and `skills/git-worktrees/`. Local worktrees live under `.worktrees/` and are never committed. |
+| **Learned rule** | A numbered, categorized rule under `## Learned Rules` in an instruction file. IDs are append-only by default and archive supersessions to `copilot-instructions-deprecated.md`; renumber only via an explicit logged entry in that file to resolve an ID collision or migration error, never to keep sequences tidy. |
+| **Worktrunk** | Worktree-per-task workflow; the `wt` CLI wraps `git worktree` with hooks, LLM commits, and a merge pipeline. Both raw-git and Worktrunk workflows live in `skills/git-worktrees/` (the single user-facing worktree skill). Local worktrees live under `.worktrees/` and are never committed. |
 | **Session state** | `session-state/<sessionId>/` holds per-session artifacts (plan.md, checkpoints, files). Gitignored. Pruned via `scripts/prune-session-state.sh`. |
 | **Stabilisation guard** | The `stabilisation-guard` extension that surfaces unresolved `open_loop` / `assistant_goal` Lore memories at session start. Resolved via the `resolve-open-loops` skill. |
 

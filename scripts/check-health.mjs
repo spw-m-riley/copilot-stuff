@@ -81,6 +81,19 @@ const HEALTH_CHECKS = [
     unavailableGuidance:
       "Optional validator is not available yet at `scripts/validate-frontmatter.mjs`.",
   },
+  {
+    id: "rule-ids",
+    label: "learned-rule ID validator",
+    command: "node",
+    args: ["scripts/validate-rule-ids.mjs"],
+    required: true,
+    allowMissing: true,
+    requiredPaths: ["scripts/validate-rule-ids.mjs"],
+    guidance:
+      "Run `node scripts/validate-rule-ids.mjs` and renumber the reported duplicate learned-rule IDs.",
+    unavailableGuidance:
+      "Optional validator is not available yet at `scripts/validate-rule-ids.mjs`.",
+  },
 ];
 
 function normalizeText(text) {

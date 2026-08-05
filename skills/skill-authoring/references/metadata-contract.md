@@ -67,6 +67,12 @@ The following `metadata` keys are explicitly banned because they carry upstream 
 
 ## Special-case decisions
 
+### Route-target validation and the mention allowlist
+
+The validator checks `## Do not use this skill when` and `## Routing boundary` for two classes of stale routing: a markdown link pointing at a local file that no longer exists, and a bare backtick mention shaped like a skill or agent name (`some-kebab-name`) that does not resolve to `skills/some-kebab-name/SKILL.md` or `agents/some-kebab-name.agent.md`.
+
+Some bare mentions in those sections are deliberately not local skills or agents — a CLI tool name in a "situation" column, or a built-in review capability that is not tracked under `skills/` or `agents/`. Add those to `ROUTE_MENTION_ALLOWLIST` in `scripts/validate-skill-library.mjs` with a short comment explaining why the mention is intentional prose rather than a stale route. Do not add an entry just to silence a genuinely broken route — fix the route instead.
+
 ### Model invocation versus explicit invocation
 
 Implicit model invocation improves discoverability: the skill description can help the model select the skill without the user naming it. That discoverability has a cost, because the description contributes to model context and adds another candidate to routing and cognitive load on every relevant prompt.
@@ -166,3 +172,4 @@ The validator (`scripts/validate-skill-library.mjs`) currently enforces:
 | Required lifecycle fields (`category`, `audience`, `maturity`, `kind`) | All skills | **Error** |
 | Required headings must exist, occur exactly once, and stay in order | All skills | Error |
 | Support-file links and orphaned support files | All skills | Error |
+| **Route-target validation**: markdown links in `## Do not use this skill when` / `## Routing boundary` resolve to an existing local file; bare backtick mentions of a kebab-case, 2+ segment name in those sections resolve to a local `skills/<name>/SKILL.md` or `agents/<name>.agent.md`, unless listed in `ROUTE_MENTION_ALLOWLIST` | All skills | **Error** (added wave 3) |

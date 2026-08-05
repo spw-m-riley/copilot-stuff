@@ -12,7 +12,7 @@ Fill in this table before starting the experiment loop. Paste the completed vers
 | **Direction** | _`lower_is_better` or `higher_is_better`_ |
 | **In-scope files/dirs** | _Which files or directories the agent may edit_ |
 | **Out-of-scope files/dirs** | _Which files must not be touched_ |
-| **Max experiments** | _A count, or `unlimited` (stop on interrupt only)_ |
+| **Max experiments** | _Required: a bounded count or wall-clock time budget (e.g., `20 experiments` or `2 hours`). No `unlimited` default — confirm a concrete stop condition, in addition to stop-on-interrupt._ |
 | **Constraints** | _Time budget per run, dependency policy, test-passing requirement, API compatibility, memory limits — or `none`_ |
 | **Simplicity policy** | _Default: simpler is better; weigh complexity cost against metric gain. Note any overrides here._ |
 

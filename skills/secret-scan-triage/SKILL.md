@@ -31,7 +31,7 @@ Use this skill when `gitleaks` findings need a disciplined triage path so real e
 | --- | --- | --- |
 | Active `gitleaks` findings require triage and remediation | Yes | - |
 | Secret was confirmed leaked in production systems requiring org-level incident handling | No | security incident owner / platform process |
-| Task is dependency or policy redesign unrelated to concrete findings | No | `agent-governance` |
+| Task is dependency or policy redesign unrelated to concrete findings | No | `agent-safety` |
 
 ## Inputs to gather
 
@@ -80,7 +80,7 @@ Use this skill when `gitleaks` findings need a disciplined triage path so real e
 
 - Smoke test:
   - should trigger: "Triage these gitleaks hits and narrow any allowlist changes."
-  - should not trigger: "Add secret-handling policy checks to this agent." (→ `agent-governance`)
+  - should not trigger: "Add secret-handling policy checks to this agent." (→ `agent-safety`)
 
 ## Examples
 

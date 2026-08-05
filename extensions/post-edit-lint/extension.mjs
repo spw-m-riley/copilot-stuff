@@ -6,7 +6,6 @@ import os from "node:os";
 import path from "node:path";
 
 const FALLOW_BASELINE_FILENAME = path.join(".fallow", "baseline.json");
-import { createValidatorRegistry } from "./lib/validator-registry.mjs";
 
 const EDIT_TOOLS = new Set(["apply_patch", "edit", "create"]);
 const JS_TS_EXTENSIONS = new Set([
@@ -33,7 +32,9 @@ const TEXT_EXTENSIONS = new Set([
 const MARKDOWN_EXTENSION = ".md";
 const WORKFLOW_CONTRACT_ASSETS_SEGMENT = `${path.sep}skills${path.sep}workflow-contracts${path.sep}assets${path.sep}`;
 const SESSION_STATE_SEGMENT = `${path.sep}session-state${path.sep}`;
-const validatorRegistry = createValidatorRegistry();
+const LORE_JSON_SEGMENT = `${path.sep}lore.json`;
+const LORE_SCHEMA_JSON_SEGMENT = `${path.sep}schemas${path.sep}lore.schema.json`;
+const LORE_CONFIG_MJS_SEGMENT = `${path.sep}extensions${path.sep}lore${path.sep}lib${path.sep}config.mjs`;
 
 function run(command, args, options = {}) {
   return new Promise((resolve) => {
@@ -330,10 +331,10 @@ async function runFallbackJsTools(filePath) {
   const fileName = path.basename(filePath);
   const directory = path.dirname(filePath);
 
-  const prettier = await findExecutable("prettier", directory);
-  if (prettier) {
-    const result = await run(prettier, ["--write", filePath]);
-    summaries.push(formatSummary(`prettier (${fileName})`, result));
+  const oxfmt = await findExecutable("oxfmt", directory);
+  if (oxfmt) {
+    const result = await run(oxfmt, ["--write", filePath]);
+    summaries.push(formatSummary(`oxfmt (${fileName})`, result));
   }
 
   const oxlint = await findExecutable("oxlint", directory);
@@ -342,32 +343,34 @@ async function runFallbackJsTools(filePath) {
     summaries.push(formatSummary(`oxlint (${fileName})`, result));
   }
 
-  summaries.push(...(await runEslintFallback(filePath, directory, fileName)));
-
-  const biome = await findExecutable("biome", directory);
-  if (biome) {
-    const result = await run(biome, ["check", "--write", filePath]);
-    summaries.push(formatSummary(`biome (${fileName})`, result));
-  }
-
   return summaries;
 }
 
-async function runEslintFallback(filePath, directory, fileName) {
-  const eslint = await findExecutable("eslint", directory);
-  if (!eslint) {
+function isLoreSchemaTrigger(filePath) {
+  const normalized = path.resolve(filePath);
+  return (
+    normalized.endsWith(LORE_JSON_SEGMENT) ||
+    normalized.endsWith(LORE_SCHEMA_JSON_SEGMENT) ||
+    normalized.endsWith(LORE_CONFIG_MJS_SEGMENT)
+  );
+}
+
+async function validateLoreSchema(filePath) {
+  if (!isLoreSchemaTrigger(filePath)) {
     return [];
   }
 
-  let result = await run(eslint, [filePath]);
-  const summaries = [];
-  if (!result.ok) {
-    const fixResult = await run(eslint, ["--fix", filePath]);
-    summaries.push(formatSummary(`eslint --fix (${fileName})`, fixResult));
-    result = await run(eslint, [filePath]);
+  const validatorPath = await findUp(path.dirname(filePath), (dir) =>
+    path.join(dir, "extensions", "lore", "scripts", "validate-config-schema.mjs"),
+  );
+  if (!validatorPath) {
+    return [];
   }
-  summaries.push(formatSummary(`eslint (${fileName})`, result));
-  return summaries;
+
+  const result = await run(process.execPath, [validatorPath], {
+    cwd: path.dirname(validatorPath),
+  });
+  return [formatSummary("lore-schema-parity", result)];
 }
 
 async function findWorkflowContractValidator(filePath) {
@@ -509,7 +512,9 @@ const session = await joinSession({
         summaries.push(...(await processFile(filePath)));
       }
 
-      summaries.push(...(await validatorRegistry.validate(changedFiles, { findUp, formatSummary, run })));
+      for (const filePath of changedFiles) {
+        summaries.push(...(await validateLoreSchema(filePath)));
+      }
 
       if (summaries.length === 0) {
         return;

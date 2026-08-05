@@ -16,6 +16,7 @@ The guide content in this skill's `references/` directory is derived from:
 - `references/performance.md`: copied verbatim from `guides/performance/performance.md`.
 - `references/forms.md`: copied verbatim from `guides/forms/forms.md`.
 - `SKILL.md`: newly authored for this local skill library; does not reproduce upstream SKILL.md content.
+- All reference files and `SKILL.md`: pinned every `npx -y modern-web-guidance@latest` dynamic-retrieval invocation to `npx -y modern-web-guidance@0.0.169` (matching the version recorded above) instead of an unbounded `@latest` tag, so retrieval always runs a specific, reviewed package version. Bump this pin deliberately alongside the version recorded in this file, not independently.
 
 ## Trademark notice
 

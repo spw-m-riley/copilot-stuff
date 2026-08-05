@@ -42,7 +42,7 @@ Read the symptom table and route immediately — do not implement TypeScript fix
 | --- | --- |
 | Burst of `tsc` errors after a refactor, upgrade, or config change | [`tsc-error-triage`](../tsc-error-triage/SKILL.md) |
 | Config cleanup, enabling stricter flags, resolving module-resolution drift | [`tsconfig-hardening`](../tsconfig-hardening/SKILL.md) |
-| Multi-package workspace needs `composite` / `references` / `tsc -b` migration | [`project-references-migration`](../project-references-migration/SKILL.md) |
+| Multi-package workspace needs `composite` / `references` / `tsc -b` migration | [`tsconfig-hardening`](../tsconfig-hardening/SKILL.md) (project-references mode) |
 | Explicit `any` in application code, helpers, DTOs, or API layers | [`typescript-any-eliminator`](../typescript-any-eliminator/SKILL.md) |
 | Untrusted input at an API, storage, or parsing boundary needs runtime validation + types | [`schema-boundary-typing`](../schema-boundary-typing/SKILL.md) |
 | Lock down a type-inference contract or regression with compile-time tests | [`test-driven-development`](../test-driven-development/SKILL.md) |

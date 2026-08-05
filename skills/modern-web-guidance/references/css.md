@@ -63,7 +63,7 @@ Modern browser-native selectors reduce the need for preprocessors and complex st
 
 ### Prefer CSS selectors over JS for complex element targeting
 
-- **DO** use `:has()` to style parents based on child state instead of managing classes in JS (e.g. `label:has(:checked)` instead of a manual `label.has-checked` class) For more information, see the guides at `child-state-based-styling` (via `npx -y modern-web-guidance@latest retrieve "child-state-based-styling"`) and `content-based-styling` (via `npx -y modern-web-guidance@latest retrieve "content-based-styling"`).
+- **DO** use `:has()` to style parents based on child state instead of managing classes in JS (e.g. `label:has(:checked)` instead of a manual `label.has-checked` class) For more information, see the guides at `child-state-based-styling` (via `npx -y modern-web-guidance@0.0.169 retrieve "child-state-based-styling"`) and `content-based-styling` (via `npx -y modern-web-guidance@0.0.169 retrieve "content-based-styling"`).
 - **DO NOT** nest `:has()` or use pseudo-elements inside it (browser API limitation)
 - Use `:nth-child(<An+B> of <selector>)` when you need to style every n-th element of a certain type. E.g. `details:nth-child(1 of [open])` will style the first open `<details>` element it finds, whereas `details[open]:first-child` would style only the first child if and only if it was open.
 
@@ -240,7 +240,7 @@ Check for any existing conventions around naming and levels before inventing you
 Typically this happens in Tier 2 or Tier 3 tokens.
 - IMPORTANT: When using `light-dark()` on an inherited `<color>` property, it will resolve to a specific color based on that element's `color-scheme` and inherit as that resolved color, not as a `light-dark()` value. It will NOT adapt to any descendant-specific `color-scheme` overrides. To keep `light-dark()` color tokens dynamic resolve them as late as possible by only passing them around as unregistered custom properties and avoid relying on inherited color values across `color-scheme` boundaries.
 
-See `dark-mode` (via `npx -y modern-web-guidance@latest retrieve "dark-mode"`) for tips & best practices on supporting dark mode switching and `component-specific-light-dark-theme` (via `npx -y modern-web-guidance@latest retrieve "component-specific-light-dark-theme"`) for more on applying different `color-scheme` modes than the page-wide setting on certain elements.
+See `dark-mode` (via `npx -y modern-web-guidance@0.0.169 retrieve "dark-mode"`) for tips & best practices on supporting dark mode switching and `component-specific-light-dark-theme` (via `npx -y modern-web-guidance@0.0.169 retrieve "component-specific-light-dark-theme"`) for more on applying different `color-scheme` modes than the page-wide setting on certain elements.
 
 ### Forced Colors Mode
 
@@ -289,7 +289,7 @@ For most styling purposes (e.g. colors, borders, backgrounds, typography, etc) t
 
 #### Multiple choice controls (select, radios, checkboxes)
 
-- To select one among many options presented in a dropdown: Use a `<select>` + `appearance: base-select` + `::picker(select)`. For more info see `branded-select-styling` (via `npx -y modern-web-guidance@latest retrieve "branded-select-styling"`)
+- To select one among many options presented in a dropdown: Use a `<select>` + `appearance: base-select` + `::picker(select)`. For more info see `branded-select-styling` (via `npx -y modern-web-guidance@0.0.169 retrieve "branded-select-styling"`)
 - Selecting one or more among multiple options laid out inline in the page: Use a `<input type=checkbox>` or `<input type=radio>` inside a `<label>` for each option. Style via `label:has(:checked)`.
 - Style checkboxes, radios and switches via `appearance: none` + generated content (`::before`/`::after`) or background images to draw the checked state.
 <!-- Customizable select listbox version currently buggy + this has much better browser support -->
@@ -428,7 +428,7 @@ Simple pie chart:
 }
 ```
 
-**Important:** When using gradients to render charts, ensure there is a textual fallback for screen readers. MANDATORY: You MUST provide a semantic data table as an accessible alternative, as detailed in `accessibility` (via `npx -y modern-web-guidance@latest retrieve "accessibility"`) under the alternate text and media guidelines.
+**Important:** When using gradients to render charts, ensure there is a textual fallback for screen readers. MANDATORY: You MUST provide a semantic data table as an accessible alternative, as detailed in `accessibility` (via `npx -y modern-web-guidance@0.0.169 retrieve "accessibility"`) under the alternate text and media guidelines.
 
 ## 9. Transitions & animations
 
@@ -562,7 +562,7 @@ Walk the decision tree top-to-bottom and stop at the first match. Note that layo
 
 **Do:**
 
-- Use logical properties (`inline-size`, `block-size`, `margin-inline`, `padding-block`, `inset-inline-start`) for layout dimensions and spacing — see `css` (via `npx -y modern-web-guidance@latest retrieve "css"`) for full coverage.
+- Use logical properties (`inline-size`, `block-size`, `margin-inline`, `padding-block`, `inset-inline-start`) for layout dimensions and spacing — see `css` (via `npx -y modern-web-guidance@0.0.169 retrieve "css"`) for full coverage.
 - Apply the content-first vs layout-first mental model: flexbox when items dictate flow, grid when you define the skeleton first.
 - Use the `place-*` shorthands (`place-content`, `place-items`, `place-self`) to align across both axes in one declaration.
 - Reach for intrinsic sizing (`min-content`, `max-content`, `fit-content()`) and flexible tracks (`fr`, `minmax()`) before fixed `width`/`height` — fewer media queries, more resilient layouts.
@@ -575,7 +575,7 @@ Walk the decision tree top-to-bottom and stop at the first match. Note that layo
 body.centered  { display: grid; place-content: center; min-block-size: 100dvb; }
 ```
 
-> For `calc-size()` and constraint-aware intrinsic sizing, see `calculate-with-intrinsic-sizes` (via `npx -y modern-web-guidance@latest retrieve "calculate-with-intrinsic-sizes"`).
+> For `calc-size()` and constraint-aware intrinsic sizing, see `calculate-with-intrinsic-sizes` (via `npx -y modern-web-guidance@0.0.169 retrieve "calculate-with-intrinsic-sizes"`).
 
 ## 2 Flexbox
 
@@ -729,7 +729,7 @@ Query the size (or computed style) of an ancestor container rather than the view
 }
 ```
 
-> For component-driven responsive styling patterns, see `size-aware-styling` (via `npx -y modern-web-guidance@latest retrieve "size-aware-styling"`) and `fluid-scaling` (via `npx -y modern-web-guidance@latest retrieve "fluid-scaling"`).
+> For component-driven responsive styling patterns, see `size-aware-styling` (via `npx -y modern-web-guidance@0.0.169 retrieve "size-aware-styling"`) and `fluid-scaling` (via `npx -y modern-web-guidance@0.0.169 retrieve "fluid-scaling"`).
 
 ## 5 Native overlays, anchor positioning, and stacking contexts
 
@@ -752,7 +752,7 @@ Anchor positioning is not natively supported by any major browser yet.
 - Don't mix physical and logical keywords in a single `position-area` value — pick one coordinate system.
 - Feature-detect with `@supports (anchor-name: --x)` and provide an absolute-position fallback.
 
-> For full implementation detail, polyfill strategies, and `popover` value reference, see `declarative-dialog-popover-control` (via `npx -y modern-web-guidance@latest retrieve "declarative-dialog-popover-control"`) and `position-aware-tooltips` (via `npx -y modern-web-guidance@latest retrieve "position-aware-tooltips"`). For anchor positioning applied to menus and tab indicators, see `resilient-context-menus-and-nested-dropdowns` (via `npx -y modern-web-guidance@latest retrieve "resilient-context-menus-and-nested-dropdowns"`) and `anchor-positioning-tab-underline` (via `npx -y modern-web-guidance@latest retrieve "anchor-positioning-tab-underline"`).
+> For full implementation detail, polyfill strategies, and `popover` value reference, see `declarative-dialog-popover-control` (via `npx -y modern-web-guidance@0.0.169 retrieve "declarative-dialog-popover-control"`) and `position-aware-tooltips` (via `npx -y modern-web-guidance@0.0.169 retrieve "position-aware-tooltips"`). For anchor positioning applied to menus and tab indicators, see `resilient-context-menus-and-nested-dropdowns` (via `npx -y modern-web-guidance@0.0.169 retrieve "resilient-context-menus-and-nested-dropdowns"`) and `anchor-positioning-tab-underline` (via `npx -y modern-web-guidance@0.0.169 retrieve "anchor-positioning-tab-underline"`).
 
 ## 6 Overflow tracking and layout stability
 
@@ -791,7 +791,7 @@ Manage layout shifts, scrollbars, and clipping predictably.
 }
 ```
 
-> For `overflow: clip` and `overflow-clip-margin` in depth, see `overflow-clipping-control` (via `npx -y modern-web-guidance@latest retrieve "overflow-clipping-control"`). For scrollbar color, sizing, and theming, see `customize-scrollbar-color-and-thickness` (via `npx -y modern-web-guidance@latest retrieve "customize-scrollbar-color-and-thickness"`), `dark-mode` (via `npx -y modern-web-guidance@latest retrieve "dark-mode"`), and `adapt-scrollbar-to-contrast-preferences` (via `npx -y modern-web-guidance@latest retrieve "adapt-scrollbar-to-contrast-preferences"`).
+> For `overflow: clip` and `overflow-clip-margin` in depth, see `overflow-clipping-control` (via `npx -y modern-web-guidance@0.0.169 retrieve "overflow-clipping-control"`). For scrollbar color, sizing, and theming, see `customize-scrollbar-color-and-thickness` (via `npx -y modern-web-guidance@0.0.169 retrieve "customize-scrollbar-color-and-thickness"`), `dark-mode` (via `npx -y modern-web-guidance@0.0.169 retrieve "dark-mode"`), and `adapt-scrollbar-to-contrast-preferences` (via `npx -y modern-web-guidance@0.0.169 retrieve "adapt-scrollbar-to-contrast-preferences"`).
 
 ## 7 Viewport mechanics and track distribution
 
@@ -801,7 +801,7 @@ Supported by: Chrome 108 (Nov 2022), Edge 108 (Dec 2022), Firefox 101 (May 2022)
 - Use `dvh`/`dvw` for mobile layout containers that must account for browser UI shifting (URL bar collapse/expand).
 - Don't use `100vw` for full-width layout — it ignores scrollbar width and causes horizontal overflow. Use `100%`, `100dvw`, or `100svw` instead.
 
-> For the full viewport unit reference (`svh`, `lvh`, `dvi`, `dvb`, etc.), see `css` (via `npx -y modern-web-guidance@latest retrieve "css"`).
+> For the full viewport unit reference (`svh`, `lvh`, `dvi`, `dvb`, etc.), see `css` (via `npx -y modern-web-guidance@0.0.169 retrieve "css"`).
 
 ## 8 Grid lanes (aka masonry)
 

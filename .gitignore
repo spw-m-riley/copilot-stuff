@@ -4,6 +4,7 @@
 # Local Copilot config
 /config.json
 /config/skill-defaults.local.yaml
+/permissions-config.json
 
 # Local CLI history and per-session artifacts
 /command-history-state.json
@@ -29,7 +30,6 @@
 # Runtime-installed plugins - not tracked
 installed-plugins/
 .fallow/
-permissions-config.json
 
 # Runtime scratch and Copilot CLI state directories
 .tmp/
@@ -39,3 +39,4 @@ ide/
 plugin-data/
 updater/
 sidebar-session-state/
+sidebar-sessions-state/

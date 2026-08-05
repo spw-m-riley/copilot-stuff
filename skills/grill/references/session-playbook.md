@@ -23,5 +23,5 @@ Shared patterns for running an effective interrogation session.
 
 - When a term is resolved, update CONTEXT.md immediately. Do not wait for the session to end.
 - List rejected aliases under _Avoid_.
-- All resolved terms are captured in CONTEXT.md (grill-with-docs only).
-- Any qualifying decisions have been offered as ADRs (grill-with-docs only).
+- All resolved terms are captured in CONTEXT.md (`interrogate-with-docs` mode only).
+- Any qualifying decisions have been offered as ADRs (`interrogate-with-docs` mode only).

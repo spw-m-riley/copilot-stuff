@@ -1,6 +1,7 @@
 ---
 name: plan-review-loop
 description: "Use when a completed /plan needs explicit multi-reviewer approval and refinement before implementation begins."
+disable-model-invocation: true
 metadata:
   category: workflow
   audience: general-coding-agent
@@ -30,8 +31,7 @@ Use this skill to run structured plan reviews after `/plan` completes, with cust
 | Situation | Use this skill? | Route instead |
 | --- | --- | --- |
 | A finished plan needs structured multi-reviewer approval before implementation | Yes | — |
-| You want stress-testing of a design and CONTEXT.md updated | No | [`grill-with-docs`](../grill-with-docs/SKILL.md) |
-| You want fast informal critique without a full review loop | No | [`grill-me`](../grill-me/SKILL.md) |
+| You want stress-testing of a design and CONTEXT.md updated, or fast informal critique without a full review loop | No | [`grill`](../grill/SKILL.md) |
 | The plan is already approved and implementation has started | No | proceed with implementation |
 
 ## Inputs to gather
@@ -84,7 +84,7 @@ The skill validates successfully when:
 
 - Smoke test:
   - should trigger: "Use Jason and Freddy to review this finished /plan before implementation."
-  - should not trigger: "Stress-test this design and update CONTEXT.md as we go." (→ `grill-with-docs`)
+  - should not trigger: "Stress-test this design and update CONTEXT.md as we go." (→ `grill`)
 
 ## Examples
 

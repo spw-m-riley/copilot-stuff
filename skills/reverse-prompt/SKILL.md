@@ -1,6 +1,6 @@
 ---
 name: reverse-prompt
-description: "Use when a request is ambiguous or under-specified and needs sharpening before research, planning, or implementation."
+description: "Use when the user explicitly asks to reverse-prompt, rewrite, or sharpen a request into an executable brief before research, planning, or implementation."
 metadata:
   category: workflow
   audience: general-coding-agent
@@ -13,12 +13,12 @@ metadata:
 ## Use this skill when
 
 - The user explicitly asks you to improve, rewrite, sharpen, or reverse-prompt a request.
-- The current ask is under-specified enough that a sharper brief would materially improve execution speed or correctness.
-- The user wants prompt improvement as a precursor to research, planning, or implementation.
+- The user explicitly asks for a sharper brief, "must-see/should-see" context breakdown, or an executable prompt as a precursor to research, planning, or implementation.
 
 ## Do not use this skill when
 
 - The request is already specific enough to execute directly.
+- The request is merely under-specified with no explicit prompt-rewrite ask; clarify inline or proceed with reasonable assumptions instead of invoking this skill implicitly.
 - The guidance should apply to most tasks even when no prompt-help intent is present.
 - The behavior belongs in a specialized agent or an always-on extension hook instead of a reusable manual workflow.
 - The user only wants generic prompt-writing advice with no repository grounding.
@@ -99,7 +99,7 @@ metadata:
 
 - Smoke test:
   - should trigger: "Sharpen this vague request into a concrete implementation prompt for this repo."
-  - should not trigger: "Grill my already-written migration plan for risks." (→ `grill-me`)
+  - should not trigger: "Grill my already-written migration plan for risks." (→ `grill`)
 
 ## Examples
 

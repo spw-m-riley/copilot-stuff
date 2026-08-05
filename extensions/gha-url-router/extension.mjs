@@ -1,24 +1,8 @@
 import { approveAll } from "@github/copilot-sdk";
 import { joinSession } from "@github/copilot-sdk/extension";
-import {
-  normalizePrompt,
-  normalizeSessionId,
-  readChildMetadata,
-  setBoundedContext,
-} from "../_shared/context-policy.mjs";
 
 const ACTIONS_RUN_RE =
   /https:\/\/github\.com\/([^/\s]+)\/([^/\s]+)\/actions\/runs\/(\d+)(?:\/job\/(\d+))?/gi;
-
-const MAX_ACTIVE_SESSIONS = 128;
-const activeContextBySession = new Map();
-const CHILD_CONTEXT_SKIP_KEYWORDS = [
-  "config",
-  "configure",
-  "configuration",
-  "healthcheck",
-  "copilot-healthcheck",
-];
 
 function parseActionsTargets(prompt) {
   const matches = Array.from(prompt.matchAll(new RegExp(ACTIONS_RUN_RE.source, "gi")));
@@ -53,71 +37,19 @@ function buildParentContext(targets) {
   );
 }
 
-function buildChildContext(targets) {
-  return buildContext(
-    targets,
-    "Parent prompt already parsed GitHub Actions run/job URLs. Start from this routing data.",
-  );
-}
-
-function setActiveContext(sessionId, targets) {
-  setBoundedContext(activeContextBySession, sessionId, { targets }, MAX_ACTIVE_SESSIONS);
-}
-
-function isClearlyUnrelatedSubagent(input) {
-  const metadata = readChildMetadata(input);
-  if (!metadata) {
-    return false;
-  }
-  return CHILD_CONTEXT_SKIP_KEYWORDS.some((keyword) => metadata.includes(keyword));
-}
-
 const session = await joinSession({
   onPermissionRequest: approveAll,
   hooks: {
     // fallow-ignore-next-line complexity
     onUserPromptSubmitted: async (input) => {
-      const sessionId = normalizeSessionId(input?.sessionId);
-      const prompt = normalizePrompt(input?.prompt);
+      const prompt = typeof input?.prompt === "string" ? input.prompt.trim() : "";
       const targets = parseActionsTargets(prompt);
       if (!targets) {
-        if (sessionId) {
-          activeContextBySession.delete(sessionId);
-        }
         return;
-      }
-
-      if (sessionId) {
-        setActiveContext(sessionId, targets);
       }
 
       await session.log("GitHub Actions URL detected", { ephemeral: true });
       return { additionalContext: buildParentContext(targets) };
-    },
-    // fallow-ignore-next-line complexity
-    onSubagentStart: async (input) => {
-      const sessionId = normalizeSessionId(input?.sessionId);
-      if (!sessionId) {
-        return;
-      }
-
-      const activeContext = activeContextBySession.get(sessionId);
-      if (!activeContext) {
-        return;
-      }
-      if (isClearlyUnrelatedSubagent(input)) {
-        return;
-      }
-
-      await session.log("gha-url-router: injected child context", { ephemeral: true });
-      return { additionalContext: buildChildContext(activeContext.targets) };
-    },
-    onSessionEnd: async (input) => {
-      const sessionId = normalizeSessionId(input?.sessionId);
-      if (!sessionId) {
-        return;
-      }
-      activeContextBySession.delete(sessionId);
     },
   },
   tools: [],

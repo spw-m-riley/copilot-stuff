@@ -9,6 +9,12 @@ import {
   TASK_HEADINGS,
   TASK_ONLY_HEADINGS,
 } from "./skill-contract.mjs";
+import {
+  findHeadingLineIndex,
+  findHeadingLineIndexes,
+  parseFrontmatter,
+  stripFencedCodeBlocks,
+} from "../../../scripts/markdown-structure.mjs";
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(SCRIPT_DIR, "../../..");
@@ -16,6 +22,25 @@ const SKILLS_ROOT = path.join(REPO_ROOT, "skills");
 
 const VALID_KINDS = new Set(["task", "reference"]);
 const VALID_MATURITIES = new Set(["draft", "stable"]);
+
+// Headings whose "route to X" / "route instead" prose is worth checking for
+// dangling references to skills or agents that no longer exist locally.
+const ROUTE_SECTION_HEADINGS = [
+  "## Do not use this skill when",
+  "## Routing boundary",
+];
+
+// Explicit allowlist of bare backtick mentions inside route-section prose that
+// are intentionally NOT local skills/agents (tool names, built-in capabilities
+// that are not tracked under skills/ or agents/, etc). Add an entry here only
+// when the mention is deliberate prose, not a stale route.
+const ROUTE_MENTION_ALLOWLIST = new Set([
+  // Tool name mentioned in a routing-boundary "situation" column, not a route target.
+  "pip-compile",
+  // Built-in review capability (invoke via `/security-review` or the `task` tool's
+  // `security-review` agent type) — not a file tracked under skills/ or agents/.
+  "security-review",
+]);
 
 // Metadata contract: only these top-level keys are permitted in skill frontmatter.
 // See skills/skill-authoring/references/metadata-contract.md for rationale.
@@ -46,186 +71,6 @@ const IMPORT_CONTRACT_PATH = path.join(
   REPO_ROOT,
   "skills/skill-authoring/references/import-rewrite-contract.md",
 );
-
-function normalize(text) {
-  return text.replace(/\r\n?/g, "\n");
-}
-
-// fallow-ignore-next-line complexity
-function parseScalar(value) {
-  if (value === "true") {
-    return true;
-  }
-  if (value === "false") {
-    return false;
-  }
-  if (value === "null") {
-    return null;
-  }
-  const quoted = value.match(/^(['"])(.*)\1$/);
-  if (quoted) {
-    return quoted[2];
-  }
-  return value;
-}
-
-// fallow-ignore-next-line complexity
-function parseFrontmatter(text) {
-  const normalized = normalize(text);
-  if (!normalized.startsWith("---\n")) {
-    throw new Error("missing frontmatter block");
-  }
-
-  const endIndex = normalized.indexOf("\n---\n", 4);
-  if (endIndex === -1) {
-    throw new Error("unterminated frontmatter block");
-  }
-
-  const frontmatterText = normalized.slice(4, endIndex);
-  const body = normalized.slice(endIndex + 5);
-  const frontmatter = {};
-  let currentObject = null;
-
-  for (const line of frontmatterText.split("\n")) {
-    if (!line.trim()) {
-      continue;
-    }
-    currentObject = parseFrontmatterLine(line, frontmatter, currentObject);
-  }
-
-  return { frontmatter, body };
-}
-
-function parseFrontmatterLine(line, frontmatter, currentObject) {
-  const indent = line.length - line.trimStart().length;
-  if (indent === 0) {
-    return parseTopLevelFrontmatterLine(line, frontmatter);
-  }
-
-  if (!currentObject || indent < 2) {
-    throw new Error(`unexpected frontmatter indentation: ${line}`);
-  }
-
-  parseNestedFrontmatterLine(line, currentObject);
-  return currentObject;
-}
-
-function parseTopLevelFrontmatterLine(line, frontmatter) {
-  const separatorIndex = line.indexOf(":");
-  if (separatorIndex === -1) {
-    throw new Error(`invalid frontmatter line: ${line}`);
-  }
-
-  const key = line.slice(0, separatorIndex).trim();
-  const value = line.slice(separatorIndex + 1).trim();
-  if (!value) {
-    const nestedObject = {};
-    frontmatter[key] = nestedObject;
-    return nestedObject;
-  }
-
-  frontmatter[key] = parseScalar(value);
-  return null;
-}
-
-function parseNestedFrontmatterLine(line, currentObject) {
-  const trimmed = line.trim();
-  const separatorIndex = trimmed.indexOf(":");
-  if (separatorIndex === -1) {
-    throw new Error(`invalid nested frontmatter line: ${line}`);
-  }
-
-  const key = trimmed.slice(0, separatorIndex).trim();
-  const value = trimmed.slice(separatorIndex + 1).trim();
-  currentObject[key] = parseScalar(value);
-}
-
-function parseOpeningFence(line) {
-  const trimmed = line.trimStart();
-  const match = trimmed.match(/^(?:[-+*]|\d+\.)?\s*(`{3,}|~{3,})/);
-  if (!match) {
-    return null;
-  }
-
-  return {
-    marker: match[1][0],
-    length: match[1].length,
-  };
-}
-
-function isClosingFence(line, openingFence) {
-  const trimmed = line.trimStart();
-  const match = trimmed.match(/^(?:[-+*]|\d+\.)?\s*(`{3,}|~{3,})\s*$/);
-  if (!match) {
-    return false;
-  }
-
-  return (
-    match[1][0] === openingFence.marker &&
-    match[1].length >= openingFence.length
-  );
-}
-
-// fallow-ignore-next-line complexity
-function stripFencedCodeBlocks(body) {
-  const lines = body.split("\n");
-  const strippedLines = [];
-  const errors = [];
-  let openingFence = null;
-  let openingFenceLine = -1;
-
-  for (const [index, line] of lines.entries()) {
-    if (!openingFence) {
-      const fence = parseOpeningFence(line);
-      if (fence) {
-        openingFence = fence;
-        openingFenceLine = index + 1;
-        strippedLines.push("");
-        continue;
-      }
-
-      strippedLines.push(line);
-      continue;
-    }
-
-    if (isClosingFence(line, openingFence)) {
-      openingFence = null;
-      openingFenceLine = -1;
-      strippedLines.push("");
-      continue;
-    }
-
-    strippedLines.push("");
-  }
-
-  if (openingFence) {
-    errors.push(
-      `unterminated fenced code block starting on line ${openingFenceLine}`,
-    );
-  }
-
-  return {
-    searchableBody: strippedLines.join("\n"),
-    errors,
-  };
-}
-
-function findHeadingLineIndex(lines, heading) {
-  return findHeadingLineIndexes(lines, heading)[0] ?? -1;
-}
-
-function findHeadingLineIndexes(lines, heading) {
-  const indexes = [];
-  for (let index = 0; index < lines.length; index += 1) {
-    const line = lines[index];
-    const leadingSpaces = line.length - line.trimStart().length;
-    const normalizedHeadingLine = line.trim().replace(/\s+#+\s*$/, "");
-    if (leadingSpaces < 4 && normalizedHeadingLine === heading) {
-      indexes.push(index);
-    }
-  }
-  return indexes;
-}
 
 function getSectionText(body, heading) {
   const { searchableBody } = stripFencedCodeBlocks(body);
@@ -281,6 +126,20 @@ function collectReferenceTargets(sectionText) {
     addReferenceTargetsFromPattern(sectionText, pattern, targets);
   }
 
+  return targets;
+}
+
+// Markdown-link targets only (no bare backtick spans). Bare backticks in
+// prose sections like "Do not use this skill when" often illustrate paths
+// (`~/.copilot`, `session-state/<id>/handoff.md`) rather than navigate to a
+// real file, so treating them as link targets there is too noisy.
+function collectMarkdownLinkTargets(sectionText) {
+  const targets = new Set();
+  if (sectionText === null) {
+    return targets;
+  }
+
+  addReferenceTargetsFromPattern(sectionText, /\[[^\]]*]\(([^)]+)\)/g, targets);
   return targets;
 }
 
@@ -433,6 +292,7 @@ async function validateSkillContent(filePath, frontmatter, body) {
 
   await validateReferenceTargets(filePath, referenceSection, errors);
   await validateOrphanedSupportFiles(filePath, body, errors);
+  await validateRouteMentions(filePath, body, errors);
 
   return errors;
 }
@@ -613,6 +473,66 @@ async function validateReferenceTargets(filePath, referenceSection, errors) {
     const targetPath = path.resolve(path.dirname(filePath), rawTarget);
     if (!(await pathExists(targetPath))) {
       errors.push(`missing referenced file ${rawTarget}`);
+    }
+  }
+}
+
+// Bare backtick mentions of a plausible skill/agent name (2+ kebab-case
+// segments) that are NOT part of a markdown link. Markdown-linked mentions are
+// covered by the local-path check in validateRouteLinkTargets instead.
+function collectBareRouteMentions(sectionText) {
+  const mentions = new Set();
+  if (sectionText === null) {
+    return mentions;
+  }
+
+  const pattern = /`([a-z][a-z0-9]*(?:-[a-z0-9]+)+)`(?!\])/g;
+  for (const match of sectionText.matchAll(pattern)) {
+    mentions.add(match[1]);
+  }
+  return mentions;
+}
+
+async function routeMentionResolvesLocally(name) {
+  const skillPath = path.join(SKILLS_ROOT, name, "SKILL.md");
+  const agentPath = path.join(REPO_ROOT, "agents", `${name}.agent.md`);
+  return (await pathExists(skillPath)) || (await pathExists(agentPath));
+}
+
+// Route-target validation: within "Do not use this skill when" and "Routing
+// boundary" sections, catch (a) markdown links pointing at a local file that
+// no longer exists, and (b) bare backtick mentions of a skill/agent-shaped
+// name that resolves to neither a local skill nor a local agent, unless the
+// name is on the explicit ROUTE_MENTION_ALLOWLIST for intentionally non-local
+// prose (built-in capabilities, tool names, etc).
+async function validateRouteMentions(filePath, body, errors) {
+  const skillDir = path.dirname(filePath);
+
+  for (const heading of ROUTE_SECTION_HEADINGS) {
+    const sectionText = getSectionText(body, heading);
+    if (sectionText === null) {
+      continue;
+    }
+
+    for (const rawTarget of collectMarkdownLinkTargets(sectionText)) {
+      const targetPath = path.resolve(skillDir, rawTarget);
+      if (!(await pathExists(targetPath))) {
+        errors.push(
+          `dangling route link in "${heading}": ${rawTarget}`,
+        );
+      }
+    }
+
+    for (const name of collectBareRouteMentions(sectionText)) {
+      if (ROUTE_MENTION_ALLOWLIST.has(name)) {
+        continue;
+      }
+      if (await routeMentionResolvesLocally(name)) {
+        continue;
+      }
+      errors.push(
+        `dangling route-target mention in "${heading}": \`${name}\` does not match a local skills/ or agents/ entry — fix the route or add it to ROUTE_MENTION_ALLOWLIST in scripts/validate-skill-library.mjs if it is intentionally non-local prose`,
+      );
     }
   }
 }

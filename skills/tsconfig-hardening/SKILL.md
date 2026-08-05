@@ -16,6 +16,7 @@ metadata:
 - A repository has a confusing `tsconfig` chain that needs cleanup or consolidation.
 - Module resolution, emit behavior, or workspace config drift is causing recurring TypeScript issues.
 - The user wants to change TypeScript configuration even if that work may produce compiler errors that will need follow-on triage.
+- The repository has multiple TypeScript packages or layers and wants to adopt `composite`, `references`, or `tsc -b` incrementally (project-references mode; see [Mode selection](#mode-selection)).
 
 ## Do not use this skill when
 
@@ -23,6 +24,16 @@ metadata:
 - The build problem is mainly in Babel, bundler, or runtime tooling with no meaningful `tsconfig` change.
 - The repository intentionally uses a loose config and the user did not ask to harden it.
 - The main task is now triaging the compiler errors caused by an earlier config change rather than changing config further.
+
+## Mode selection
+
+This skill covers two related but distinct workflows. Pick one before starting:
+
+- **Config-hardening mode** (default) — tightening strictness flags, cleaning up an `extends` chain, or fixing module-resolution drift in an existing (usually single-package) config. Follow the main [Workflow](#workflow) below.
+- **Project-references mode** — adopting `composite`, `references`, and `tsc -b` incrementally across a multi-package or layered workspace. Follow [Project references mode](#project-references-mode) below instead; use this mode when the repository has multiple TypeScript packages or layers and the goal is faster, more reliable builds or a coherent reference graph, not single-package strictness.
+
+If both are in scope (a workspace needs both stricter flags and a references migration), do the references migration first on a pilot package, then harden strictness per package once the graph is stable — mixing both in one diff makes failures hard to attribute.
+
 
 ## Inputs to gather
 
@@ -135,10 +146,34 @@ Stop broadening the config work when any of these happen:
 - the config diff no longer fits the current diagnosis in one review pass
 - the only remaining fixes are code changes, not config changes
 
+## Project references mode
+
+Use this mode when the repository has multiple TypeScript packages or layers and needs faster, more reliable builds via `tsc -b`, or when declaration output, package boundaries, or editor performance are suffering in a growing workspace. This mode replaces the standalone `project-references-migration` skill; the staged checklist below is the same procedure, folded in here as an explicit mode of `tsconfig-hardening`.
+
+**Do not use this mode when** the repository is a small single-project TypeScript setup, the task is only to fix one package's local `tsconfig`, or the workspace already has healthy project references and only needs routine maintenance — those are ordinary config-hardening mode.
+
+### First moves (project references)
+
+1. Inventory the package graph, current `tsconfig` chain, and any obvious cycles.
+2. Pick one leaf or low-risk package as the pilot migration surface, and confirm how declarations, outputs, and package boundaries work today before adding references.
+3. Follow [`references/project-references-checklist.md`](references/project-references-checklist.md) for the full staged workflow — pilot config, expanding from leaves upward, and troubleshooting stale editor caches or mismatched build output.
+
+### Project-references guardrails
+
+- **Must not** migrate the whole workspace in one leap without a proven pilot.
+- **Must not** introduce circular references to mirror accidental runtime coupling.
+- **Should** keep runtime resolution, package exports, and declaration output aligned.
+- **Should** prefer real package boundaries over giant shared path-alias surfaces.
+- **May** leave exceptional packages on local configs temporarily when the graph is not ready.
+- **Should** treat a repeated cycle or stale output mismatch as a sign to pause migration, not to add another config layer.
+
+### Project-references troubleshooting
+
+See [`references/project-references-checklist.md`](references/project-references-checklist.md) § *Troubleshoot output and editor cache* for stale-declaration, wrong-emit-folder, and rootDir/outDir pitfalls.
+
 ## Routing boundary
 
-- Use this skill when the primary work is TypeScript configuration cleanup or strictness sequencing.
-- Route to [`project-references-migration`](../project-references-migration/SKILL.md) when the main goal is incremental `tsc -b` project-references adoption across a layered workspace.
+- Use this skill when the primary work is TypeScript configuration cleanup, strictness sequencing, or incremental project-references adoption (see [Mode selection](#mode-selection)).
 - Route to [`tsc-error-triage`](../tsc-error-triage/SKILL.md) once config changes have landed and the task becomes source-level compiler error remediation.
 - If the TypeScript problem is vague or it's unclear which skill applies, route to [`typescript-triage`](../typescript-triage/SKILL.md).
 
@@ -148,9 +183,11 @@ Stop broadening the config work when any of these happen:
 - Run the build if `tsconfig` affects emit or declaration generation.
 - Confirm the final config still matches the intended runtime and package layout.
 - Use [`references/hardening-scenarios.md`](references/hardening-scenarios.md) to keep strictness sequencing, stop thresholds, and do-not-widen cases aligned with the maintenance loop.
+- In project-references mode: confirm declarations and outputs land in the expected locations, run the typecheck workflow that consumes cross-package imports (not just the referenced build), and open a consuming file to confirm go-to-definition resolves to the expected referenced package source or fresh declarations rather than stale outputs.
 
 - Smoke test:
   - should trigger: "Enable noImplicitAny and clean up this repo's tsconfig chain safely."
+  - should trigger: "Add tsconfig references across our TS packages so tsc -b works." (project-references mode)
   - should not trigger: "Fix the source errors from the last typecheck run." (→ `tsc-error-triage`)
 
 ## Examples
@@ -190,8 +227,29 @@ Stop broadening the config work when any of these happen:
     }
   }
   ```
+- Project-references mode `Before`
+  ```jsonc
+  {
+    "compilerOptions": {
+      "composite": false
+    }
+  }
+  ```
+  `After`
+  ```jsonc
+  {
+    "compilerOptions": {
+      "composite": true,
+      "declaration": true,
+      "declarationMap": true
+    },
+    "references": [{ "path": "../core" }]
+  }
+  ```
+  Pilot one leaf package first, then validate that `tsc -b` and editor go-to-definition resolve against the fresh declarations instead of stale outputs.
 
 ## Reference files
 
 - [`references/strictness-path.md`](references/strictness-path.md) - a safe order for tightening common TypeScript compiler settings and related checks.
 - [`references/hardening-scenarios.md`](references/hardening-scenarios.md) - scenario checklist for sequencing strictness work without widening scope.
+- [`references/project-references-checklist.md`](references/project-references-checklist.md) - staged checklist for introducing project references without destabilizing the workspace (project-references mode).

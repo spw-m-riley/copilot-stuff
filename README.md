@@ -35,20 +35,11 @@ These live in [`./extensions/`](./extensions/) and are auto-discovered by the Co
 | Extension | What It Does |
 | --------- | ------------ |
 | `lore` | Local-first memory and continuity for Copilot CLI. Handles session recall, learning from your workflow, and keeping context sharp across sessions. Keep Lore-specific setup, rollout, maintenance, and health docs in [`./extensions/lore`](./extensions/lore). |
-| `agit-recorder` | Records Copilot CLI sessions into the local `.agit` store through the `agit` hook. |
-| `gha-url-router` | Detects GitHub Actions run/job URLs in prompts, injects structured routing context, and caches that routing data for delegated investigation agents when child-hook support is available. |
+| `gha-url-router` | Detects GitHub Actions run/job URLs in prompts and injects structured routing context. |
 | `post-edit-lint` | Watches `edit`-style tool calls and runs targeted formatting, linting, and validation for JS/TS, JSON, YAML, Terraform, and shell files, feeding results back into the conversation. |
-| `worktree-manager` | Adds `mr_worktree_create`, `mr_worktree_list`, `mr_worktree_status`, `mr_worktree_remove`, and `mr_worktree_merge` tools, plus injects worktree guidance into the parent session and prepares the same guidance for child agents when the runtime supports that hook. |
+| `worktree-manager` | Adds `mr_worktree_create`, `mr_worktree_list`, `mr_worktree_status`, `mr_worktree_remove`, and `mr_worktree_merge` tools. |
 | `rtk-hook` | Runs `rtk hook copilot` on Bash pre-tool calls so RTK can deny raw commands and steer Copilot CLI toward the token-saving `rtk ...` equivalent. See [`./docs/RTK.md`](./docs/RTK.md). |
 | `stabilisation-guard` | Surfaces unresolved `open_loop` and `assistant_goal` Lore memories at session start, then denies the first `edit`/`create`/`apply_patch` call once so pending items are acknowledged before implementation begins. Reads `lore.db` directly; fails open on any error. |
-
-### Child-Agent Context Propagation
-
-Several extensions inject policy and guidance into the parent session today and keep child-agent propagation handlers wired for future runtime support:
-- **gha-url-router** → GitHub Actions investigation child agents (run/job context)
-- **worktree-manager** → implementation/edit/task child agents (worktree guidance)
-
-In the current bundled Copilot CLI SDK, named `onSubagentStart` hooks are not dispatched, so this child-agent inheritance path is **wired but currently dormant**. Treat it as future-facing behavior until the runtime adds a supported child-interception hook.
 
 ## Workflow: Research → Plan → Implement
 
@@ -78,7 +69,7 @@ Use the /plan-review-loop skill to review and refine the current plan
 ```
 
 ### Step 3: Implement (Execute)
-Once the plan is approved, switch out of plan mode if needed and use that approved plan as the execution contract. Then use `/fleet` or direct agent delegation for implementation. Parent turns receive worktree guidance and fleet policy immediately; the child-agent inheritance path is wired but currently dormant until the runtime supports `onSubagentStart`.
+Once the plan is approved, switch out of plan mode if needed and use that approved plan as the execution contract. Then use `/fleet` or direct agent delegation for implementation.
 
 ---
 
@@ -109,7 +100,7 @@ Then review the finished plan explicitly:
 ```
 Use the /plan-review-loop skill to review and refine the current plan
 ```
-Once Jason and Freddy both approve, switch out of plan mode if needed and implement the approved plan with `/fleet` — the parent session receives the relevant workflow guidance, and the child-agent inheritance path remains pending runtime hook support.
+Once Jason and Freddy both approve, switch out of plan mode if needed and implement the approved plan with `/fleet`.
 
 **Example 2: Type Safety Audit** (Finding and fixing `any` in TypeScript)
 ```
@@ -139,13 +130,12 @@ The categories below describe the current repo-tracked skills in this worktree. 
 
 ### Skills by Category
 
-**TypeScript (6 skills)** — Compile-time and runtime type safety, configuration, and diagnostics
+**TypeScript (5 skills)** — Compile-time and runtime type safety, configuration, and diagnostics
 - `tsc-error-triage` — When `tsc` screams at you, find the first real error (not the cascade)
-- `tsconfig-hardening` — Enable stricter TypeScript without your codebase exploding
+- `tsconfig-hardening` — Enable stricter TypeScript without your codebase exploding, including an explicit project-references mode for incremental `tsc -b` adoption across a workspace (formerly the standalone `project-references-migration` skill)
 - `schema-boundary-typing` — Untrusted input? Validate at runtime before treating it as typed
 - `typescript-any-eliminator` — Replace that `any` with the narrowest truthful type
 - `typescript-triage` — Route unclear TypeScript problems to the right specialist skill
-- `project-references-migration` — Layer a monorepo with TypeScript project references safely
 
 **Migrations (2 skills)** — Framework and tool transitions handled in staged batches
 - `aws-sdk-v2-to-v3-migration` — Migrate AWS SDK v2 → v3 modular clients without breaking things
@@ -155,18 +145,17 @@ The categories below describe the current repo-tracked skills in this worktree. 
 - `test-driven-development` — Failing test first. Implementation after. Always.
 - `systematic-debugging` — Hit a wall? Isolate the root cause before guessing at fixes
 - `verification-before-completion` — Don't claim "tests pass" without running them fresh
-- `api-smoke-validation` — Quick, repeatable smoke validation of API endpoints with hurl after changes
+- `api-smoke-validation` — Quick, repeatable smoke validation of API endpoints with hurl after changes (explicit invocation only — this repo has no hurl fixtures of its own to justify implicit routing)
 
-**Workflow & Planning (13 skills)** — Planning, handoff docs, discovery, and decision support
+**Workflow & Planning (12 skills)** — Planning, handoff docs, discovery, and decision support
 - `acquire-codebase-knowledge` — Produce traceable codebase knowledge packs for onboarding and repo discovery
 - `context-map` — Map likely files, dependencies, tests, and reference patterns before multi-file work
 - `doc-coauthoring` — Write docs collaboratively with context gathering and reader feedback loops
 - `execution-strategy` — Choose inline, serial, or parallel execution before dispatching agents
-- `grill-me` — Stress-test a plan or design through structured interrogation
-- `grill-with-docs` — Stress-test a plan while updating domain docs such as `CONTEXT.md` and ADRs
+- `grill` — Stress-test a plan or design through structured interrogation, with an optional mode that updates domain docs such as `CONTEXT.md` and ADRs along the way (consolidates the former `grill-me` and `grill-with-docs` skills)
 - `improve` — Audit a codebase for high-leverage improvements and produce an implementation plan
-- `plan-review-loop` — Run explicit Jason/Freddy plan review rounds after `/plan`
-- `reverse-prompt` — Turn a vague request into an executable task brief (explicit user trigger)
+- `plan-review-loop` — Run explicit Jason/Freddy plan review rounds after `/plan` (explicit invocation only)
+- `reverse-prompt` — Turn a request into an executable task brief when the user explicitly asks for a prompt rewrite or sharper brief
 - `session-handoff` — Create durable handoff context when switching sessions or lanes
 - `workflow-contracts` — Create versioned markdown handoff artifacts for multi-turn work
 - `to-prd` — Turn repository and conversation context into a product requirements document
@@ -174,11 +163,10 @@ The categories below describe the current repo-tracked skills in this worktree. 
 
 **Optimization & Evaluation (2 skills)** — Iterative improvement and evaluator loops
 - `agentic-eval` — Build evaluator/optimizer loops and rubric-driven refinement pipelines
-- `autoresearch` — Run autonomous experiments to improve a measurable metric
+- `autoresearch` — Run a bounded number of autonomous experiments to improve a measurable metric (explicit invocation only; requires a confirmed experiment or time budget, and scopes its journal under `.autoresearch/<tag>/` instead of root-level `results.tsv`/`run.log`)
 
-**Governance & Supply Chain (3 skills)** — Agent controls, provenance, and integrity
-- `agent-governance` — Add policy enforcement, trust scoring, audit trails, and tool-access controls to agents
-- `agent-supply-chain` — Generate and verify integrity manifests for agent plugins and tools
+**Governance & Supply Chain (2 skills)** — Agent runtime controls, provenance, and integrity
+- `agent-safety` — Add policy enforcement, trust scoring, audit trails, and tool-access controls to agents, and generate/verify integrity manifests for agent plugins and tools (consolidates the former `agent-governance` and `agent-supply-chain` skills into governance and supply-chain reference sections)
 - `secret-scan-triage` — Triage gitleaks findings with containment and false-positive adjudication before merging
 
 **CI/CD (1 skill)** — GitHub Actions troubleshooting, diagnosis, and local reproduction
@@ -188,16 +176,14 @@ The categories below describe the current repo-tracked skills in this worktree. 
 - `fallow` — Use Fallow for dead code, duplication, complexity, boundary, and cleanup workflows in JS/TS repos
 - `ast-grep` — Structural code search, linting, and safe codemod rewrites with ast-grep
 
-**Authoring & Configuration (4 skills)** - Skill creation and setup workflows
+**Authoring & Configuration (3 skills)** - Skill creation and setup workflows
 - `copilot-extension-development` - Build and register Copilot CLI extensions
-- `customize-cloud-agent` - Configure cloud coding-agent instructions and environments
 - `skill-authoring` - Write reusable agent skills from scratch with activation conditions
 - `init` - Create or update copilot-instructions.md and per-file instruction files
 
-**Version Control (4 skills)** — Worktree, branching, and PR workflows
+**Version Control (3 skills)** — Worktree, branching, and PR workflows
 - `git-signing-troubleshoot` — Diagnose GPG, SSH, or 1Password signing blockers
-- `git-worktrees` — Create and manage isolated Git worktrees for parallel lanes
-- `worktrunk` — Advanced worktree lifecycle, LLM-generated commits, and coordination
+- `git-worktrees` — Create and manage isolated Git worktrees for parallel lanes, including Worktrunk (`wt`) hooks, LLM commits, merge pipeline, and parallel-agent lane configuration (consolidates the former standalone `worktrunk` skill)
 - `github-cli-pr-workflow` — Complete PR lifecycle with `gh`: create/update, resolve review comments, watch checks, and choose merge, keep, or discard
 
 **Review & Analysis (2 skills)** — Evidence-backed review and repository comparison
@@ -220,6 +206,18 @@ The categories below describe the current repo-tracked skills in this worktree. 
 
 **Tooling (1 skill)** — Package-manager, runtime, and toolchain upgrade diagnosis
 - `tooling-upgrade-triage` — Diagnose failed package-manager, runtime, or toolchain upgrades
+
+### Recent consolidations
+
+The skill library was audited and several packages were merged or retired to keep the catalog coherent. Old direct-name invocations for the removed packages no longer resolve — use the replacement names below:
+
+| Removed | Replaced by | Why |
+| --- | --- | --- |
+| `customize-cloud-agent` | — (deleted) | Deferred to the general `copilot-setup-steps` guidance surfaced elsewhere; not enough distinct workflow to justify a standalone skill. |
+| `grill-me`, `grill-with-docs` | `grill` | Same interrogation workflow with a mode switch (`interrogate` vs `interrogate-with-docs`) instead of two near-duplicate packages. |
+| `worktrunk` | `git-worktrees` | One user-facing worktree skill instead of two; `git-worktrees` now covers both raw `git worktree` and Worktrunk (`wt`) configuration. |
+| `project-references-migration` | `tsconfig-hardening` (project-references mode) | Project-references adoption is now an explicit mode of the same TypeScript config skill instead of a separate package. |
+| `agent-governance`, `agent-supply-chain` | `agent-safety` | Governance (runtime policy) and supply-chain integrity are related agent-safety concerns, kept as clearly separated reference sections in one package. |
 
 ### Using Skills
 
@@ -295,6 +293,7 @@ Older flat-pattern worktrees can be renamed incrementally as they are touched or
 | Stale session state | `scripts/prune-session-state.sh` — dry-run by default; `--apply` deletes; `--days N` overrides the 90-day default. |
 | Worktree audit | Monthly — see [Worktree Management](#worktree-management) above. |
 | Learned-rule review | Quarterly — see `copilot-instructions.md` § *Learned Rules Review Cadence*. |
+| Learned-rule ID integrity | `node scripts/validate-rule-ids.mjs` — checks the global-pool ledger files (root + deprecated + go/memory/shell/review/github instructions) for a reused ID with different content; also wired into `check-health.mjs`. |
 | Skill validation | `node skills/skill-authoring/scripts/validate-skill-library.mjs`. |
 | DB compaction | Between sessions, `sqlite3 lore.db 'VACUUM;'` and the same on `session-store.db`. Both DBs are open while Copilot CLI is running. |
 

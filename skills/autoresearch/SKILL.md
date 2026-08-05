@@ -1,6 +1,7 @@
 ---
 name: autoresearch
 description: "Use when iteratively optimizing a measurable codebase metric; not for writing tests or diagnosing failures."
+disable-model-invocation: true
 metadata:
   category: optimization
   audience: general-coding-agent
@@ -10,14 +11,15 @@ metadata:
 
 # Autoresearch
 
-Use this skill when the goal is to improve a specific, measurable outcome through repeated automated experiments — write a change, measure it, keep it or revert it, repeat. You define the metric; the agent runs the loop autonomously until interrupted or the budget is exhausted.
+Use this skill when the goal is to improve a specific, measurable outcome through repeated automated experiments — write a change, measure it, keep it or revert it, repeat. You define the metric and a bounded experiment budget; the agent runs the loop autonomously within that budget until interrupted or the budget is exhausted. This skill only runs when explicitly invoked — it is side-effectful (commits, branch creation, reverts) and noisy enough that it should never compete for implicit routing.
 
 This is distinct from test-driven development (writing tests for behavior) and systematic debugging (diagnosing a known failure). Use this skill when optimization through iteration is the work.
 
 ## Use this skill when
 
+- The user explicitly asks to run this skill, hill-climb a metric, or "keep running experiments" autonomously.
 - You want to iteratively improve a measurable outcome: execution time, bundle size, test pass rate, build time, latency, coverage, complexity, or a custom benchmark score.
-- You have a metric command that produces a numeric result and you want the agent to run experiments autonomously until interrupted or a budget is reached.
+- You have a metric command that produces a numeric result and a bounded experiment budget, and want the agent to run experiments autonomously within that budget.
 - The right solution is not obvious upfront and you want to explore the space empirically.
 - You want to hill-climb: keep changes that help, discard changes that do not, and log everything.
 
@@ -27,6 +29,7 @@ This is distinct from test-driven development (writing tests for behavior) and s
 - The goal is diagnosing why something is broken (use `systematic-debugging`).
 - There is no measurable metric — the outcome is purely qualitative or subjective.
 - The codebase does not have a git repository or the user has not confirmed a dedicated experiment branch is acceptable.
+- The user has not confirmed a bounded experiment budget (a maximum experiment count or a wall-clock time budget) — ask for one before starting; this skill does not run unbounded by default.
 
 ## Routing boundary
 
@@ -34,7 +37,7 @@ This is distinct from test-driven development (writing tests for behavior) and s
 | --- | --- | --- |
 | Writing failing tests before implementing a feature | No | `test-driven-development` |
 | Diagnosing why a test or build is failing | No | `systematic-debugging` |
-| Iteratively optimizing a benchmark or metric | Yes | — |
+| Iteratively optimizing a benchmark or metric, explicitly invoked, with a bounded budget | Yes | — |
 | Improving code quality with no numeric signal | No | `systematic-debugging` or `verification-before-completion` |
 | Running a single targeted experiment to validate a hypothesis | No | Implement directly; this skill is for multi-experiment autonomous loops |
 
@@ -48,10 +51,10 @@ This is distinct from test-driven development (writing tests for behavior) and s
 - **Direction**: `lower_is_better` or `higher_is_better`.
 - **In-scope files/directories**: what the agent is allowed to edit.
 - **Out-of-scope files/directories**: what must not be touched.
+- **Max experiments**: a required bounded numeric count, or an explicit wall-clock time budget. There is no "unlimited" default — confirm a concrete stopping point with the user before starting the loop, in addition to honoring an interrupt.
 
 **Helpful if present**
 
-- **Max experiments**: a count or `unlimited` (default: unlimited, stop only on interrupt).
 - **Constraints**: time budget per run, dependency policy, test-passing requirement, API compatibility, memory limits.
 - **Simplicity policy**: default is "simpler is better — weigh complexity cost against improvement magnitude."
 
@@ -62,7 +65,7 @@ This is distinct from test-driven development (writing tests for behavior) and s
 
 ## First move
 
-1. Confirm all required inputs are known. If the metric command or extraction method is unclear, ask before creating the branch.
+1. Confirm all required inputs are known, including a bounded `Max experiments` count or time budget. If the metric command, extraction method, or budget is unclear, ask before creating the branch.
 2. Create a dedicated experiment branch: `git checkout -b autoresearch/<tag>` (use today's date as the tag, e.g., `autoresearch/2025-07-09`).
 3. Run the metric command on the unmodified code and record the baseline value before any experiments begin.
 
@@ -90,33 +93,33 @@ Do not start the loop until confirmed.
 
 1. Create branch: `git checkout -b autoresearch/<tag>`.
 2. Read all in-scope files to build full context of the current state.
-3. Initialize `results.tsv` in the repo root with the header row (see `references/experiment-guide.md` for the TSV format). Add `results.tsv` and `run.log` to `.git/info/exclude` so they stay untracked without modifying any tracked file.
+3. Initialize `.autoresearch/<tag>/results.tsv` with the header row (see `references/experiment-guide.md` for the TSV format). Add `.autoresearch/` to `.git/info/exclude` so the whole scratch directory stays untracked without modifying any tracked file. Scoping the journal and log under `.autoresearch/<tag>/` (rather than a fixed root-level `results.tsv`/`run.log`) avoids collisions with unrelated root-level files and with any other autoresearch tag or branch running concurrently.
 4. Run the metric command on unmodified code. Record as experiment `0` with status `baseline`.
 5. Report baseline to the user before starting the loop.
 
 ### Phase 3: Experiment loop
 
-Run until `MAX_EXPERIMENTS` is reached or the user interrupts. Do not stop to ask permission between iterations.
+Run until the confirmed `Max experiments` bound (count or time budget) is reached or the user interrupts — never run unbounded. Do not stop to ask permission between iterations within that bound.
 
 For each experiment:
 
 1. **Think** — analyze previous results and current code. Generate a hypothesis. Consult `references/experiment-guide.md` for strategy ordering (low-hanging fruit first, diversify after plateaus, combine winners, etc.).
 2. **Edit** — modify only in-scope files. Keep changes focused and minimal per experiment.
 3. **Commit** — `git add <changed files> && git commit -m "experiment: <short description>"`.
-4. **Run** — execute the metric command. Redirect to `run.log` (`<command> > run.log 2>&1`).
-5. **Measure** — extract the metric from `run.log`. If extraction fails, read the last 50 lines for the error.
+4. **Run** — execute the metric command. Redirect to `.autoresearch/<tag>/run.log` (`<command> > .autoresearch/<tag>/run.log 2>&1`).
+5. **Measure** — extract the metric from `.autoresearch/<tag>/run.log`. If extraction fails, read the last 50 lines for the error.
 6. **Decide**:
    - **Improved**: keep the commit. Update the running best.
    - **Same or worse**: revert with a revert commit — `git revert HEAD --no-edit`. Log status `discard`.
    - **Crash/error**: if a quick single-line fix is obvious, apply it in a new commit and re-run once. If still broken after one fix attempt, revert with `git revert HEAD --no-edit` (or revert both commits if two were made) and log status `crash`. Do not use `--amend` or `reset --hard`.
-7. **Log** — append one row to `results.tsv`: `experiment_number  commit_hash  metric_value  status  description`.
-8. **Continue** — go to step 1.
+7. **Log** — append one row to `.autoresearch/<tag>/results.tsv`: `experiment_number  commit_hash  metric_value  status  description`.
+8. **Continue** — go to step 1 unless the confirmed experiment bound or time budget has been reached.
 
 ### Phase 4: Report
 
 When the loop ends:
 
-1. Print the full `results.tsv` as a formatted table.
+1. Print the full `.autoresearch/<tag>/results.tsv` as a formatted table.
 2. Summarize: total experiments, kept / discarded / crashed counts, baseline vs. final metric, improvement percentage, top 3 most impactful changes.
 3. Show the kept-commit log: `git log --oneline <start_commit>..HEAD`.
 4. Recommend next steps: ideas that were too risky or complex for the automated loop.
@@ -124,12 +127,13 @@ When the loop ends:
 ## Outputs
 
 - `autoresearch/<tag>` branch containing only kept (improving) experiment commits.
-- `results.tsv` (untracked) — full experiment journal.
-- `run.log` (untracked) — output from the most recent metric run.
+- `.autoresearch/<tag>/results.tsv` (untracked, scoped to this tag) — full experiment journal.
+- `.autoresearch/<tag>/run.log` (untracked, scoped to this tag) — output from the most recent metric run.
 - A written Phase 4 summary report in the chat.
 
 ## Guardrails
 
+- Never start the experiment loop without a confirmed bounded `Max experiments` count or time budget; ask for one instead of defaulting to unlimited.
 - Keep every experiment within the declared in-scope files; leave out-of-scope files untouched.
 - Measure every experiment before deciding whether to keep or discard it.
 - Revert losing or crashed experiments with a new `git revert HEAD --no-edit` commit so history stays intact and data remains recoverable.
@@ -137,8 +141,10 @@ When the loop ends:
 - Keep dependencies and environment configuration unchanged unless the user explicitly approves a change.
 - Keep each experiment small enough that its effect on the metric remains identifiable.
 - Retain a change only when it improves the target metric without regressing any named constraint.
+- Keep the results journal and run log scoped to `.autoresearch/<tag>/` instead of the repo root, so concurrent tags, branches, or unrelated tools never collide on `results.tsv` or `run.log`.
 
 ## Validation
+
 
 Mechanical:
 
@@ -152,13 +158,13 @@ Smoke tests:
 - should not trigger: "Write a failing test for the `parseUser` function before I implement it" (→ `test-driven-development`)
 - should not trigger: "My CI pipeline is failing and I don't know why" (→ `systematic-debugging`)
 
-Before each reporting step, apply `verification-before-completion`: confirm the `results.tsv` row count matches the experiment count and the final metric was measured from the last run.
+Before each reporting step, apply `verification-before-completion`: confirm the `.autoresearch/<tag>/results.tsv` row count matches the experiment count and the final metric was measured from the last run.
 
 ## Examples
 
-- "Run experiments on `src/compute.ts` to reduce the `npm run benchmark` p95 latency. Keep going until I stop you."
-- "I want to minimize `go test -bench=. ./...` ns/op for the `BenchmarkSort` function. File a result log and tell me what you tried."
-- "Hill-climb my Rust build time. The metric is `time cargo build --release`, lower is better. Only touch `Cargo.toml` and `src/`."
+- "Run experiments on `src/compute.ts` to reduce the `npm run benchmark` p95 latency. Try up to 20 experiments and report back."
+- "I want to minimize `go test -bench=. ./...` ns/op for the `BenchmarkSort` function. Cap it at 1 hour of wall-clock time and tell me what you tried."
+- "Hill-climb my Rust build time. The metric is `time cargo build --release`, lower is better. Only touch `Cargo.toml` and `src/`, and stop after 15 experiments."
 
 ## Reference files
 
