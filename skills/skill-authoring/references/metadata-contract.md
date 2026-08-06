@@ -73,6 +73,12 @@ The validator checks `## Do not use this skill when` and `## Routing boundary` f
 
 Some bare mentions in those sections are deliberately not local skills or agents — a CLI tool name in a "situation" column, or a built-in review capability that is not tracked under `skills/` or `agents/`. Add those to `ROUTE_MENTION_ALLOWLIST` in `scripts/validate-skill-library.mjs` with a short comment explaining why the mention is intentional prose rather than a stale route. Do not add an entry just to silence a genuinely broken route — fix the route instead.
 
+### Entry-point/router skills and the `## Routing boundary` heading
+
+A thin router skill (see [`layering-guide.md`](layering-guide.md#optional-split-decisions)) exists specifically to dispatch to specialist siblings by symptom, so its whole body is already the routing surface. Such a skill may use a domain-named canonical heading instead of a separate `## Routing boundary` section — for example `typescript-triage` uses `## Symptom routing table`. Do not add a second `## Routing boundary` table underneath it purely to match the leaf-skill convention; that would duplicate the same rows for no added clarity.
+
+This is a **documented special case**, not an unvalidated gap: `ROUTE_SECTION_HEADINGS` in `scripts/validate-skill-library.mjs` also lists a router skill's canonical routing heading (currently `## Symptom routing table`), so its links and bare route mentions get the same dangling-reference check as `## Do not use this skill when` and `## Routing boundary`. When a new router skill is added with its own domain-named routing heading, add that heading to `ROUTE_SECTION_HEADINGS` in the same change rather than leaving its routes unchecked.
+
 ### Model invocation versus explicit invocation
 
 Implicit model invocation improves discoverability: the skill description can help the model select the skill without the user naming it. That discoverability has a cost, because the description contributes to model context and adds another candidate to routing and cognitive load on every relevant prompt.
@@ -94,6 +100,22 @@ This skill uses `metadata.reader_testing: required` as a skill-specific behavior
 ## Multiline description policy
 
 The description field must be a single-line YAML string. Quoting is recommended when the text contains punctuation that can confuse YAML parsing, but unquoted plain scalars are valid when they parse cleanly. Multiline block scalars (`|-`, `|`, `>-`, `>`) are **not valid** for skill descriptions. Complex trigger conditions that do not fit comfortably on one line belong in `## Use this skill when`, not in the `description` field.
+
+### Colon-in-description gotcha
+
+A YAML mapping value is terminated the moment a strict parser sees `: ` (colon followed by a space) inside an unquoted plain scalar — the parser reads it as the start of a nested mapping rather than as punctuation inside the description text. This silently truncates or breaks the frontmatter depending on the parser, and the failure mode can be a confusing "missing description" or "invalid frontmatter" error far from the actual cause.
+
+```yaml
+# Breaks under a strict YAML parser: the colon-space after "Use when" looks like a second mapping key
+description: Use when: the user asks for X or Y
+```
+
+```yaml
+# Correct: quote the whole value once it contains a colon-space, em dash colon, or similar punctuation
+description: "Use when the user asks for X or Y, especially after: a prior review flagged the gap."
+```
+
+Quote the description whenever it contains a colon followed by a space, and prefer double quotes so an apostrophe inside the text does not also need escaping. Re-run the validator after any description edit — it re-parses frontmatter and will surface a YAML failure as a missing-key error rather than a syntax error, so don't assume a "missing description" failure always means the key was deleted.
 
 ## Frontmatter shape reference
 
@@ -172,4 +194,4 @@ The validator (`scripts/validate-skill-library.mjs`) currently enforces:
 | Required lifecycle fields (`category`, `audience`, `maturity`, `kind`) | All skills | **Error** |
 | Required headings must exist, occur exactly once, and stay in order | All skills | Error |
 | Support-file links and orphaned support files | All skills | Error |
-| **Route-target validation**: markdown links in `## Do not use this skill when` / `## Routing boundary` resolve to an existing local file; bare backtick mentions of a kebab-case, 2+ segment name in those sections resolve to a local `skills/<name>/SKILL.md` or `agents/<name>.agent.md`, unless listed in `ROUTE_MENTION_ALLOWLIST` | All skills | **Error** (added wave 3) |
+| **Route-target validation**: markdown links in `## Do not use this skill when` / `## Routing boundary` (plus any router skill's documented canonical routing heading, e.g. `## Symptom routing table`) resolve to an existing local file; bare backtick mentions of a kebab-case, 2+ segment name in those sections resolve to a local `skills/<name>/SKILL.md` or `agents/<name>.agent.md`, unless listed in `ROUTE_MENTION_ALLOWLIST` | All skills | **Error** (added wave 3; router heading added wave 4) |

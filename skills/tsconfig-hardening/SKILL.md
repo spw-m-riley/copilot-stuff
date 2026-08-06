@@ -1,6 +1,7 @@
 ---
 name: tsconfig-hardening
 description: "Use when tightening TypeScript flags, fixing tsconfig/module-resolution drift, or adding project references safely."
+disable-model-invocation: true
 metadata:
   category: typescript
   audience: general-coding-agent
@@ -56,53 +57,6 @@ If both are in scope (a workspace needs both stricter flags and a references mig
 2. Separate configuration cleanup from code fixes so the diff explains itself.
 3. Pick one strictness or resolution problem to address first instead of flipping every flag at once.
 
-## Concrete config diffs
-
-Base config before:
-
-```json
-{
-  "compilerOptions": {
-    "strict": false,
-    "noImplicitAny": false
-  }
-}
-```
-
-Base config after:
-
-```json
-{
-  "compilerOptions": {
-    "strict": false,
-    "noImplicitAny": true
-  }
-}
-```
-
-Use a single-flag step like this before considering `strict: true`; the umbrella switch is only safe when the blast radius is already understood.
-
-Package override before:
-
-```json
-{
-  "extends": "../../tsconfig.base.json"
-}
-```
-
-Package override after:
-
-```json
-{
-  "extends": "../../tsconfig.base.json",
-  "compilerOptions": {
-    "noImplicitOverride": false
-  }
-}
-```
-
-Use a per-package override like this only to defer a base flag temporarily when one package is not ready yet.
-
 ## Workflow
 
 1. Capture the current config shape and the commands it affects.
@@ -136,15 +90,6 @@ Use a per-package override like this only to defer a base flag temporarily when 
 - `exactOptionalPropertyTypes` tends to ripple through object defaults and partial-update helpers, so keep the diff small enough to explain the actual API impact.
 - `noImplicitOverride` usually stays local to inheritance hierarchies and is a good follow-up batch after the broader nullability work.
 - If a stricter flag would require `module`, `moduleResolution`, or `outDir` changes to stay buildable, pause and re-evaluate the root cause before widening the config patch.
-
-## When to stop widening
-
-Stop broadening the config work when any of these happen:
-
-- the next change would touch both strictness and package-layout concerns
-- the remaining failures are spread across unrelated packages
-- the config diff no longer fits the current diagnosis in one review pass
-- the only remaining fixes are code changes, not config changes
 
 ## Project references mode
 
@@ -210,6 +155,23 @@ See [`references/project-references-checklist.md`](references/project-references
     }
   }
   ```
+  Use a single-flag step like this before considering `strict: true`; the umbrella switch is only safe when the blast radius is already understood.
+- Package override `Before`
+  ```jsonc
+  {
+    "extends": "../../tsconfig.base.json"
+  }
+  ```
+  `After`
+  ```jsonc
+  {
+    "extends": "../../tsconfig.base.json",
+    "compilerOptions": {
+      "noImplicitOverride": false
+    }
+  }
+  ```
+  Use a per-package override like this only to defer a base flag temporarily when one package is not ready yet.
 - `Before`
   ```jsonc
   {

@@ -25,7 +25,7 @@ prerequisites. This is model-triggered guidance, not enforcement.
 ## Do not use this skill when
 
 - The task is pure text search for a known literal with no symbol-scope concern — use `rg` directly
-- You are building a structural rewrite or codemod — use the `ast-grep` skill
+- You are building a structural rewrite or codemod — use the repository's structural-search tooling
 - You need a pre-edit map of all files involved in a change — use the `context-map` skill
 
 ## Routing boundary
@@ -34,7 +34,7 @@ prerequisites. This is model-triggered guidance, not enforcement.
 |-----------|----------------|---------------|
 | Navigating to a symbol definition or finding all references | Yes | — |
 | Counting occurrences of an exact string | No | `rg` directly |
-| Syntax-aware structural search or codemod | No | `ast-grep` |
+| Syntax-aware structural search or codemod | No | repository structural-search tooling |
 | Mapping all files and tests before a broad edit | No | `context-map` |
 | Terraform-specific LSP (terraform-ls) capability matrix | Partial | Defer ecosystem-specific setup to infrastructure skills |
 

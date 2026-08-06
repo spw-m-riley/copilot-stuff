@@ -23,9 +23,10 @@ Use this skill when the goal is to break already-shaped work into issue-tracker 
 ## Do not use this skill when
 
 - The work still needs a PRD or broader product framing before it can be split into tickets — use [`to-prd`](../to-prd/SKILL.md).
-- The codebase is not understood well enough to describe the slices responsibly — use [`acquire-codebase-knowledge`](../acquire-codebase-knowledge/SKILL.md).
+- The codebase is not understood well enough to describe the slices responsibly — use [`context-map`](../context-map/SKILL.md).
 - The user needs a reusable markdown handoff artifact rather than tracker-native issues — use [`workflow-contracts`](../workflow-contracts/SKILL.md).
 - The ask is still too vague to tell whether issue slicing is the right next step — use [`reverse-prompt`](../reverse-prompt/SKILL.md).
+- The source is a raw, untriaged issue or PR with no category, lifecycle state, or behavioral brief yet — use [`issue-tracker-triage`](../issue-tracker-triage/SKILL.md).
 
 ## Routing boundary
 
@@ -34,8 +35,9 @@ Use this skill when the goal is to break already-shaped work into issue-tracker 
 | Break an existing plan or PRD into implementation tickets with dependencies | Yes | - |
 | Create the product-facing requirements document before any ticket breakdown exists | No | [`to-prd`](../to-prd/SKILL.md) |
 | Produce a structured markdown handoff for planning, review, or execution | No | [`workflow-contracts`](../workflow-contracts/SKILL.md) |
-| Explore the repository because the current architecture is still unclear | No | [`acquire-codebase-knowledge`](../acquire-codebase-knowledge/SKILL.md) |
+| Explore the repository because the current architecture is still unclear | No | [`context-map`](../context-map/SKILL.md) |
 | Rewrite an under-specified ask before deciding whether tickets should exist yet | No | [`reverse-prompt`](../reverse-prompt/SKILL.md) |
+| Classify a raw, untriaged issue or PR before any slicing decision | No | [`issue-tracker-triage`](../issue-tracker-triage/SKILL.md) |
 
 ## Inputs to gather
 
@@ -71,6 +73,7 @@ Use this skill when the goal is to break already-shaped work into issue-tracker 
    - each slice should cut through the necessary layers end-to-end
    - each slice should be demoable or verifiable on its own
    - prefer many thin slices over a few thick ones
+   - exception: for a genuinely wide, mechanical refactor with no per-site product decision (a rename, type migration, or API swap touching many call sites), use the expand/migrate/contract phases in [`references/expand-contract.md`](references/expand-contract.md) instead of forcing vertical slices
 4. For each slice, draft:
    - title
    - type: `AFK` or `HITL`
@@ -94,7 +97,7 @@ Use this skill when the goal is to break already-shaped work into issue-tracker 
 
 ## Guardrails
 
-- Keep slices vertical, not horizontal. Do not create separate tickets like "database work", "API work", and "UI work" when one thin end-to-end slice would be more executable.
+- Keep slices vertical, not horizontal. Do not create separate tickets like "database work", "API work", and "UI work" when one thin end-to-end slice would be more executable. The only exception is a wide mechanical refactor using [`references/expand-contract.md`](references/expand-contract.md); label those issues explicitly as expand-contract phases so they are not mistaken for ordinary vertical slices.
 - Prefer `AFK` over `HITL` unless human review, design, or decision-making is genuinely required.
 - Do not publish issues before the user approves the proposed breakdown.
 - Do not invent labels such as `needs-triage`, project fields, or tracker conventions unless they are verified in the target project.
@@ -121,4 +124,5 @@ Use this skill when the goal is to break already-shaped work into issue-tracker 
 
 - [`assets/issue-template.md`](assets/issue-template.md) - starter issue body template for each approved slice.
 - [`references/slicing-guide.md`](references/slicing-guide.md) - tracer-bullet slicing rules, `AFK` vs `HITL` guidance, and anti-patterns.
+- [`references/expand-contract.md`](references/expand-contract.md) - narrow exception for wide, mechanical refactors: expand/migrate/contract phases instead of vertical slices.
 - [`references/checklist.md`](references/checklist.md) - final review checklist for slice quality, dependency order, and publication readiness.

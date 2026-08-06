@@ -70,8 +70,9 @@ Use this skill when implementing any feature, bugfix, or behavior change that sh
 - One behavior per red/green cycle.
 - Confirm every new test fails before writing production code.
 - Keep production changes minimal to satisfy current test only.
-- Mock boundaries (I/O, network, DB), not core logic under test.
+- Mock boundaries (I/O, network, DB), not core logic under test; see [`references/anti-patterns.md`](references/anti-patterns.md) for concrete boundary-mocking guidance.
 - Never leave refactor steps with failing tests.
+- Watch for tautological or implementation-coupled tests as described in [`references/anti-patterns.md`](references/anti-patterns.md); a refactor with no behavior change forcing test edits is a coupling smell, not expected churn.
 
 ## Validation
 
@@ -97,3 +98,4 @@ See [`references/tdd-scenarios.md`](references/tdd-scenarios.md) for full walkth
 - [`references/tdd-scenarios.md`](references/tdd-scenarios.md) - Detailed scenario walkthroughs with TypeScript examples.
 - [`references/type-test-scenarios.md`](references/type-test-scenarios.md) - choosing the lightest durable compile-time type-test shape.
 - [`references/assertion-patterns.md`](references/assertion-patterns.md) - positive and negative compile-time assertion patterns.
+- [`references/anti-patterns.md`](references/anti-patterns.md) - tautological-test and implementation-coupled-test anti-patterns, the philosophical difference between them, and concrete boundary-mocking guidance.

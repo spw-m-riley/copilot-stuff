@@ -31,7 +31,7 @@ metadata:
 | --- | --- | --- |
 | Add or modify an extension under `extensions/<name>/` | Yes | - |
 | Create or revise a reusable skill under `skills/<name>/` | No | [`skill-authoring`](../skill-authoring/SKILL.md) |
-| Update global or file-scoped instructions for extension policy only | No | [`init`](../init/SKILL.md) |
+| Update global or file-scoped instructions for extension policy only | No | edit the matching instruction file directly |
 | Debug a generic runtime failure with unknown root cause first | No | [`systematic-debugging`](../systematic-debugging/SKILL.md) |
 
 ## Inputs to gather

@@ -69,7 +69,7 @@ Use this skill when the task is to produce a structured review result for a code
 
 1. Identify the review target and classify the overall scope as `focused`, `mixed`, or `broad`.
 2. Mark each suspicious area as `primary`, `secondary`, or `pre-existing` using [`references/diff-scope.md`](references/diff-scope.md).
-3. Review the primary surface first. Prefer correctness, safety, and merge-blocking concerns over style or speculative cleanup.
+3. Review the primary surface first. Prefer correctness, safety, and merge-blocking concerns over style or speculative cleanup. Optionally use [`references/fowler-smell-baseline.md`](references/fowler-smell-baseline.md) as a non-binding maintainability lens and [`references/review-axes.md`](references/review-axes.md) to separate standards-axis concerns from spec-axis concerns when framing a finding.
 4. For each possible finding, apply the confidence anchors and evidence rules in [`references/confidence-and-evidence.md`](references/confidence-and-evidence.md) and the shared review mechanics in [`references/shared-review-operations.md`](references/shared-review-operations.md). Drop or downgrade any claim that cannot meet the evidence bar.
 5. Record surviving findings in the JSON shape documented by [`references/findings-schema.md`](references/findings-schema.md) and defined by [`assets/findings.schema.json`](assets/findings.schema.json).
 6. Route specialist questions only when needed using [`references/persona-routing.md`](references/persona-routing.md), and record that routing on the affected finding.
@@ -121,5 +121,7 @@ Use this skill when the task is to produce a structured review result for a code
 - [`references/shared-review-operations.md`](references/shared-review-operations.md) - scope-first and evidence-first review mechanics shared with the PR lifecycle workflow
 - [`references/validator-subagent.md`](references/validator-subagent.md) - second-pass validator prompt and when to use each validator mode
 - [`references/persona-routing.md`](references/persona-routing.md) - always-on vs conditional specialist routing mapped only to real local agents
+- [`references/fowler-smell-baseline.md`](references/fowler-smell-baseline.md) - optional, non-binding Fowler-style smell lens for maintainability findings
+- [`references/review-axes.md`](references/review-axes.md) - standards-axis vs spec-axis framing for how a finding is phrased and weighted
 - [`assets/findings.schema.json`](assets/findings.schema.json) - JSON Schema for structured review findings output
 - [`assets/smoke-test-prompts.md`](assets/smoke-test-prompts.md) - manual discoverability and routing checks for this skill

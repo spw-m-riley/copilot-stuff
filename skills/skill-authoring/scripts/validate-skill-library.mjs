@@ -25,9 +25,18 @@ const VALID_MATURITIES = new Set(["draft", "stable"]);
 
 // Headings whose "route to X" / "route instead" prose is worth checking for
 // dangling references to skills or agents that no longer exist locally.
+// Entry-point/router skills (see layering-guide.md "Optional split decisions")
+// may use a domain-named canonical routing heading instead of a second
+// "## Routing boundary" section underneath their own — list that heading here
+// too so its route links get the same dangling-reference check. See
+// metadata-contract.md "Entry-point/router skills and the `## Routing
+// boundary` heading" for the documented special case.
 const ROUTE_SECTION_HEADINGS = [
   "## Do not use this skill when",
   "## Routing boundary",
+  // typescript-triage's canonical router table (dispatches by symptom instead
+  // of duplicating a separate "## Routing boundary" section).
+  "## Symptom routing table",
 ];
 
 // Explicit allowlist of bare backtick mentions inside route-section prose that
@@ -37,6 +46,9 @@ const ROUTE_SECTION_HEADINGS = [
 const ROUTE_MENTION_ALLOWLIST = new Set([
   // Tool name mentioned in a routing-boundary "situation" column, not a route target.
   "pip-compile",
+  // Package name mentioned in aws-sdk-v2-to-v3-migration's routing-boundary
+  // "situation" column, not a route target.
+  "aws-sdk",
   // Built-in review capability (invoke via `/security-review` or the `task` tool's
   // `security-review` agent type) — not a file tracked under skills/ or agents/.
   "security-review",

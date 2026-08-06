@@ -31,7 +31,7 @@ Use this skill when creating or revising a reusable `skills/<name>/SKILL.md` pac
 | Situation | Use this skill? | Route instead |
 | --- | --- | --- |
 | Create or revise a reusable skill package | Yes | - |
-| Create or update agent instruction files | No | [`init`](../init/SKILL.md) |
+| Create or update agent instruction files | No | edit the matching instruction file directly |
 | Author README, guide, API docs, or runbook prose | No | [`doc-coauthoring`](../doc-coauthoring/SKILL.md) |
 | Curate the whole `~/.copilot` library across skills, agents, instructions, docs, and validators | No | [`copilot-config-curator`](../../agents/copilot-config-curator.agent.md) |
 | Build a long-lived operator persona or stateful workflow | No | specialized agent |

@@ -1,6 +1,7 @@
 ---
 name: reverse-prompt
 description: "Use when the user explicitly asks to reverse-prompt, rewrite, or sharpen a request into an executable brief before research, planning, or implementation."
+disable-model-invocation: true
 metadata:
   category: workflow
   audience: general-coding-agent
@@ -22,6 +23,17 @@ metadata:
 - The guidance should apply to most tasks even when no prompt-help intent is present.
 - The behavior belongs in a specialized agent or an always-on extension hook instead of a reusable manual workflow.
 - The user only wants generic prompt-writing advice with no repository grounding.
+
+## Routing boundary
+
+| Situation | Use this skill? | Route instead |
+| --- | --- | --- |
+| Request is vague and needs sharpening into goal, scope, constraints, deliverable, and completion signal | Yes | - |
+| Request is already specific enough to execute directly | No | execute directly |
+| A plan or design already exists and needs structured interrogation | No | [`grill`](../grill/SKILL.md) |
+| Scope is known but files, tests, or blast radius are unclear | No | [`context-map`](../context-map/SKILL.md) |
+| Enough context exists to synthesize a full PRD | No | [`to-prd`](../to-prd/SKILL.md) |
+| Source is a raw, untriaged issue or PR needing a category and lifecycle state | No | [`issue-tracker-triage`](../issue-tracker-triage/SKILL.md) |
 
 ## Inputs to gather
 

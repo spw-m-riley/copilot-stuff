@@ -34,7 +34,7 @@ Use this skill when a repository already uses GitHub Actions and you need to dia
 | Situation | Use this skill? | Route instead |
 | --- | --- | --- |
 | Failing GitHub Actions run, job, or check in a repo already on Actions | Yes | - |
-| CircleCI migration planning, parity checks, or staged cutover | No | [`circleci-to-github-actions-migration`](../circleci-to-github-actions-migration/SKILL.md) |
+| CircleCI migration planning, parity checks, or staged cutover | No | [`ci-migration-orchestrator`](../../agents/ci-migration-orchestrator.agent.md) |
 | Broad multi-workflow or multi-environment CI migration orchestration | No | `ci-migration-orchestrator` |
 | Workflow cleanup is about readability of inline Bash, shell branching, or sprawling conditions rather than a live failure | No | [`workflow-bash-refactor`](../../agents/workflow-bash-refactor.agent.md) |
 | PR review-comment adjudication and fix batching | No | [`github-cli-pr-workflow`](../github-cli-pr-workflow/SKILL.md) |

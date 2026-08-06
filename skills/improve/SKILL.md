@@ -67,7 +67,7 @@ Use this skill when you need a read-only advisor pass over a codebase that ends 
 ## Workflow
 
 1. **Recon first.** Gather architecture, command surface, conventions, and intent/design documents.
-2. **Audit by category.** Use the audit playbook categories and evidence format; keep findings grounded in concrete `file:line` evidence.
+2. **Audit by category.** Use the audit playbook categories and evidence format; keep findings grounded in concrete `file:line` evidence. For deeper tech-debt/architecture findings, optionally use [`references/architecture-heuristics.md`](references/architecture-heuristics.md) for recent-hot-spot analysis, the deletion test for deep vs. shallow modules, ADR conflict checks, and recommendation-strength labels.
 3. **Vet and prioritize.** Remove false positives, collapse duplicates, and rank by leverage (impact vs effort with confidence and risk).
 4. **Select plan targets.** Ask the user which findings to plan, or default to top 3-5 in non-interactive mode.
 5. **Write self-contained plans.** Use the template so another executor can implement without prior context.
@@ -109,3 +109,4 @@ Use this skill when you need a read-only advisor pass over a codebase that ends 
 - [`references/audit-playbook.md`](references/audit-playbook.md) - audit categories, evidence format, and prioritization rubric
 - [`references/plan-template.md`](references/plan-template.md) - required template for self-contained executor-ready plans
 - [`references/closing-the-loop.md`](references/closing-the-loop.md) - execute, reconcile, and issue-publication loop guidance
+- [`references/architecture-heuristics.md`](references/architecture-heuristics.md) - optional deeper architecture lens: hot-spot analysis, deletion test/deep modules, ADR conflict warning, and recommendation-strength labels

@@ -1,6 +1,7 @@
 ---
 name: to-prd
 description: "Use when synthesizing a PRD from repository and conversation context for issue handoff; not for general docs or discovery."
+disable-model-invocation: true
 metadata:
   category: workflow
   audience: general-coding-agent
@@ -23,8 +24,9 @@ Use this skill when the goal is to turn what is already known — repository con
 
 - The user wants a broader documentation workflow with iterative co-authoring and reader feedback — use [`doc-coauthoring`](../doc-coauthoring/SKILL.md).
 - The task needs an implementation handoff, review artifact, or execution contract rather than a product-facing PRD — use [`workflow-contracts`](../workflow-contracts/SKILL.md).
-- The codebase is still poorly understood and repository-level discovery is the real blocker — use [`acquire-codebase-knowledge`](../acquire-codebase-knowledge/SKILL.md).
+- The codebase is still poorly understood and repository-level discovery is the real blocker — use [`context-map`](../context-map/SKILL.md).
 - The ask is mainly to sharpen or restructure a vague request before planning or implementation — use [`reverse-prompt`](../reverse-prompt/SKILL.md).
+- The source is a raw, untriaged issue or PR with no category, lifecycle state, or behavioral brief yet — use [`issue-tracker-triage`](../issue-tracker-triage/SKILL.md).
 
 ## Routing boundary
 
@@ -33,9 +35,10 @@ Use this skill when the goal is to turn what is already known — repository con
 | Turn an already-discussed feature into a PRD body for issue tracking or review | Yes | - |
 | Produce a reusable markdown handoff artifact for planning, review, or execution | No | [`workflow-contracts`](../workflow-contracts/SKILL.md) |
 | Write or refactor a broad shared document with multi-round collaboration | No | [`doc-coauthoring`](../doc-coauthoring/SKILL.md) |
-| Map the repository first because the system is not understood well enough to describe the work | No | [`acquire-codebase-knowledge`](../acquire-codebase-knowledge/SKILL.md) |
+| Map the repository first because the system is not understood well enough to describe the work | No | [`context-map`](../context-map/SKILL.md) |
 | Rewrite an under-specified ask into a clearer brief before deciding whether a PRD is even needed | No | [`reverse-prompt`](../reverse-prompt/SKILL.md) |
 | Break an approved PRD into independently trackable tickets | No | [`to-issues`](../to-issues/SKILL.md) |
+| Classify a raw, untriaged issue or PR before any product framing | No | [`issue-tracker-triage`](../issue-tracker-triage/SKILL.md) |
 
 ## Inputs to gather
 
@@ -69,7 +72,7 @@ Use this skill when the goal is to turn what is already known — repository con
 2. Inspect the current implementation enough to name the major modules or surfaces likely to change. Prefer deep, stable module boundaries when the repository suggests them.
 3. Draft `Problem Statement`, `Solution`, and `User Stories` from the user's perspective. Make the user-story list extensive enough to cover primary flows, edge cases, administrative or operator roles, and failure/recovery paths when they matter.
 4. Draft `Implementation Decisions` from concrete repository evidence: modules, interface changes, schema or API implications, architectural choices, and notable interactions. Describe capabilities and contracts, not file paths or code snippets.
-5. Draft `Testing Decisions` around external behavior: what makes a good test here, which surfaces should be tested, and the closest prior art in the codebase.
+5. Draft `Testing Decisions` around external behavior: what makes a good test here, which surfaces should be tested, and the closest prior art in the codebase. Use [`references/test-seam-sketching.md`](references/test-seam-sketching.md) to describe test seams in prose, including its narrowly bounded exception for one prototype-derived structural snippet in `Further Notes` when a decision genuinely needs it recorded.
 6. Make `Out of Scope` explicit. Put unresolved but non-blocking notes in `Further Notes`; if a gap is still blocking, say so instead of inventing certainty.
 7. If issue-tracker publication is part of the request, publish using the project's verified issue workflow. If tracker vocabulary, labels, or permissions are missing, stop at a complete markdown artifact and surface the publication blocker explicitly.
 
@@ -84,10 +87,10 @@ Use this skill when the goal is to turn what is already known — repository con
 
 - Do not start with a broad interview. Synthesize from existing context first and ask only targeted questions that unblock the PRD materially.
 - Keep `Problem Statement` and `Solution` user-facing; do not let them collapse into implementation notes.
-- Do not include file paths or code snippets in `Implementation Decisions`.
+- Do not include file paths or code snippets in `Implementation Decisions` or `Testing Decisions`; the only exception is the single, narrowly bounded prototype-derived structural snippet described in [`references/test-seam-sketching.md`](references/test-seam-sketching.md), and even that belongs in `Further Notes`, not those two sections.
 - Do not invent issue labels such as `needs-triage` unless the project already defines them.
 - Prefer repository vocabulary, current architecture, and known prior art over generic best-practice prose.
-- If the task turns into repository discovery, route to [`acquire-codebase-knowledge`](../acquire-codebase-knowledge/SKILL.md) instead of stretching this skill.
+- If the task turns into repository discovery, route to [`context-map`](../context-map/SKILL.md) instead of stretching this skill.
 
 ## Validation
 
@@ -109,3 +112,4 @@ Use this skill when the goal is to turn what is already known — repository con
 
 - [`assets/prd-template.md`](assets/prd-template.md) - starter PRD scaffold with the required section order.
 - [`references/checklist.md`](references/checklist.md) - final quality and publication checklist before treating the PRD as done.
+- [`references/test-seam-sketching.md`](references/test-seam-sketching.md) - how to describe test seams in prose, plus the narrow prototype-derived structural-snippet exception.

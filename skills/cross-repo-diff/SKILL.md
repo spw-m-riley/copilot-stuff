@@ -24,7 +24,7 @@ Use this skill to systematically compare repositories and produce an actionable 
 
 - The comparison is within a single repository (branches, PRs, or commits) — use standard diff tools or [`code-review`](../code-review/SKILL.md).
 - The goal is purely to review code quality or find bugs, not to understand structural differences between repos — use [`code-review`](../code-review/SKILL.md).
-- The goal is a full CircleCI-to-GitHub-Actions migration with phased rollout — use [`circleci-to-github-actions-migration`](../circleci-to-github-actions-migration/SKILL.md) (cross-repo-diff can inform that decision but does not drive the migration itself).
+- The goal is a full CircleCI-to-GitHub-Actions migration with phased rollout — use [`ci-migration-orchestrator`](../../agents/ci-migration-orchestrator.agent.md) (cross-repo-diff can inform that decision but does not drive the migration itself).
 
 ## Routing boundary
 
@@ -34,7 +34,7 @@ Use this skill to systematically compare repositories and produce an actionable 
 | Use one repo as a guide for migrating or implementing in another | Yes | - |
 | Audit a fleet of repos for consistency | Yes | - |
 | Diff a PR or branch within one repo | No | [`code-review`](../code-review/SKILL.md) |
-| Execute a CircleCI→GitHub Actions migration | No | [`circleci-to-github-actions-migration`](../circleci-to-github-actions-migration/SKILL.md) |
+| Execute a CircleCI→GitHub Actions migration | No | [`ci-migration-orchestrator`](../../agents/ci-migration-orchestrator.agent.md) |
 | Full fleet-wide CI standardisation rollout | No | `ci-migration-orchestrator` agent |
 | Audit one repo's code quality or maintainability | No | [`fallow`](../fallow/SKILL.md) |
 

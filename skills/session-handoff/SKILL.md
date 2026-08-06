@@ -58,9 +58,11 @@ metadata:
 
 ## First move
 
-1. Identify the current `session-state/<sessionId>/` folder from the active session context or existing session-state layout.
-2. Inspect the current branch/worktree status and collect concrete refs, commands, and artifact paths.
-3. Create or update `handoff.md` in that per-session folder; do not invent another location.
+1. If it is unclear whether a handoff is even the right move right now, check [`references/phase-boundary-decisions.md`](references/phase-boundary-decisions.md) to decide between continue, clear, handoff, subagent, and compact before writing anything.
+2. Identify the current `session-state/<sessionId>/` folder from the active session context or existing session-state layout.
+3. Inspect the current branch/worktree status and collect concrete refs, commands, and artifact paths.
+4. Create or update `handoff.md` in that per-session folder; do not invent another location.
+5. If an existing handoff template has a compatible field, populate **Suggested next skills** with the specific reusable skills implied by the next actions, or write "none identified"; do not invent a new template field when none exists.
 
 ## Workflow
 
@@ -100,6 +102,7 @@ metadata:
 - Confirm `session-state/<sessionId>/handoff.md` exists and is the only new handoff location.
 - Confirm the artifact includes goal, current state, pending decisions, next actions, refs, validation status, and active worktree path or an explicit "none".
 - Confirm commands and refs are factual, not inferred from memory.
+- If the existing template supports it, confirm the `Suggested next skills` field is populated with specific skills or "none identified"; otherwise confirm no new template field was invented.
 - Confirm the next action is obvious within a few seconds of reading the file.
 - Run `node skills/skill-authoring/scripts/validate-skill-library.mjs skills/session-handoff/SKILL.md` after changing this skill.
 - Smoke test:
@@ -114,5 +117,6 @@ metadata:
 
 ## Reference files
 
+- [`references/phase-boundary-decisions.md`](references/phase-boundary-decisions.md) - decision order for continue, clear, handoff, subagent, and compact at a phase boundary.
 - [`session-artifacts.instructions.md`](../../instructions/session-artifacts.instructions.md) - policy for session-state Markdown artifacts.
 - [`workflow-contracts`](../workflow-contracts/SKILL.md) - adjacent contract-oriented handoff workflow.

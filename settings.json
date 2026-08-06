@@ -6,7 +6,7 @@
     "copilot-sdk@awesome-copilot": true,
     "ponytail@ponytail": true
   },
-  "experimental": true,
+  "experimental": false,
   "extensions": {
     "mode": "load_and_augment"
   },
@@ -106,8 +106,12 @@
   },
   "updateTerminalTitle": true,
   "voice": {
-    "enabled": false,
-    "selectedModel": "nemotron-speech-streaming-en-0.6b-generic-cpu:3"
+    "enabled": true,
+    "selectedModel": "nemotron-speech-streaming-en-0.6b-generic-cpu:3",
+    "selectedDevice": {
+      "name": "Matt’s Pro - Find My",
+      "occurrence": 0
+    }
   },
   "model": "gpt-5.6-luna",
   "sandbox": {

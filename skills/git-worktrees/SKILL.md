@@ -26,6 +26,17 @@ This is the single user-facing worktree skill: raw `git worktree` workflows and 
 - A disposable clone is explicitly preferred over sharing object storage with the main repository.
 - The task is only PR lifecycle work (create/update PR and watch checks) on an already prepared branch; route to [`github-cli-pr-workflow`](../github-cli-pr-workflow/SKILL.md).
 
+## Routing boundary
+
+| Situation | Use this skill? | Route instead |
+| --- | --- | --- |
+| Need an isolated worktree/branch for parallel work, a review lane, or an agent task | Yes | - |
+| Configuring Worktrunk (`wt`) hooks, LLM commits, merge pipeline, or parallel-agent lanes | Yes | - |
+| Only a quick edit on the current branch is needed | No | work directly on the current checkout |
+| Task is PR lifecycle only (create/update PR, resolve comments, watch checks) on an already-prepared branch | No | [`github-cli-pr-workflow`](../github-cli-pr-workflow/SKILL.md) |
+| Pushed branch's CI is failing and needs root-cause triage | No | [`github-actions-failure-triage`](../github-actions-failure-triage/SKILL.md) |
+| A disposable clone with no shared object storage is explicitly preferred | No | plain `git clone` |
+
 ## Inputs to gather
 
 **Required before editing**
@@ -51,7 +62,8 @@ This is the single user-facing worktree skill: raw `git worktree` workflows and 
 1. Check current worktrees and branch state (`git worktree list` and `git branch --all`).
 2. Pick names using defaults from `assets/naming-examples.md`.
 3. Create a fresh worktree from the target base ref before editing files.
-4. If the task is Worktrunk configuration itself (hooks, LLM commits, merge defaults, parallel agents), run `wt config show` first to inspect what is already loaded before changing anything.
+4. Run the [new-worktree bootstrap checklist](references/bootstrap-checklist.md) before the first install, edit, or test in that worktree — it covers env/secret copying, independent deps, DB/service identity and ports, generated files, hooks, shared vs. per-worktree Git state, and the primary-checkout integration point.
+5. If the task is Worktrunk configuration itself (hooks, LLM commits, merge defaults, parallel agents), run `wt config show` first to inspect what is already loaded before changing anything.
 
 ## Workflow
 
@@ -96,6 +108,7 @@ This is the single user-facing worktree skill: raw `git worktree` workflows and 
 - **Must** account for the uncommitted tracked and untracked baseline when continuing existing work in a fresh worktree — a new worktree starts from `HEAD` only and can silently omit local state the task actually needs.
 - **Must** never report a task done while the assigned worktree has uncommitted changes — validate, commit the finalized slice, confirm `git status` is clean, then update status.
 - **Must** check nested git repositories separately from the parent worktree — the parent's status can look clean while a nested repo still has uncommitted changes.
+- **Must** run the [new-worktree bootstrap checklist](references/bootstrap-checklist.md) before trusting a fresh worktree's env, deps, DB/service, generated files, or hooks — a worktree shares Git's object store and refs with its parent but not these paths, and skipping the checklist is a common source of "works in the primary checkout, broken in the worktree" bugs.
 - **Should** use consistent naming defaults, but adjust to repository conventions when needed.
 - **Should** keep branch names and worktree paths aligned so the branch name still makes sense if the worktree path is copied or recreated later.
 - **Should** verify the repository root before creating the worktree in monorepos or nested checkouts.
@@ -159,6 +172,7 @@ This is the single user-facing worktree skill: raw `git worktree` workflows and 
 
 - [Naming conventions and scheme](references/naming-conventions.md)
 - [Naming defaults and examples](assets/naming-examples.md)
+- [New-worktree bootstrap checklist](references/bootstrap-checklist.md) - env/secret copy-not-symlink, independent deps, DB/service identity and ports, generated files, hooks, shared Git state, git-dir/common-dir detection, and primary-checkout integration policy
 - [Recovery and cleanup guide](references/recovery-and-cleanup.md)
 - [Worktrunk command equivalents](references/worktrunk-commands.md)
 - [`references/wt-config-reference.md`](references/wt-config-reference.md) — complete Worktrunk config key reference with defaults

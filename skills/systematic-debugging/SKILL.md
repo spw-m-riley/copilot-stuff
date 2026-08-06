@@ -36,6 +36,7 @@ Use this skill when the symptom is visible but the root cause is not yet proven.
 | Root cause is validated and fix strategy is known | No | [`test-driven-development`](../test-driven-development/SKILL.md) |
 | Fix is implemented and needs proof | No | [`verification-before-completion`](../verification-before-completion/SKILL.md) |
 | User wants a specific known fix applied | Usually no | apply the requested fix, then validate |
+| Root cause is confirmed but no correct seam/interface exists for a clean fix | No | [`codebase-design`](../codebase-design/SKILL.md) |
 
 ## Inputs to gather
 
@@ -48,12 +49,12 @@ Use this skill when the symptom is visible but the root cause is not yet proven.
 ## First move
 
 1. Capture the full error or failure output.
-2. Reproduce the issue consistently, or document why it is intermittent.
+2. Pick the fastest reproduction technique from [`references/feedback-loop-playbook.md`](references/feedback-loop-playbook.md) and reproduce the issue consistently, or document why it is intermittent.
 3. Read the failure output end-to-end before proposing fixes.
 
 ## Workflow
 
-1. **Investigate:** reproduce, trace data flow, check boundaries, inspect recent diffs.
+1. **Investigate:** reproduce using the ranked techniques and completion bar in [`references/feedback-loop-playbook.md`](references/feedback-loop-playbook.md), trace data flow, check boundaries, inspect recent diffs. Tag any temporary debug output with a unique marker so it stays easy to filter and remove.
 2. **Compare cases:** isolate differences between failing and working behavior.
 3. **State one hypothesis:** one sentence for cause + evidence.
 4. **Test minimally:** one focused check per hypothesis.
@@ -95,3 +96,4 @@ Use this skill when the symptom is visible but the root cause is not yet proven.
 
 - [`references/root-cause-tracing.md`](references/root-cause-tracing.md) - error analysis, reproduction, and data-flow tracing techniques
 - [`references/defense-in-depth.md`](references/defense-in-depth.md) - layered observability and systematic elimination strategies
+- [`references/feedback-loop-playbook.md`](references/feedback-loop-playbook.md) - ranked reproduction techniques, the reproducible/deterministic/fast/agent-runnable completion bar, flaky reproduction-rate guidance, debug tags, and when to route to `codebase-design`

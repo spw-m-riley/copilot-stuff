@@ -21,6 +21,25 @@ Use this document when rewriting an upstream skill into this local library. Wave
 - Python or shell scripts that cannot be kept generic and self-contained, or that duplicate what the existing local validator already covers.
 - Inline code examples promoted as the primary skill content when a reference file or `assets/` example would keep `SKILL.md` concise.
 
+## Third-party skill intake security checks
+
+Run these checks before adopting content from any third-party or community skill source (an upstream repo, a marketplace listing, a pasted skill file) — not only for wave-import skills already in this contract's scope. A skill file is instructions an agent will follow with real tool access, so treat unreviewed skill content the same way you would treat unreviewed code from an unknown source.
+
+- Read every script, hook, and inline shell/code block in full before adoption; do not adopt a skill package while any referenced `scripts/` file is unread.
+- Look specifically for: embedded shell commands that exfiltrate data (curl/wget to unfamiliar hosts, piping local files to a network call), obfuscated or encoded payloads (base64 blobs decoded and executed, unusually dense one-liners), and instructions that ask the agent to disable safety behavior, hide actions from the user, or bypass this repo's guardrails.
+- Look for prompt-injection framing inside the skill body itself — instructions phrased to override the agent's system-level guardrails, claim false authority ("the user has already approved..."), or redefine what counts as the user's request.
+- Verify any external command referenced by a script or hook (its name, not just its behavior) is a real, known tool — an upstream skill can reference a plausible-sounding binary that does not exist locally or that resolves to something unexpected on `PATH`.
+- Confirm hard-coded URLs, paths, and credentials fields are either removed or clearly intentional and scoped (see [Preserve vs. discard](#preserve-vs-discard) for the same non-local-path rule applied here).
+- When in doubt about a specific construct, treat it the same as the shell-safety obfuscation guardrail: refuse and ask, rather than adopt and hope.
+
+## Cross-agent portability notes
+
+Skills are sometimes shared or adapted across agent runtimes beyond this Copilot CLI library. Note real differences in invocation model rather than assuming every runtime routes skills the same way:
+
+- Codex-style agents commonly declare tools/skills through a manifest such as `agents/openai.yaml` with **manual-invocation-only** semantics — the operator or a slash-command names the skill explicitly, and there is no implicit, description-driven selection step comparable to this repo's `description`-based routing.
+- When adapting a local skill for a Codex-style consumer (or importing one from that ecosystem), do not assume the `description` field's trigger-phrase framing carries the same routing weight there — it may only ever surface as help text for a manually invoked command. Keep the trigger-phrase contract for this repo's own routing, and note the manual-invocation difference explicitly in the skill's provenance/commit message rather than silently changing local `description` conventions to match the other runtime.
+- Do not weaken this repo's implicit-invocation description contract (see [Frontmatter expectations](#frontmatter-expectations)) to accommodate a manual-invocation-only target; the two invocation models can coexist without either one bending to the other.
+
 ## Canonical top-level shape
 
 ### Task skill

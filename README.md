@@ -147,19 +147,21 @@ The categories below describe the current repo-tracked skills in this worktree. 
 - `verification-before-completion` — Don't claim "tests pass" without running them fresh
 - `api-smoke-validation` — Quick, repeatable smoke validation of API endpoints with hurl after changes (explicit invocation only — this repo has no hurl fixtures of its own to justify implicit routing)
 
-**Workflow & Planning (12 skills)** — Planning, handoff docs, discovery, and decision support
+**Workflow & Planning (14 skills)** — Planning, handoff docs, discovery, and decision support
 - `acquire-codebase-knowledge` — Produce traceable codebase knowledge packs for onboarding and repo discovery
 - `context-map` — Map likely files, dependencies, tests, and reference patterns before multi-file work
 - `doc-coauthoring` — Write docs collaboratively with context gathering and reader feedback loops
 - `execution-strategy` — Choose inline, serial, or parallel execution before dispatching agents
-- `grill` — Stress-test a plan or design through structured interrogation, with an optional mode that updates domain docs such as `CONTEXT.md` and ADRs along the way (consolidates the former `grill-me` and `grill-with-docs` skills)
+- `grill` — Stress-test a plan or design through structured interrogation, with an optional mode that updates domain docs such as `CONTEXT.md` and ADRs along the way (consolidates the former `grill-me` and `grill-with-docs` skills), plus an opt-in frontier/round question-batching mode
 - `improve` — Audit a codebase for high-leverage improvements and produce an implementation plan
+- `issue-tracker-triage` — Classify a raw issue or PR into a tracker-agnostic category, lifecycle state, and durable behavioral brief before planning or ticketing
 - `plan-review-loop` — Run explicit Jason/Freddy plan review rounds after `/plan` (explicit invocation only)
 - `reverse-prompt` — Turn a request into an executable task brief when the user explicitly asks for a prompt rewrite or sharper brief
 - `session-handoff` — Create durable handoff context when switching sessions or lanes
 - `workflow-contracts` — Create versioned markdown handoff artifacts for multi-turn work
+- `work-prep` — Route request shaping, issue triage, PRD synthesis, and issue slicing with explicit commands
 - `to-prd` — Turn repository and conversation context into a product requirements document
-- `to-issues` — Split approved work into dependency-aware issue slices
+- `to-issues` — Split approved work into dependency-aware issue slices, with an expand-contract exception for wide mechanical refactors
 
 **Optimization & Evaluation (2 skills)** — Iterative improvement and evaluator loops
 - `agentic-eval` — Build evaluator/optimizer loops and rubric-driven refinement pipelines
@@ -176,10 +178,14 @@ The categories below describe the current repo-tracked skills in this worktree. 
 - `fallow` — Use Fallow for dead code, duplication, complexity, boundary, and cleanup workflows in JS/TS repos
 - `ast-grep` — Structural code search, linting, and safe codemod rewrites with ast-grep
 
-**Authoring & Configuration (3 skills)** - Skill creation and setup workflows
+**Architecture & Design (1 skill)** — Shared structural vocabulary and boundary-health checks
+- `codebase-design` — Module/interface/adapter/depth/seam vocabulary, the deletion test, the two-adapters rule, and dependency categories, shared by `test-driven-development`, `code-review`, `systematic-debugging`, and `improve`
+
+**Authoring & Configuration (4 skills)** - Skill creation and setup workflows
 - `copilot-extension-development` - Build and register Copilot CLI extensions
 - `skill-authoring` - Write reusable agent skills from scratch with activation conditions
 - `init` - Create or update copilot-instructions.md and per-file instruction files
+- `human-setup-wizard` - Generate a human-only setup walkthrough with confirmation gates and safe secret handling; never executed end-to-end by an agent
 
 **Version Control (3 skills)** — Worktree, branching, and PR workflows
 - `git-signing-troubleshoot` — Diagnose GPG, SSH, or 1Password signing blockers

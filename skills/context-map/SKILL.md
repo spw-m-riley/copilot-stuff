@@ -1,6 +1,6 @@
 ---
 name: context-map
-description: "Use before implementation when files, dependencies, tests, or patterns need a non-committed map; use acquire-codebase-knowledge for durable repo docs."
+description: "Use before implementation when files, dependencies, tests, or patterns need a non-committed map; use the repository documentation workflow for durable repo docs."
 metadata:
   category: workflow
   audience: general-coding-agent
@@ -22,7 +22,7 @@ Use this skill when the next step is figuring out what to read or touch before c
 ## Do not use this skill when
 
 - The exact files are already named and the scope is narrow enough to execute directly.
-- The user wants durable repository onboarding or architecture documentation; use [`acquire-codebase-knowledge`](../acquire-codebase-knowledge/SKILL.md).
+- The user wants durable repository onboarding or architecture documentation; use the repository documentation workflow.
 - The user wants a phased implementation plan with tasks, dependencies, rollout notes, or handoff artifacts; route to `implementation-planner` or `workflow-contracts`.
 - The main problem is sharpening the user's ask rather than mapping the codebase; route to `reverse-prompt` first.
 

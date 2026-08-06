@@ -1,6 +1,6 @@
 ---
 name: typescript-triage
-description: "Start here when the TypeScript problem is unclear — routes to the right specialist skill by symptom."
+description: "Start here when the TypeScript problem is unclear or an explicit routing command should choose the right specialist skill."
 metadata:
   category: typescript
   audience: general-coding-agent
@@ -12,6 +12,19 @@ metadata:
 
 Use this as the entry point when a TypeScript task does not clearly match one of the specialist skills.
 Read the symptom table and route immediately — do not implement TypeScript fixes from within this skill.
+
+## Commands
+
+| Command | Route to |
+| --- | --- |
+| `errors` | [`tsc-error-triage`](../tsc-error-triage/SKILL.md) |
+| `config` | [`tsconfig-hardening`](../tsconfig-hardening/SKILL.md) |
+| `any` | [`typescript-any-eliminator`](../typescript-any-eliminator/SKILL.md) |
+| `boundary` | [`schema-boundary-typing`](../schema-boundary-typing/SKILL.md) |
+| `tests` | [`test-driven-development`](../test-driven-development/SKILL.md) |
+
+Use `/typescript-triage <command>` when the route is known. With a task description but no command, use the symptom table; an empty invocation shows this menu.
+The four TypeScript specialist routes are explicit-only to keep implicit routing focused here; direct skill invocation remains available. The `tests` route remains the general TDD skill.
 
 ## Use this skill when
 
@@ -32,9 +45,11 @@ Read the symptom table and route immediately — do not implement TypeScript fix
 
 ## First move
 
-1. Run `tsc --noEmit` (or the repo's equivalent typecheck command) if compiler output is not already available.
-2. Match the output or description to a row in the symptom routing table below.
-3. Route to the specialist skill — do not begin fixing from here.
+1. If an explicit command is present, route to its specialist immediately.
+2. If no task description is provided, show the command menu and stop.
+3. Run `tsc --noEmit` (or the repo's equivalent typecheck command) if compiler output is not already available.
+4. Match the output or description to a row in the symptom routing table below.
+5. Route to the specialist skill — do not begin fixing from here.
 
 ## Symptom routing table
 
@@ -53,6 +68,11 @@ Read the symptom table and route immediately — do not implement TypeScript fix
 - "Sort out the any types" → `typescript-any-eliminator`; after `any` is removed, route untrusted-boundary gaps to `schema-boundary-typing`
 - "Our types are a mess" → start with `tsconfig-hardening` for config; then `typescript-any-eliminator` for code
 - "Add type safety to this API" → `schema-boundary-typing` first; `test-driven-development` after the boundary is stable
+- `/typescript-triage errors` → `tsc-error-triage`
+- `/typescript-triage config` → `tsconfig-hardening`
+- `/typescript-triage any` → `typescript-any-eliminator`
+- `/typescript-triage boundary` → `schema-boundary-typing`
+- `/typescript-triage tests` → `test-driven-development`
 
 ## Workflow
 
@@ -71,6 +91,7 @@ Read the symptom table and route immediately — do not implement TypeScript fix
 - Re-route if the first specialist skill surfaces a different root cause (for example, `tsc-error-triage` discovers that config is actually the culprit → route back through `tsconfig-hardening`).
 - Smoke test:
   - should trigger: "Fix the TypeScript — I'm not sure what's wrong."
+  - should trigger: "`/typescript-triage errors` for the compiler failures from the last refactor."
   - should not trigger: "Run `tsc --noEmit` and fix the specific errors it reports." (→ `tsc-error-triage`)
 
 ## Examples

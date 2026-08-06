@@ -66,7 +66,7 @@ Use this skill to relentlessly interrogate a plan or design until every branch o
 
 ## Workflow
 
-1. **Ask one question at a time.** Walk down each branch of the design tree, resolving dependencies between decisions sequentially. For each question, provide your recommended answer. Wait for the user's response before continuing. See [references/session-playbook.md](references/session-playbook.md) for question sequencing, scenario construction, and contradiction-surfacing patterns shared by both modes.
+1. **Ask one question at a time (default).** Walk down each branch of the design tree, resolving dependencies between decisions sequentially. For each question, provide your recommended answer. Wait for the user's response before continuing. See [references/session-playbook.md](references/session-playbook.md) for question sequencing, scenario construction, and contradiction-surfacing patterns shared by both modes. Only when the user explicitly asks to move faster, or a set of genuinely independent questions has piled up, use the bounded batching and non-blocking fact-finding option in [references/frontier-batching.md](references/frontier-batching.md) instead — it never replaces the one-at-a-time default or the no-wall-of-questions guardrail below.
 2. **Explore instead of asking** when a question can be answered by examining the codebase.
 3. **In `interrogate-with-docs` mode only:**
    - Challenge terms that conflict with the existing glossary in CONTEXT.md immediately.
@@ -83,7 +83,7 @@ Use this skill to relentlessly interrogate a plan or design until every branch o
 
 ## Guardrails
 
-- Ask questions one at a time. Never dump a wall of questions.
+- Ask questions one at a time by default. Never dump a wall of questions — the optional batching in [references/frontier-batching.md](references/frontier-batching.md) is a narrow, opt-in exception, not a new default.
 - Provide your recommended answer with every question.
 - Explore the codebase when it can answer a question directly — do not ask the user what the code already tells you.
 - In `interrogate` mode, do not create or update any documentation files (CONTEXT.md, ADRs). If domain-doc maintenance turns out to be needed, switch to `interrogate-with-docs` mode instead of silently writing docs.
@@ -113,4 +113,5 @@ Use this skill to relentlessly interrogate a plan or design until every branch o
 - [references/session-playbook.md](references/session-playbook.md) — shared interrogation patterns: question sequencing, scenario construction, contradiction surfacing, fuzzy-term resolution, and docs-specific guidance for `interrogate-with-docs` mode
 - [references/context-format.md](references/context-format.md) — CONTEXT.md format specification: structure, rules, single vs. multi-context repos
 - [references/adr-format.md](references/adr-format.md) — ADR format, offering criteria, qualifying categories, and optional sections
+- [references/frontier-batching.md](references/frontier-batching.md) — optional, opt-in frontier/round batching and non-blocking fact-finding subagent rule; the one-at-a-time default and no-wall-of-questions guardrail still apply
 - [assets/context-template.md](assets/context-template.md) — starter template for a new CONTEXT.md

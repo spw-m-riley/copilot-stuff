@@ -1,6 +1,7 @@
 ---
 name: schema-boundary-typing
 description: "Use when untrusted inputs need edge validation so runtime schemas, guards, and exported TypeScript types stay aligned."
+disable-model-invocation: true
 metadata:
   category: typescript
   audience: general-coding-agent
